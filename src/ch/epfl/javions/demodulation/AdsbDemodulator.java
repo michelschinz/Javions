@@ -2,8 +2,7 @@ package ch.epfl.javions.demodulation;
 
 import ch.epfl.javions.ByteString;
 import ch.epfl.javions.Crc24;
-import ch.epfl.javions.adsb.MessageParser;
-import ch.epfl.javions.adsb.ModeSFrame;
+import ch.epfl.javions.adsb.Message;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -32,7 +31,7 @@ public final class AdsbDemodulator {
         this.window = new PowerWindow(samplesStream, LONG_MESSAGE_WIDTH);
     }
 
-    public Optional<ModeSFrame> nextFrame() throws IOException {
+    public Optional<Message> nextFrame() throws IOException {
         if (window.available() < 0) throw new EOFException();
 
         var maybeFrame = frameOfCurrentWindow();
@@ -40,7 +39,7 @@ public final class AdsbDemodulator {
         return maybeFrame;
     }
 
-    private Optional<ModeSFrame> frameOfCurrentWindow() {
+    private Optional<Message> frameOfCurrentWindow() {
         var p0 = preamblePower(0);
         var p1 = preamblePower(1);
         var p2 = preamblePower(2);
@@ -53,17 +52,17 @@ public final class AdsbDemodulator {
 
         // Extract first byte, to obtain length
         var firstByte = getByte(0);
-        var df = MessageParser.rawDownLinkFormat(firstByte);
+        var df = Message.rawDownLinkFormat(firstByte);
         if (df != 17) return Optional.empty();
 
         // Check CRC, fixing one-bit errors
-        var frameBytes = new byte[ModeSFrame.BYTES_LONG];
+        var frameBytes = new byte[Message.BYTES_LONG];
         frameBytes[0] = (byte) firstByte;
         for (int i = 1; i < frameBytes.length; i += 1)
             frameBytes[i] = (byte) getByte(i);
 
         return crc24.crc(frameBytes) == 0
-                ? Optional.of(new ModeSFrame(ByteString.ofBytes(frameBytes)))
+                ? Optional.of(Message.of(ByteString.ofBytes(frameBytes)))
                 : Optional.empty();
     }
 
