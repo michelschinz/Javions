@@ -2,13 +2,13 @@ package ch.epfl.javions;
 
 import java.util.Optional;
 
+import static ch.epfl.javions.Math2.TAU;
 import static java.lang.Math.*;
 
 public final class CprDecoder {
     // References:
     // [1] 1090-WP-14-09R1
 
-    private static final double TAU = 2d * PI;
     private static final double TAU_3_4 = TAU * 3d / 4d;
 
     private static final int LATITUDE_ZONE_COUNT = 15; // NZ in [1]

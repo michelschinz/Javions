@@ -2,6 +2,7 @@ package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
+import ch.epfl.javions.Math2;
 import ch.epfl.javions.Units;
 
 public record AirborneVelocityMessage(
@@ -10,8 +11,6 @@ public record AirborneVelocityMessage(
         double velocity,
         double trackOrHeading
 ) implements Message {
-
-    private static final double TAU = Math.scalb(Math.PI, 1);
 
     public enum VelocityType {GROUND, AIR}
 
@@ -59,12 +58,12 @@ public record AirborneVelocityMessage(
     private static double track(long payload) {
         assert velocityType(payload) == VelocityType.GROUND;
         var signedTrack = Math.atan2(velocityEW(payload), velocityNS(payload));
-        return signedTrack < 0 ? signedTrack + TAU : signedTrack;
+        return signedTrack < 0 ? signedTrack + Math2.TAU : signedTrack;
     }
 
     private static double heading(long payload) {
         assert velocityType(payload) == VelocityType.AIR;
-        return TAU * Math.scalb(Bits.extractUInt(payload, 21 + 11, 10), -10);
+        return Math2.TAU * Math.scalb(Bits.extractUInt(payload, 21 + 11, 10), -10);
     }
 
     public static double velocity(long payload) {
