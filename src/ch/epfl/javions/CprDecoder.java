@@ -41,13 +41,13 @@ public final class CprDecoder {
             var nl = lonZones(latE);
             var m = (int) floor(lonCprE * (nl - 1) - lonCprO * nl + 0.5);
             var lonE = normalizeLon(TAU / nl * (floorMod(m, nl) + lonCprE));
-            return Optional.of(new GeoPos(lonE, latE, Float.NaN)); // FIXME altitude?
+            return Optional.of(new GeoPos((float) lonE, (float) latE));
         } else {
             var nl = lonZones(latO);
             var nl1 = max(nl - 1, 1);
             var m = (int) floor(lonCprE * (nl - 1) - lonCprO * nl + 0.5);
             var lonO = normalizeLon(TAU / nl1 * (floorMod(m, nl1) + lonCprO));
-            return Optional.of(new GeoPos(lonO, latO, Float.NaN)); // FIXME altitude?
+            return Optional.of(new GeoPos((float) lonO, (float) latO));
         }
     }
 
