@@ -3,6 +3,8 @@ package ch.epfl.javions;
 public final class Units {
     public static final class Angle {
         public static final double RADIAN = 1;
+        public static final double TURN = 2 * Math.PI * RADIAN;
+        public static final double DEGREE = TURN / 360;
     }
 
     public static final class Time {
