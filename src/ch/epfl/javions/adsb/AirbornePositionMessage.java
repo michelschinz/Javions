@@ -6,6 +6,7 @@ import ch.epfl.javions.CprPosition;
 import ch.epfl.javions.Units;
 
 public record AirbornePositionMessage(
+        long timeStamp,
         int icao,
         double altitude
 ) implements Message {
@@ -37,7 +38,7 @@ public record AirbornePositionMessage(
         }
     }
 
-    public static AirbornePositionMessage of(ByteString bytes) {
+    public static AirbornePositionMessage of(long timeStamp, ByteString bytes) {
         var icao = Message.icao(bytes);
         var altitude = altitude(Message.payload(bytes));
         return new AirbornePositionMessage(icao, altitude);

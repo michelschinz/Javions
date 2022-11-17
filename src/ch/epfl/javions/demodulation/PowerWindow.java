@@ -9,6 +9,7 @@ public final class PowerWindow {
     private final int windowSize;
     private final PowerComputer powerComputer;
     private final int[][] chunks;
+    private long position;
     private int headIndex; // Invariant: 0 <= headIndex < CHUNK_SIZE
     private int available;
 
@@ -22,8 +23,13 @@ public final class PowerWindow {
         this.windowSize = windowSize;
         this.powerComputer = powerComputer;
         this.chunks = chunks;
+        this.position = 0;
         this.headIndex = 0;
         this.available = initiallyAvailable;
+    }
+
+    public long position() {
+        return position;
     }
 
     public int available() {
@@ -37,6 +43,7 @@ public final class PowerWindow {
     }
 
     public void advance() throws IOException {
+        position += 1;
         headIndex += 1;
         available -= 1;
 

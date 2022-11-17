@@ -6,6 +6,7 @@ import ch.epfl.javions.Math2;
 import ch.epfl.javions.Units;
 
 public record AirborneVelocityMessage(
+        long timeStamp,
         int icao,
         VelocityType velocityType,
         double velocity,
@@ -85,7 +86,7 @@ public record AirborneVelocityMessage(
         return 1 <= subType && subType <= 4;
     }
 
-    public static AirborneVelocityMessage of(ByteString message) {
+    public static AirborneVelocityMessage of(long timeStamp, ByteString message) {
         var payload = Message.payload(message);
         var subType = subType(payload);
         // TODO messages with invalid subtype probably contain other data nevertheless!
@@ -96,6 +97,6 @@ public record AirborneVelocityMessage(
         var type = velocityType(payload);
         var velocity = velocity(payload);
         var trackOrHeading = trackOrHeading(payload);
-        return new AirborneVelocityMessage(icao, type, velocity, trackOrHeading);
+        return new AirborneVelocityMessage(timeStamp, icao, type, velocity, trackOrHeading);
     }
 }

@@ -6,6 +6,7 @@ import ch.epfl.javions.ByteString;
 import static ch.epfl.javions.adsb.WakeVortexCategory.*;
 
 public record AircraftIdentificationMessage(
+        long timeStamp,
         int icao,
         WakeVortexCategory category,
         String callSign
@@ -45,12 +46,12 @@ public record AircraftIdentificationMessage(
         return new String(callSignChars).trim();
     }
 
-    public static AircraftIdentificationMessage of(ByteString messageData) {
+    public static AircraftIdentificationMessage of(long timeStamp, ByteString messageData) {
         var icao = Message.icao(messageData);
         var typeCode = Message.rawTypeCode(messageData);
         var capability = Message.rawCapability(messageData);
         var category = category(typeCode, capability);
         var callSign = callSign(Message.payload(messageData));
-        return new AircraftIdentificationMessage(icao, category, callSign);
+        return new AircraftIdentificationMessage(timeStamp, icao, category, callSign);
     }
 }

@@ -18,6 +18,8 @@ public final class AdsbDemodulator {
     private static final int BYTE_WIDTH = 8 * BIT_WIDTH;
     private static final int LONG_MESSAGE_WIDTH = PREAMBLE_WIDTH + 14 * BYTE_WIDTH;
 
+    private static final long NANOSECONDS_PER_SAMPLE = 100;
+
     private static final int[] PREAMBLE_PEAKS = {0, 2, 7, 9};
     private static final int[] PREAMBLE_VALLEYS = {1, 3, 4, 5, 6, 8};
 
@@ -62,8 +64,12 @@ public final class AdsbDemodulator {
             frameBytes[i] = (byte) getByte(i);
 
         return crc24.crc(frameBytes) == 0
-                ? Optional.of(Message.of(ByteString.ofBytes(frameBytes)))
+                ? Optional.of(Message.of(timeStamp(), ByteString.ofBytes(frameBytes)))
                 : Optional.empty();
+    }
+
+    private long timeStamp() {
+        return window.position() * NANOSECONDS_PER_SAMPLE;
     }
 
     private int getByte(int i) {

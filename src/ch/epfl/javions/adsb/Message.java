@@ -60,14 +60,15 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
                | msg.byteAt(3);
     }
 
-    static Message of(ByteString bytes) {
+    static Message of(long timeStamp, ByteString bytes) {
         return switch (typeCode(bytes)) {
-            case AIRCRAFT_IDENTIFICATION -> AircraftIdentificationMessage.of(bytes);
-            case AIRBORNE_VELOCITIES -> AirborneVelocityMessage.of(bytes);
-            case AIRBORNE_POSITION -> AirbornePositionMessage.of(bytes);
+            case AIRCRAFT_IDENTIFICATION -> AircraftIdentificationMessage.of(timeStamp, bytes);
+            case AIRBORNE_VELOCITIES -> AirborneVelocityMessage.of(timeStamp, bytes);
+            case AIRBORNE_POSITION -> AirbornePositionMessage.of(timeStamp, bytes);
             default -> null;
         };
     }
 
+    long timeStamp();
     int icao();
 }
