@@ -5,41 +5,19 @@ import ch.epfl.javions.adsb.WakeVortexCategory;
 public record PlaneState(
         WakeVortexCategory category,
         String callSign,
+        GeoPos position,
         double altitude,
         double velocity,
         double trackOrHeading) {
     public static final PlaneState EMPTY = new Builder().build();
 
     public static final class Builder {
-        private WakeVortexCategory category;
-        private String callSign;
-        private double altitude;
-        private double velocity;
-        private double trackOrHeading;
-
-        public Builder(WakeVortexCategory initialCategory,
-                       String initialCallSign,
-                       double initialAltitude,
-                       double initialVelocity,
-                       double initialTrackOrHeading) {
-            this.category = initialCategory;
-            this.callSign = initialCallSign;
-            this.altitude = initialAltitude;
-            this.velocity = initialVelocity;
-            this.trackOrHeading = initialTrackOrHeading;
-        }
-
-        public Builder() {
-            this(WakeVortexCategory.UNKNOWN, "", Double.NaN, Double.NaN, Double.NaN);
-        }
-
-        public Builder(PlaneState initialState) {
-            this(initialState.category,
-                    initialState.callSign(),
-                    initialState.altitude(),
-                    initialState.velocity(),
-                    initialState.trackOrHeading());
-        }
+        private WakeVortexCategory category = WakeVortexCategory.UNKNOWN;
+        private String callSign = "";
+        private GeoPos position = null;
+        private double altitude = Double.NaN;
+        private double velocity = Double.NaN;
+        private double trackOrHeading = Double.NaN;
 
         public WakeVortexCategory category() {
             return category;
@@ -57,6 +35,14 @@ public record PlaneState(
         public Builder setCallSign(String callSign) {
             this.callSign = callSign;
             return this;
+        }
+
+        public GeoPos position() {
+            return position;
+        }
+
+        public void setPosition(GeoPos position) {
+            this.position = position;
         }
 
         public double altitude() {
@@ -87,7 +73,7 @@ public record PlaneState(
         }
 
         public PlaneState build() {
-            return new PlaneState(category, callSign, altitude, velocity, trackOrHeading);
+            return new PlaneState(category(), callSign(), position(), altitude(), velocity(), trackOrHeading());
         }
     }
 }
