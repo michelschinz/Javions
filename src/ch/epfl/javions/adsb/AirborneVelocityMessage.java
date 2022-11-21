@@ -1,13 +1,10 @@
 package ch.epfl.javions.adsb;
 
-import ch.epfl.javions.Bits;
-import ch.epfl.javions.ByteString;
-import ch.epfl.javions.Math2;
-import ch.epfl.javions.Units;
+import ch.epfl.javions.*;
 
 public record AirborneVelocityMessage(
         long timeStamp,
-        int icao,
+        IcaoAddress icaoAddress,
         VelocityType velocityType,
         double velocity,
         double trackOrHeading
@@ -93,7 +90,7 @@ public record AirborneVelocityMessage(
         //   => do not ignore them, but make "velocity" return NaN for example.
         if (!(1 <= subType && subType <= 4)) return null;
 
-        var icao = Message.icao(message);
+        var icao = Message.icaoAddress(message);
         var type = velocityType(payload);
         var velocity = velocity(payload);
         var trackOrHeading = trackOrHeading(payload);

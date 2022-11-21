@@ -2,6 +2,7 @@ package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
+import ch.epfl.javions.IcaoAddress;
 import ch.epfl.javions.MessageType;
 
 public sealed interface Message permits AirbornePositionMessage, AirborneVelocityMessage, AircraftIdentificationMessage {
@@ -54,10 +55,14 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
         return typeCode(rawTypeCode(msg));
     }
 
-    static int icao(ByteString msg) {
+    static int rawIcaoAddress(ByteString msg) {
         return msg.byteAt(1) << 16
                | msg.byteAt(2) << 8
                | msg.byteAt(3);
+    }
+
+    static IcaoAddress icaoAddress(ByteString msg) {
+        return new IcaoAddress(rawIcaoAddress(msg));
     }
 
     static Message of(long timeStamp, ByteString bytes) {
@@ -70,5 +75,5 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
     }
 
     long timeStamp();
-    int icao();
+    IcaoAddress icaoAddress();
 }

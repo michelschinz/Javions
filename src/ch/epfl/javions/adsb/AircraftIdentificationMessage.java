@@ -2,12 +2,13 @@ package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
+import ch.epfl.javions.IcaoAddress;
 
 import static ch.epfl.javions.adsb.WakeVortexCategory.*;
 
 public record AircraftIdentificationMessage(
         long timeStamp,
-        int icao,
+        IcaoAddress icaoAddress,
         WakeVortexCategory category,
         String callSign
 ) implements Message {
@@ -47,7 +48,7 @@ public record AircraftIdentificationMessage(
     }
 
     public static AircraftIdentificationMessage of(long timeStamp, ByteString messageData) {
-        var icao = Message.icao(messageData);
+        var icao = Message.icaoAddress(messageData);
         var typeCode = Message.rawTypeCode(messageData);
         var capability = Message.rawCapability(messageData);
         var category = category(typeCode, capability);

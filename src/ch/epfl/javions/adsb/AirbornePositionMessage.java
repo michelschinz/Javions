@@ -2,11 +2,12 @@ package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
+import ch.epfl.javions.IcaoAddress;
 import ch.epfl.javions.Units;
 
 public record AirbornePositionMessage(
         long timeStamp,
-        int icao,
+        IcaoAddress icaoAddress,
         boolean isEven,
         int cprLon,
         int cprLat,
@@ -46,7 +47,7 @@ public record AirbornePositionMessage(
     }
 
     public static AirbornePositionMessage of(long timeStamp, ByteString bytes) {
-        var icao = Message.icao(bytes);
+        var icao = Message.icaoAddress(bytes);
         var payload = Message.payload(bytes);
         var isEven = cprFormat(payload) == 0;
         var cprLon = cprLon(payload);
