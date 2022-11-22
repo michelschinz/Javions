@@ -24,6 +24,7 @@ public final class PlaneManager {
     public PlaneManager(ObjectProperty<MapViewParameters> mapViewParametersProperty,
                         ObservableMap<IcaoAddress, PlaneState> planeStates) {
         var pane = new Pane();
+        pane.getStylesheets().add("planes.css");
         pane.setMouseTransparent(true);
 
         this.mapViewParametersProperty = mapViewParametersProperty;
