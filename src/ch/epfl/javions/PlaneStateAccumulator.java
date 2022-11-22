@@ -11,8 +11,9 @@ public final class PlaneStateAccumulator {
     private static final long MAX_INTER_MESSAGE_NS =
             Duration.ofSeconds(10).toNanos();
 
-    private AirbornePositionMessage lastPositionMessage = null;
     private final PlaneState.Builder stateBuilder = new PlaneState.Builder();
+    private AirbornePositionMessage lastPositionMessage = null;
+    private long lastMessageTimeStamp = -1;
 
     public void update(Message message) {
         switch (message) {
@@ -38,6 +39,7 @@ public final class PlaneStateAccumulator {
                     .setCategory(m.category())
                     .setCallSign(m.callSign());
         }
+        lastMessageTimeStamp = message.timeStamp();
     }
 
     private static boolean isValidMessagePair(AirbornePositionMessage m1, AirbornePositionMessage m2) {
@@ -49,6 +51,10 @@ public final class PlaneStateAccumulator {
 
     public PlaneState currentState() {
         return stateBuilder.build();
+    }
+
+    public long lastMessageTimeStamp() {
+        return lastMessageTimeStamp;
     }
 
     @Override
