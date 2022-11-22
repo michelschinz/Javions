@@ -1,11 +1,16 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.javions.AvrParser;
+import ch.epfl.javions.IcaoAddress;
 import ch.epfl.javions.adsb.Message;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
+import javafx.collections.ObservableList;
 import javafx.scene.Scene;
+import javafx.scene.control.SplitPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
@@ -36,8 +41,19 @@ public final class Main extends Application {
 
         var messageQueue = new ConcurrentLinkedDeque<Message>();
         var planeStateManager = new PlaneStateManager();
+
+        var observablePlaneStates = FXCollections.<ObservablePlaneState>observableArrayList();
+        planeStateManager.states().addListener((MapChangeListener<IcaoAddress, ObservablePlaneState>) c -> {
+            if (c.wasRemoved())
+                observablePlaneStates.remove(c.getValueRemoved());
+            if (c.wasAdded())
+                observablePlaneStates.add(c.getValueAdded());
+        });
+
         var planeManager = new PlaneManager(mapViewParametersProperty, planeStateManager.states());
-        var mainPane = new StackPane(baseMapManager.pane(), planeManager.pane());
+        var planeTableManager = new PlaneTableManager(observablePlaneStates);
+        var mapPane = new StackPane(baseMapManager.pane(), planeManager.pane());
+        var mainPane = new SplitPane(mapPane, planeTableManager.pane());
 
         var scene = new Scene(mainPane);
         primaryStage.setScene(scene);
