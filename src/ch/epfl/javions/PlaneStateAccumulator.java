@@ -11,18 +11,23 @@ public final class PlaneStateAccumulator {
     private static final long MAX_INTER_MESSAGE_NS =
             Duration.ofSeconds(10).toNanos();
 
-    private final PlaneState.Builder stateBuilder = new PlaneState.Builder();
+    private final PlaneStateSetter stateSetter;
     private AirbornePositionMessage lastPositionMessage = null;
     private long lastMessageTimeStamp = -1;
 
+    public PlaneStateAccumulator(PlaneStateSetter stateSetter) {
+        this.stateSetter = stateSetter;
+    }
+
     public void update(Message message) {
         switch (message) {
-            case AirborneVelocityMessage m -> stateBuilder
-                    .setVelocity(m.velocity())
-                    .setTrackOrHeading(m.trackOrHeading());
+            case AirborneVelocityMessage m -> {
+                stateSetter.setVelocity(m.velocity());
+                stateSetter.setTrackOrHeading(m.trackOrHeading());
+            }
 
             case AirbornePositionMessage m -> {
-                stateBuilder.setAltitude(m.altitude());
+                stateSetter.setAltitude(m.altitude());
                 if (isValidMessagePair(lastPositionMessage, m)) {
                     var messageE = m.isEven() ? m : lastPositionMessage;
                     var messageO = m.isEven() ? lastPositionMessage : m;
@@ -30,14 +35,15 @@ public final class PlaneStateAccumulator {
                                     Math.scalb(messageE.cprLon(), -17), Math.scalb(messageE.cprLat(), -17),
                                     Math.scalb(messageO.cprLon(), -17), Math.scalb(messageO.cprLat(), -17),
                                     m.isEven())
-                            .ifPresent(stateBuilder::setPosition);
+                            .ifPresent(stateSetter::setPosition);
                 }
                 lastPositionMessage = m;
             }
 
-            case AircraftIdentificationMessage m -> stateBuilder
-                    .setCategory(m.category())
-                    .setCallSign(m.callSign());
+            case AircraftIdentificationMessage m -> {
+                stateSetter.setCategory(m.category());
+                stateSetter.setCallSign(m.callSign());
+            }
         }
         lastMessageTimeStamp = message.timeStamp();
     }
@@ -49,16 +55,7 @@ public final class PlaneStateAccumulator {
                && Math.abs(m1.timeStamp() - m2.timeStamp()) <= MAX_INTER_MESSAGE_NS;
     }
 
-    public PlaneState currentState() {
-        return stateBuilder.build();
-    }
-
     public long lastMessageTimeStamp() {
         return lastMessageTimeStamp;
-    }
-
-    @Override
-    public String toString() {
-        return currentState().toString();
     }
 }

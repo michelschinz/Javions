@@ -17,12 +17,20 @@ public record PointWebMercator(double x, double y) {
         return 8 + zoomLevel;
     }
 
-    public double xAtZoomLevel(int zoomLevel) {
+    public static double xAtZoomLevel(int zoomLevel, double x) {
         return scalb(x, shiftFor(zoomLevel));
     }
 
-    public double yAtZoomLevel(int zoomLevel) {
+    public static double yAtZoomLevel(int zoomLevel, double y) {
         return scalb(y, shiftFor(zoomLevel));
+    }
+
+    public double xAtZoomLevel(int zoomLevel) {
+        return xAtZoomLevel(zoomLevel, x);
+    }
+
+    public double yAtZoomLevel(int zoomLevel) {
+        return yAtZoomLevel(zoomLevel, y);
     }
 
     public double lon() {
