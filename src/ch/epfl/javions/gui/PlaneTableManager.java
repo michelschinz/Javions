@@ -1,7 +1,10 @@
 package ch.epfl.javions.gui;
 
+import javafx.beans.binding.Bindings;
 import javafx.collections.ObservableList;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.control.TableCell;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.PropertyValueFactory;
@@ -17,8 +20,16 @@ public final class PlaneTableManager {
         var callSignColumn = new TableColumn<ObservablePlaneState, String>("Flight");
         callSignColumn.setCellValueFactory(new PropertyValueFactory<>("callSign"));
 
-        var altColumn = new TableColumn<ObservablePlaneState, Double>("Alt.");
-        altColumn.setCellValueFactory(new PropertyValueFactory<>("altitude"));
+        var altColumn = new TableColumn<ObservablePlaneState, String>("Alt.");
+        altColumn.setCellValueFactory(f ->
+                Bindings.when(f.getValue().altitudeProperty().greaterThan(Double.NEGATIVE_INFINITY))
+                        .then(String.format("%.0f", f.getValue().getAltitude()))
+                        .otherwise(""));
+        altColumn.setCellFactory(col -> {
+            var cell = (TableCell<ObservablePlaneState, String>) TableColumn.DEFAULT_CELL_FACTORY.call(col);
+            cell.setAlignment(Pos.BASELINE_RIGHT);
+            return cell;
+        });
 
         var hdgColumn = new TableColumn<ObservablePlaneState, Double>("Hdg.");
         hdgColumn.setCellValueFactory(new PropertyValueFactory<>("trackOrHeading"));
