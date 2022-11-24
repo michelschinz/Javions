@@ -24,11 +24,16 @@ public final class CprDecoder {
         return Double.isNaN(nl) ? 1 : (int) nl;
     }
 
-    public static Optional<GeoPos> decodePosition(float lonCprE,
-                                                  float latCprE,
-                                                  float lonCprO,
-                                                  float latCprO,
+    public static Optional<GeoPos> decodePosition(int intLonCprE,
+                                                  int intLatCprE,
+                                                  int intLonCprO,
+                                                  int intLatCprO,
                                                   boolean mostRecentIsE) {
+        var lonCprE = Math.scalb(intLonCprE, -17);
+        var latCprE = Math.scalb(intLatCprE, -17);
+        var lonCprO = Math.scalb(intLonCprO, -17);
+        var latCprO = Math.scalb(intLatCprO, -17);
+
         // TODO name constants for 60 (which is 4*NZ), and 59 (which is 4*NZ-1)
         var j = (int) floor(59 * latCprE - 60 * latCprO + 0.5);
 

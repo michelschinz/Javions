@@ -32,8 +32,8 @@ public final class PlaneStateAccumulator {
                     var messageE = m.isEven() ? m : lastPositionMessage;
                     var messageO = m.isEven() ? lastPositionMessage : m;
                     CprDecoder.decodePosition(
-                                    Math.scalb(messageE.cprLon(), -17), Math.scalb(messageE.cprLat(), -17),
-                                    Math.scalb(messageO.cprLon(), -17), Math.scalb(messageO.cprLat(), -17),
+                                    messageE.cprLon(), messageE.cprLat(),
+                                    messageO.cprLon(), messageO.cprLat(),
                                     m.isEven())
                             .ifPresent(stateSetter::setPosition);
                 }
