@@ -1,6 +1,15 @@
 package ch.epfl.javions;
 
 public final class Units {
+    /*
+     Rules:
+     1. to convert a value to the base unit, multiply it by its unit, e.g.:
+          var length = 6 * Distance.FOOT;  // length = 1.8288 (6 ft in m)
+     2. to convert a value from the base unit to another unit, divide by its unit,
+        but using a multiplication, e.g.:
+          var lengthInFeet = length * (Distance.METER / Distance.FOOT);
+    */
+
     public static final class Angle {
         public static final double RADIAN = 1;
         public static final double TURN = 2 * Math.PI * RADIAN;
