@@ -66,6 +66,8 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
     }
 
     static Message of(long timeStamp, ByteString bytes) {
+        if (rawDownLinkFormat(bytes) != 17) return null; // FIXME clean-up
+
         return switch (typeCode(bytes)) {
             case AIRCRAFT_IDENTIFICATION -> AircraftIdentificationMessage.of(timeStamp, bytes);
             case AIRBORNE_VELOCITIES -> AirborneVelocityMessage.of(timeStamp, bytes);

@@ -64,7 +64,7 @@ public final class AdsbDemodulator {
             frameBytes[i] = (byte) getByte(i);
 
         return crc24.crc(frameBytes) == 0
-                ? Optional.of(Message.of(timeStamp(), ByteString.ofBytes(frameBytes)))
+                ? Optional.ofNullable(Message.of(timeStamp(), ByteString.ofBytes(frameBytes)))
                 : Optional.empty();
     }
 
