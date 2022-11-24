@@ -25,6 +25,7 @@ public final class Units {
     public static class Distance {
         public static final double METER = 1;
         public static final double CENTIMETER = METER / 100;
+        public static final double KILOMETER = 1e3 * METER;
         public static final double INCH = 2.54 * CENTIMETER;
         public static final double FOOT = 12 * INCH;
         public static final double NAUTICAL_MILE = 1852 * METER;
@@ -34,5 +35,6 @@ public final class Units {
         public static final double METERS_PER_SECOND = Distance.METER / Time.SECOND;
         public static final double FEET_PER_MINUTE = Distance.FOOT / Time.MINUTE;
         public static final double KNOT = Distance.NAUTICAL_MILE / Time.HOUR;
+        public static final double KILOMETERS_PER_HOUR = Distance.KILOMETER / Time.HOUR;
     }
 }
