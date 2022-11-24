@@ -24,43 +24,35 @@ public final class CprDecoder {
         return Double.isNaN(nl) ? 1 : (int) nl;
     }
 
-    public static Optional<GeoPos> decodePosition(int intLonCprE,
-                                                  int intLatCprE,
-                                                  int intLonCprO,
-                                                  int intLatCprO,
+    public static Optional<GeoPos> decodePosition(int lonCprE,
+                                                  int latCprE,
+                                                  int lonCprO,
+                                                  int latCprO,
                                                   boolean mostRecentIsE) {
-        var lonCprE = Math.scalb(intLonCprE, -17);
-        var latCprE = Math.scalb(intLatCprE, -17);
-        var lonCprO = Math.scalb(intLonCprO, -17);
-        var latCprO = Math.scalb(intLatCprO, -17);
-
-        // TODO name constants for 60 (which is 4*NZ), and 59 (which is 4*NZ-1)
-        var j = (int) floor(59 * latCprE - 60 * latCprO + 0.5);
-
-        var latE = normalizeLat(D_LAT_E * (floorMod(j, 60) + latCprE));
-        var latO = normalizeLat(D_LAT_O * (floorMod(j, 59) + latCprO));
+        var latZIn = floor(scalb(59 * latCprE - 60 * latCprO + scalb(1d, 16), -17));
+        var latE = D_LAT_E * (latZIn - 60 * floor(latZIn / 60) + scalb(latCprE, -17));
+        var latO = D_LAT_O * (latZIn - 59 * floor(latZIn / 59) + scalb(latCprO, -17));
 
         if (lonZones(latE) != lonZones(latO)) return Optional.empty();
+        var nl = lonZones(latE);
 
-        if (mostRecentIsE) {
-            var nl = lonZones(latE);
-            var m = (int) floor(lonCprE * (nl - 1) - lonCprO * nl + 0.5);
-            var lonE = normalizeLon(TAU / nl * (floorMod(m, nl) + lonCprE));
-            return Optional.of(new GeoPos(lonE, latE));
+        if (nl == 1) {
+            return mostRecentIsE
+                    ? geoPos(TAU * scalb(lonCprE, -17), latE)
+                    : geoPos(TAU * scalb(lonCprO, -17), latO);
         } else {
-            var nl = lonZones(latO);
-            var nl1 = max(nl - 1, 1);
-            var m = (int) floor(lonCprE * (nl - 1) - lonCprO * nl + 0.5);
-            var lonO = normalizeLon(TAU / nl1 * (floorMod(m, nl1) + lonCprO));
-            return Optional.of(new GeoPos(lonO, latO));
+            var lonZIn = floor(scalb((nl - 1d) * lonCprE - nl * lonCprO + scalb(1d, 16), -17));
+            if (!mostRecentIsE) nl -= 1d;
+            var v = lonZIn - nl * floor(lonZIn / nl);
+            return mostRecentIsE
+                    ? geoPos(TAU / nl * (v + scalb(lonCprE, -17)), latE)
+                    : geoPos(TAU / nl * (v + scalb(lonCprO, -17)), latO);
         }
     }
 
-    private static double normalizeLon(double lon) {
-        return lon >= PI ? lon - TAU : lon;
-    }
-
-    private static double normalizeLat(double lat) {
-        return lat >= TAU_3_4 ? lat - TAU : lat;
+    private static Optional<GeoPos> geoPos(double lon, double lat) {
+        var normalizedLon = lon < PI ? lon : lon - TAU;
+        var normalizedLat = lat < TAU_3_4 ? lat : lat - TAU;
+        return Optional.of(new GeoPos(normalizedLon, normalizedLat));
     }
 }
