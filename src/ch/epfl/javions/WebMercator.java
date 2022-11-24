@@ -24,4 +24,16 @@ public final class WebMercator {
     public static double lat(double y) {
         return atan(sinh(PI - TAU * y));
     }
+
+    private static int shiftFor(int zoomLevel) {
+        return 8 + zoomLevel;
+    }
+
+    public static double xAtZoomLevel(int zoomLevel, double x) {
+        return scalb(x, shiftFor(zoomLevel));
+    }
+
+    public static double yAtZoomLevel(int zoomLevel, double y) {
+        return scalb(y, shiftFor(zoomLevel));
+    }
 }
