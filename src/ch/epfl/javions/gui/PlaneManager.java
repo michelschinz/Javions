@@ -18,10 +18,12 @@ public final class PlaneManager {
 
     private final ObjectProperty<MapViewParameters> mapViewParametersProperty;
     private final ObservableMap<IcaoAddress, ObservablePlaneState> planeStates;
+    private final ObjectProperty<IcaoAddress> selectedPlaneProperty;
     private final Pane pane;
 
     public PlaneManager(ObjectProperty<MapViewParameters> mapViewParametersProperty,
-                        ObservableMap<IcaoAddress, ObservablePlaneState> planeStates) {
+                        ObservableMap<IcaoAddress, ObservablePlaneState> planeStates,
+                        ObjectProperty<IcaoAddress> selectedPlaneProperty) {
         assert planeStates.isEmpty(); // TODO should we instead create the initial nodes?
 
         var pane = new Pane();
@@ -30,6 +32,7 @@ public final class PlaneManager {
 
         this.mapViewParametersProperty = mapViewParametersProperty;
         this.planeStates = planeStates;
+        this.selectedPlaneProperty = selectedPlaneProperty;
         this.pane = pane;
 
         installHandlers();
@@ -83,6 +86,8 @@ public final class PlaneManager {
                 mapViewParametersProperty));
 
         planePath.rotateProperty().bind(planeState.trackOrHeadingProperty().multiply(Angle.RADIAN / Angle.DEGREE));
+
+        planePath.setOnMouseClicked(e -> selectedPlaneProperty.set(address));
 
         return planePath;
     }

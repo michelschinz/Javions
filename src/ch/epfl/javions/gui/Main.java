@@ -46,16 +46,9 @@ public final class Main extends Application {
         var messageQueue = new ConcurrentLinkedQueue<Message>();
         var planeStateManager = new PlaneStateManager();
 
-        var observablePlaneStates = FXCollections.<ObservablePlaneState>observableArrayList();
-        planeStateManager.states().addListener((MapChangeListener<IcaoAddress, ObservablePlaneState>) c -> {
-            if (c.wasRemoved())
-                observablePlaneStates.remove(c.getValueRemoved());
-            if (c.wasAdded())
-                observablePlaneStates.add(c.getValueAdded());
-        });
-
-        var planeManager = new PlaneManager(mapViewParametersProperty, planeStateManager.states());
-        var planeTableManager = new PlaneTableManager(observablePlaneStates);
+        var selectedAddressProperty = new SimpleObjectProperty<IcaoAddress>();
+        var planeManager = new PlaneManager(mapViewParametersProperty, planeStateManager.states(), selectedAddressProperty);
+        var planeTableManager = new PlaneTableManager(planeStateManager.states(), selectedAddressProperty);
         var mapPane = new StackPane(baseMapManager.pane(), planeManager.pane());
         var mainPane = new SplitPane(mapPane, planeTableManager.pane());
 

@@ -1,7 +1,12 @@
 package ch.epfl.javions.gui;
 
+import ch.epfl.javions.IcaoAddress;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.ObjectProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
+import javafx.collections.ObservableMap;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.TableCell;
@@ -14,8 +19,9 @@ import java.util.List;
 public final class PlaneTableManager {
     private final TableView<ObservablePlaneState> tableView;
 
-    public PlaneTableManager(ObservableList<ObservablePlaneState> planes) {
-        var tableView = new TableView<>(planes);
+    public PlaneTableManager(ObservableMap<IcaoAddress, ObservablePlaneState> planes,
+                             ObjectProperty<IcaoAddress> selectedAddressProperty) {
+        var tableView = new TableView<ObservablePlaneState>();
 
         var callSignColumn = new TableColumn<ObservablePlaneState, String>("Flight");
         callSignColumn.setCellValueFactory(new PropertyValueFactory<>("callSign"));
@@ -37,6 +43,19 @@ public final class PlaneTableManager {
         tableView.getColumns().setAll(List.of(callSignColumn, altColumn, hdgColumn));
 
         this.tableView = tableView;
+
+        installListeners(planes);
+        selectedAddressProperty.addListener((p, o, n) -> tableView.getSelectionModel().select(planes.get(n)));
+    }
+
+    private void installListeners(ObservableMap<IcaoAddress, ObservablePlaneState> planes) {
+        planes.addListener((MapChangeListener<IcaoAddress, ObservablePlaneState>) c -> {
+            var tableItems = tableView.getItems();
+            if (c.wasRemoved())
+                tableItems.remove(c.getValueRemoved());
+            if (c.wasAdded())
+                tableItems.add(c.getValueAdded());
+        });
     }
 
     public Node pane() {

@@ -15,6 +15,6 @@ public record IcaoAddress(int address) {
 
     @Override
     public String toString() {
-        return "%06x".formatted(address);
+        return "%06X".formatted(address);
     }
 }
