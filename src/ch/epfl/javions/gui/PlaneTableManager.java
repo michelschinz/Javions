@@ -29,13 +29,16 @@ public final class PlaneTableManager {
         var altColumn = new TableColumn<ObservablePlaneState, String>("Alt.");
         altColumn.setCellValueFactory(f ->
                 Bindings.when(f.getValue().altitudeProperty().greaterThan(Double.NEGATIVE_INFINITY))
-                        .then(String.format("%.0f", f.getValue().getAltitude()))
+                        .then(Integer.toString((int) f.getValue().getAltitude()))
                         .otherwise(""));
         altColumn.setCellFactory(col -> {
             var cell = (TableCell<ObservablePlaneState, String>) TableColumn.DEFAULT_CELL_FACTORY.call(col);
             cell.setAlignment(Pos.BASELINE_RIGHT);
             return cell;
         });
+        altColumn.setComparator((s1, s2) -> s1.isBlank() || s2.isBlank()
+                ? s1.compareTo(s2)
+                : Integer.compare(Integer.parseInt(s1), Integer.parseInt(s2)));
 
         var hdgColumn = new TableColumn<ObservablePlaneState, Double>("Hdg.");
         hdgColumn.setCellValueFactory(new PropertyValueFactory<>("trackOrHeading"));
