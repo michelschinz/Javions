@@ -3,26 +3,27 @@ package ch.epfl.javions;
 import java.util.Optional;
 
 import static ch.epfl.javions.Math2.TAU;
-import static java.lang.Math.*;
+import static ch.epfl.javions.Math2.floorMod;
+import static java.lang.Math.acos;
+import static java.lang.Math.cos;
+import static java.lang.Math.floor;
+import static java.lang.Math.scalb;
 
 public final class CprDecoder {
-    // References:
-    // [1] 1090-WP-14-09R1
+    private static final int CPR_BITS = 17;
+    private static final double CPR_ONE_HALF = scalb(0.5d, CPR_BITS);
 
-    private static final double TAU_3_4 = TAU * 3d / 4d;
+    private static final double LAT_ZONES_E = 60;
+    private static final double LAT_ZONES_O = LAT_ZONES_E - 1;
 
-    private static final double ZONES_E = 60;
-    private static final double ZONES_O = ZONES_E - 1;
+    private static final double D_LAT_E = 1d / LAT_ZONES_E;
+    private static final double D_LAT_O = 1d / LAT_ZONES_O;
 
-    private static final double D_LAT_E = TAU / ZONES_E;
-    private static final double D_LAT_O = TAU / ZONES_O;
+    private static final double LON_ZONES_NUMERATOR = 1 - cos(D_LAT_E * Units.Angle.TURN);
 
-    private static final double NL_DENOMINATOR = 1 - cos(TAU / ZONES_E);
-
-    // Called "NL(x)" in [1]
     private static int lonZones(double latitude) {
-        var cosLat = cos(latitude);
-        var nl = floor(TAU / acos(1 - NL_DENOMINATOR / (cosLat * cosLat)));
+        var cosLat = cos(latitude * Units.Angle.TURN);
+        var nl = floor(TAU / acos(1 - LON_ZONES_NUMERATOR / (cosLat * cosLat)));
         return Double.isNaN(nl) ? 1 : (int) nl;
     }
 
@@ -31,30 +32,29 @@ public final class CprDecoder {
                                                   int lonCprO,
                                                   int latCprO,
                                                   boolean mostRecentIsE) {
-        var latZIn = floor(scalb(ZONES_O * latCprE - ZONES_E * latCprO + scalb(1d, 16), -17));
-        var latE = D_LAT_E * (latZIn - ZONES_E * floor(latZIn / ZONES_E) + scalb(latCprE, -17));
-        var latO = D_LAT_O * (latZIn - ZONES_O * floor(latZIn / ZONES_O) + scalb(latCprO, -17));
+        var latZIn = floor(scalb(LAT_ZONES_O * latCprE - LAT_ZONES_E * latCprO + CPR_ONE_HALF, -CPR_BITS));
+        var latE = D_LAT_E * (floorMod(latZIn, LAT_ZONES_E) + scalb(latCprE, -CPR_BITS));
+        var latO = D_LAT_O * (floorMod(latZIn, LAT_ZONES_O) + scalb(latCprO, -CPR_BITS));
 
-        if (lonZones(latE) != lonZones(latO)) return Optional.empty();
-        var nl = lonZones(latE);
+        var lonZonesE = lonZones(latE);
+        if (lonZonesE != lonZones(latO)) return Optional.empty();
 
-        if (nl == 1) {
+        if (lonZonesE == 1) {
             return mostRecentIsE
-                    ? geoPos(TAU * scalb(lonCprE, -17), latE)
-                    : geoPos(TAU * scalb(lonCprO, -17), latO);
+                    ? geoPos(scalb(lonCprE, -CPR_BITS), latE)
+                    : geoPos(scalb(lonCprO, -CPR_BITS), latO);
         } else {
-            var lonZIn = floor(scalb((nl - 1d) * lonCprE - nl * lonCprO + scalb(1d, 16), -17));
-            if (!mostRecentIsE) nl -= 1;
-            var v = lonZIn - nl * floor(lonZIn / nl);
+            var lonZonesO = lonZonesE - 1;
+            var lonZIn = floor(scalb(lonZonesO * lonCprE - lonZonesE * lonCprO + CPR_ONE_HALF, -CPR_BITS));
             return mostRecentIsE
-                    ? geoPos(TAU / nl * (v + scalb(lonCprE, -17)), latE)
-                    : geoPos(TAU / nl * (v + scalb(lonCprO, -17)), latO);
+                    ? geoPos(floorMod(lonZIn, lonZonesE) + scalb(lonCprE, -CPR_BITS) / lonZonesE, latE)
+                    : geoPos(floorMod(lonZIn, lonZonesO) + scalb(lonCprO, -CPR_BITS) / lonZonesO, latO);
         }
     }
 
     private static Optional<GeoPos> geoPos(double lon, double lat) {
-        var normalizedLon = lon < PI ? lon : lon - TAU;
-        var normalizedLat = lat < TAU_3_4 ? lat : lat - TAU;
+        var normalizedLon = (int) scalb(lon < 0.5 ? lon : lon - 1, 32);
+        var normalizedLat = (int) scalb(lat < 0.75 ? lat : lat - 1, 32);
         return Optional.of(new GeoPos(normalizedLon, normalizedLat));
     }
 }
