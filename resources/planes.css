@@ -1,5 +1,4 @@
 .plane {
-    -fx-fill: lightgrey;
     -fx-stroke: black;
     -fx-stroke-line-join: round;
 }

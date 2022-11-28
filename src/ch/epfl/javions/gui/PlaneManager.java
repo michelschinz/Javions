@@ -2,6 +2,7 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.IcaoAddress;
+import ch.epfl.javions.Units;
 import ch.epfl.javions.Units.Angle;
 import ch.epfl.javions.WebMercator;
 import ch.epfl.javions.adsb.WakeVortexCategory;
@@ -102,6 +103,10 @@ public final class PlaneManager {
                                 ? svgPathForCategory(planeState.getCategory())
                                 : SHAPE_DEFAULT,
                 planeState.categoryProperty()));
+
+        planePath.fillProperty().bind(Bindings.createObjectBinding(() ->
+                        ColorRamp.PLASMA.at(planeState.getAltitude() / (11_000 * Units.Distance.METER)),
+                planeState.altitudeProperty()));
 
         Tooltip tip = new Tooltip();
         tip.textProperty().bind(Bindings.when(planeState.callSignProperty().isEmpty())
