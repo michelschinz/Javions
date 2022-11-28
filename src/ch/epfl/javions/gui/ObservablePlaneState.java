@@ -4,14 +4,19 @@ import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.PlaneStateSetter;
 import ch.epfl.javions.adsb.WakeVortexCategory;
 import javafx.beans.property.*;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 
 public final class ObservablePlaneState implements PlaneStateSetter {
     private final ObjectProperty<WakeVortexCategory> categoryProperty = new SimpleObjectProperty<>();
     private final StringProperty callSignProperty = new SimpleStringProperty("");
     private final ObjectProperty<GeoPos> positionProperty = new SimpleObjectProperty<>();
+    private final ObservableList<GeoPos> trajectory = FXCollections.observableArrayList();
     private final DoubleProperty altitudeProperty = new SimpleDoubleProperty(Double.NaN);
     private final DoubleProperty velocityProperty = new SimpleDoubleProperty(Double.NaN);
     private final DoubleProperty trackOrHeadingProperty = new SimpleDoubleProperty(Double.NaN);
+
+    private final ObservableList<GeoPos> unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory);
 
     public ObjectProperty<WakeVortexCategory> categoryProperty() {
         return categoryProperty;
@@ -50,6 +55,11 @@ public final class ObservablePlaneState implements PlaneStateSetter {
     @Override
     public void setPosition(GeoPos position) {
         positionProperty.set(position);
+        trajectory.add(position);
+    }
+
+    public ObservableList<GeoPos> trajectory() {
+        return unmodifiableTrajectory;
     }
 
     public DoubleProperty altitudeProperty() {
