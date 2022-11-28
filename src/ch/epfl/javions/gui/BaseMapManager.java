@@ -2,7 +2,6 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.gui.TileManager.TileId;
 import javafx.application.Platform;
-import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Point2D;
@@ -11,30 +10,23 @@ import javafx.scene.layout.Pane;
 
 import java.io.IOException;
 
-import static ch.epfl.javions.Math2.clamp;
 import static ch.epfl.javions.gui.TileManager.TILE_SIZE;
-import static java.lang.Math.max;
-import static java.lang.Math.scalb;
 
 public final class BaseMapManager {
-    private static final int MIN_ZOOM = 8;
-    private static final int MAX_ZOOM = 19;
-
     private final TileManager tileManager;
-    private final ObjectProperty<MapViewParameters> mapViewParametersProperty;
+    private final MapParameters mapParameters;
 
     private final Canvas canvas;
     private final Pane pane;
 
     private boolean redrawNeeded;
 
-    public BaseMapManager(TileManager tileManager,
-                          ObjectProperty<MapViewParameters> mapViewParametersProperty) {
+    public BaseMapManager(TileManager tileManager, MapParameters mapParameters) {
         var canvas = new Canvas();
         var pane = new Pane(canvas);
 
         this.tileManager = tileManager;
-        this.mapViewParametersProperty = mapViewParametersProperty;
+        this.mapParameters = mapParameters;
         this.canvas = canvas;
         this.pane = pane;
 
@@ -51,33 +43,17 @@ public final class BaseMapManager {
             var currentTime = System.currentTimeMillis();
             if (currentTime < minScrollTime.get()) return;
             minScrollTime.set(currentTime + 200);
-            var zoomDelta = (int) Math.signum(e.getDeltaY());
-            var mapViewParameters = mapViewParametersProperty.get();
-
-            var newZoomLevel = clamp(MIN_ZOOM, mapViewParameters.zoomLevel() + zoomDelta, MAX_ZOOM);
-            var scaleFactor = scalb(1, newZoomLevel - mapViewParameters.zoomLevel());
-
-            var localPoint = new Point2D(e.getX(), e.getY());
-            var pointUnderMouse = mapViewParameters.topLeft().add(localPoint);
-            var newPointUnderMouse = pointUnderMouse.multiply(scaleFactor);
-            var newTopLeft = newPointUnderMouse.subtract(localPoint);
-
-            mapViewParametersProperty.set(new MapViewParameters(newZoomLevel, newTopLeft));
+            mapParameters.changeZoomLevel((int) Math.signum(e.getDeltaY()), e.getX(), e.getY());
         });
 
         // Scrolling
         var lastDragPointP = new SimpleObjectProperty<Point2D>();
         pane.setOnMousePressed(e -> lastDragPointP.set(new Point2D(e.getX(), e.getY())));
         pane.setOnMouseDragged(e -> {
-            var mapViewParameters = mapViewParametersProperty.get();
-            var newTopLeft = mapViewParameters.topLeft()
-                    .add(lastDragPointP.get())
-                    .subtract(e.getX(), e.getY());
-            var newViewParameters = mapViewParameters
-                    .withMinXY(max(0, newTopLeft.getX()), max(0, newTopLeft.getY()));
-
-            mapViewParametersProperty.set(newViewParameters);
-            lastDragPointP.set(new Point2D(e.getX(), e.getY()));
+            var currentDragPoint = new Point2D(e.getX(), e.getY());
+            var scrollVector = lastDragPointP.get().subtract(currentDragPoint);
+            mapParameters.scroll(scrollVector.getX(), scrollVector.getY());
+            lastDragPointP.set(currentDragPoint);
         });
         pane.setOnMouseReleased(e -> lastDragPointP.set(null));
     }
@@ -93,7 +69,9 @@ public final class BaseMapManager {
             newScene.addPreLayoutPulseListener(this::redrawIfNeeded);
         });
 
-        mapViewParametersProperty.addListener(o -> redrawOnNextPulse());
+        mapParameters.minXProperty().addListener(o -> redrawOnNextPulse());
+        mapParameters.minYProperty().addListener(o -> redrawOnNextPulse());
+        mapParameters.zoomProperty().addListener(o -> redrawOnNextPulse());
         canvas.widthProperty().addListener(o -> redrawOnNextPulse());
         canvas.heightProperty().addListener(o -> redrawOnNextPulse());
     }
@@ -111,10 +89,9 @@ public final class BaseMapManager {
         if (!redrawNeeded) return;
         redrawNeeded = false;
 
-        var mapViewParameters = mapViewParametersProperty.get();
-        int zoom = mapViewParameters.zoomLevel();
-        var minX = mapViewParameters.minX();
-        var minY = mapViewParameters.minY();
+        int zoom = mapParameters.getZoom();
+        var minX = mapParameters.getMinX();
+        var minY = mapParameters.getMinY();
         var minTileIndexX = (int) (minX / TILE_SIZE);
         var maxTileIndexX = (int) ((minX + canvas.getWidth()) / TILE_SIZE);
         var minTileIndexY = (int) (minY / TILE_SIZE);
