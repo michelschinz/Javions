@@ -70,7 +70,7 @@ public final class PlaneManager {
                 () -> {
                     var pos = planeState.getPosition();
                     return pos != null
-                            ? mapViewParametersProperty.get().viewX(WebMercator.x(pos.longitude()))
+                            ? mapViewParametersProperty.get().viewX(pos.longitude())
                             : Double.NaN;
                 },
                 planeState.positionProperty(),
@@ -79,7 +79,7 @@ public final class PlaneManager {
                 () -> {
                     var pos = planeState.getPosition();
                     return pos != null
-                            ? mapViewParametersProperty.get().viewY(WebMercator.y(pos.latitude()))
+                            ? mapViewParametersProperty.get().viewY(pos.latitude())
                             : Double.NaN;
                 },
                 planeState.positionProperty(),

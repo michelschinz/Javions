@@ -9,31 +9,15 @@ public final class WebMercator {
 
     private static final double ONE_OVER_TAU = 1d / TAU;
 
-    public static double x(double lon) {
-        return ONE_OVER_TAU * (lon + PI);
+    public static double x(int zoomLevel, double lon) {
+        return scalb(ONE_OVER_TAU * (lon + PI), shiftFor(zoomLevel));
     }
 
-    public static double y(double lat) {
-        return ONE_OVER_TAU * (PI - asinh(tan(lat)));
-    }
-
-    public static double lon(double x) {
-        return TAU * x - PI;
-    }
-
-    public static double lat(double y) {
-        return atan(sinh(PI - TAU * y));
+    public static double y(int zoomLevel, double lat) {
+        return scalb(ONE_OVER_TAU * (PI - asinh(tan(lat))), shiftFor(zoomLevel));
     }
 
     private static int shiftFor(int zoomLevel) {
         return 8 + zoomLevel;
-    }
-
-    public static double xAtZoomLevel(int zoomLevel, double x) {
-        return scalb(x, shiftFor(zoomLevel));
-    }
-
-    public static double yAtZoomLevel(int zoomLevel, double y) {
-        return scalb(y, shiftFor(zoomLevel));
     }
 }

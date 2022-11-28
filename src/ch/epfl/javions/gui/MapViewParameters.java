@@ -16,11 +16,11 @@ public record MapViewParameters(int zoomLevel, double minX, double minY) {
         return new MapViewParameters(zoomLevel, minX, minY);
     }
 
-    public double viewX(double x) {
-        return WebMercator.xAtZoomLevel(zoomLevel, x) - minX;
+    public double viewX(double lon) {
+        return WebMercator.x(zoomLevel, lon) - minX;
     }
 
-    public double viewY(double y) {
-        return WebMercator.yAtZoomLevel(zoomLevel, y) - minY;
+    public double viewY(double lat) {
+        return WebMercator.y(zoomLevel, lat) - minY;
     }
 }
