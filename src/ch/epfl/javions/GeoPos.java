@@ -1,7 +1,7 @@
 package ch.epfl.javions;
 
 public record GeoPos(int intLon, int intLat) {
-    private static final int INT_90_DEGREES = 1 << 30;
+    private static final int INT_90_DEGREES = 1 << (Integer.SIZE - 2);
 
     private static double decode(int angle) {
         // Warning: the cast is necessary to call the correct variant of scalb
