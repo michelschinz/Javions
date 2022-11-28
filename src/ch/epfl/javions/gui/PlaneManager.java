@@ -121,8 +121,7 @@ public final class PlaneManager {
 
         l.visibleProperty().bind(selectedPlaneProperty.isEqualTo(address));
 
-        l.setStrokeWidth(2);
-        l.setStroke(Color.BLACK);
+        l.getStyleClass().add("trajectory");
 
         return l;
     }

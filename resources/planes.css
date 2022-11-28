@@ -3,3 +3,8 @@
     -fx-stroke: black;
     -fx-stroke-line-join: round;
 }
+
+.trajectory {
+    -fx-stroke-width: 2;
+    -fx-stroke: black;
+}
