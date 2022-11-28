@@ -10,6 +10,10 @@ public final class Units {
           var lengthInFeet = length * (Distance.METER / Distance.FOOT);
     */
 
+    // SI prefixes
+    private static final double CENTI = 1e-2;
+    private static final double KILO = 1e3;
+
     public static final class Angle {
         public static final double RADIAN = 1;
         public static final double TURN = 2 * Math.PI * RADIAN;
@@ -24,8 +28,8 @@ public final class Units {
 
     public static class Distance {
         public static final double METER = 1;
-        public static final double CENTIMETER = METER / 100;
-        public static final double KILOMETER = 1e3 * METER;
+        public static final double CENTIMETER = CENTI * METER;
+        public static final double KILOMETER = KILO * METER;
         public static final double INCH = 2.54 * CENTIMETER;
         public static final double FOOT = 12 * INCH;
         public static final double NAUTICAL_MILE = 1852 * METER;
