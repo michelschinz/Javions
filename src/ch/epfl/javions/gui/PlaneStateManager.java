@@ -12,7 +12,7 @@ import java.util.Map;
 public final class PlaneStateManager {
     private final ObservableMap<IcaoAddress, ObservablePlaneState> states =
             FXCollections.observableHashMap();
-    private final Map<ObservablePlaneState, PlaneStateAccumulator> accumulators =
+    private final Map<IcaoAddress, PlaneStateAccumulator> accumulators =
             new HashMap<>();
 
     public ObservableMap<IcaoAddress, ObservablePlaneState> states() {
@@ -24,10 +24,10 @@ public final class PlaneStateManager {
             var state = new ObservablePlaneState();
             var accumulator = new PlaneStateAccumulator(state);
             accumulator.update(message);
-            accumulators.put(state, accumulator);
+            accumulators.put(message.icaoAddress(), accumulator);
             states.put(message.icaoAddress(), state);
         } else
-            accumulators.get(states.get(message.icaoAddress())).update(message);
+            accumulators.get(message.icaoAddress()).update(message);
     }
 
     // Remove planes for which we didn't get a message recently
