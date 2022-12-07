@@ -28,10 +28,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class PlaneManager {
-    private static final String SHAPE_AIRLINER = loadSvgPath("/airliner.svgpath");
-    private static final String SHAPE_HELICOPTER = loadSvgPath("/helicopter.svgpath");
-    private static final String SHAPE_DEFAULT = SHAPE_AIRLINER;
-
     private final MapParameters mapParameters;
     private final ObservableMap<IcaoAddress, ObservablePlaneState> planeStates;
     private final ObjectProperty<IcaoAddress> selectedPlaneProperty;
@@ -47,13 +43,7 @@ public final class PlaneManager {
     }
 
     private static String svgPathForCategory(WakeVortexCategory category) {
-        if (category == null) return SHAPE_DEFAULT;
-
-        return switch (category) {
-            case HEAVY -> SHAPE_AIRLINER;
-            case ROTORCRAFT -> SHAPE_HELICOPTER;
-            default -> SHAPE_DEFAULT;
-        };
+        return AircraftIcons.UNKNOWN.svgPath();
     }
 
     public PlaneManager(MapParameters mapParameters,
@@ -98,11 +88,7 @@ public final class PlaneManager {
         planePath.getStyleClass().add("plane");
         planePath.setId(address.toString());
 
-        planePath.contentProperty().bind(Bindings.createStringBinding(() ->
-                        planeState.getCategory() != null
-                                ? svgPathForCategory(planeState.getCategory())
-                                : SHAPE_DEFAULT,
-                planeState.categoryProperty()));
+        planePath.setContent(AircraftIcons.UNKNOWN.svgPath());
 
         planePath.fillProperty().bind(Bindings.createObjectBinding(() ->
                         ColorRamp.PLASMA.at(planeState.getAltitude() / (11_000 * Units.Distance.METER)),
