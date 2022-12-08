@@ -11,6 +11,14 @@ import java.util.stream.Collectors;
 public final class OperatorsDatabase {
     private static final String SEPARATOR = Pattern.quote(",");
 
+    public record Operator(String abbreviation,
+                           String name,
+                           String country) {
+        public Operator {
+            country = country.intern();
+        }
+    }
+
     private final Map<String, Operator> operators;
 
     private static Map<String, Operator> readOperatorDatabase(Path filePath) throws IOException {

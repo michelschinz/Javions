@@ -13,15 +13,27 @@ import java.util.stream.Collectors;
 public final class AircraftDatabase {
     private static final String SEPARATOR = Pattern.quote(",");
 
-    private final Map<IcaoAddress, Aircraft> aircraft;
+    public record AircraftData(String registration,
+                               String typeDesignator,
+                               String model,
+                               String description) {
+        public AircraftData {
+            typeDesignator = typeDesignator.intern();
+            model = model.intern();
+            description = description.intern();
+        }
+    }
 
-    static Map<IcaoAddress, Aircraft> readAircraftDatabase(Path filePath) throws IOException {
+    private final Map<IcaoAddress, AircraftData> aircraft;
+
+    static Map<IcaoAddress, AircraftData> readAircraftDatabase(Path filePath) throws IOException {
         try (var s = Files.newBufferedReader(filePath)) {
             return s.lines()
                     .skip(1)
                     .map(l -> l.split(SEPARATOR))
-                    .map(l -> new Aircraft(new IcaoAddress(Integer.parseInt(l[0], 16)), l[1], l[2], l[3], l[4]))
-                    .collect(Collectors.toMap(Aircraft::address, Function.identity()));
+                    .collect(Collectors.toMap(
+                            l -> new IcaoAddress(Integer.parseInt(l[0], 16)),
+                            l -> new AircraftData(l[1], l[2], l[3], l[4])));
         }
     }
 
@@ -29,7 +41,7 @@ public final class AircraftDatabase {
         aircraft = readAircraftDatabase(path);
     }
 
-    public Aircraft get(IcaoAddress address) {
+    public AircraftData get(IcaoAddress address) {
         return aircraft.get(address);
     }
 }
