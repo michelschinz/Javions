@@ -3,41 +3,28 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.Preconditions;
 import javafx.scene.paint.Color;
 
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
+import static java.nio.charset.StandardCharsets.US_ASCII;
+
 public final class ColorRamp {
-    public static final ColorRamp PLASMA = new ColorRamp(
-            Color.rgb(13, 8, 135),
-            Color.rgb(34, 6, 144),
-            Color.rgb(50, 5, 151),
-            Color.rgb(64, 4, 157),
-            Color.rgb(78, 2, 162),
-            Color.rgb(91, 1, 165),
-            Color.rgb(104, 0, 168),
-            Color.rgb(117, 1, 168),
-            Color.rgb(129, 4, 167),
-            Color.rgb(141, 11, 165),
-            Color.rgb(152, 20, 160),
-            Color.rgb(163, 29, 154),
-            Color.rgb(173, 38, 147),
-            Color.rgb(182, 48, 139),
-            Color.rgb(191, 57, 132),
-            Color.rgb(199, 66, 124),
-            Color.rgb(207, 76, 116),
-            Color.rgb(214, 85, 109),
-            Color.rgb(221, 94, 102),
-            Color.rgb(227, 104, 95),
-            Color.rgb(233, 114, 88),
-            Color.rgb(238, 124, 81),
-            Color.rgb(243, 135, 74),
-            Color.rgb(247, 146, 67),
-            Color.rgb(250, 157, 59),
-            Color.rgb(252, 169, 53),
-            Color.rgb(253, 181, 46),
-            Color.rgb(253, 194, 41),
-            Color.rgb(252, 207, 37),
-            Color.rgb(249, 221, 36),
-            Color.rgb(245, 235, 39),
-            Color.rgb(240, 249, 33)
-    );
+    public static final ColorRamp PLASMA = loadColorRamp("plasma-colors.txt");
+
+    private static ColorRamp loadColorRamp(String fileName) {
+        try {
+            var resource = ColorRamp.class.getResourceAsStream("/" + fileName);
+            assert resource != null;
+            try (var s = new BufferedReader(new InputStreamReader(resource, US_ASCII))) {
+                return new ColorRamp(s.lines()
+                        .map(Color::valueOf)
+                        .toArray(Color[]::new));
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
+    }
 
     private final Color[] steps;
     private final double stepSize;
