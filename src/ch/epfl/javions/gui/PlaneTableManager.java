@@ -4,8 +4,8 @@ import ch.epfl.javions.IcaoAddress;
 import ch.epfl.javions.Units;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
-import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableMap;
+import javafx.collections.ObservableSet;
+import javafx.collections.SetChangeListener;
 import javafx.scene.Node;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -19,7 +19,7 @@ public final class PlaneTableManager {
     private final TableView<ObservablePlaneState> tableView;
     private final Pane pane;
 
-    public PlaneTableManager(ObservableMap<IcaoAddress, ObservablePlaneState> planes,
+    public PlaneTableManager(ObservableSet<ObservablePlaneState> planes,
                              ObjectProperty<IcaoAddress> selectedAddressProperty) {
         var tableView = createTableView();
         var pane = new BorderPane(tableView);
@@ -29,7 +29,7 @@ public final class PlaneTableManager {
         this.pane = pane;
 
         installListeners(planes);
-        selectedAddressProperty.addListener((p, o, n) -> tableView.getSelectionModel().select(planes.get(n)));
+//        selectedAddressProperty.addListener((p, o, n) -> tableView.getSelectionModel().select(planes.get(n)));
     }
 
     private static TableView<ObservablePlaneState> createTableView() {
@@ -68,13 +68,11 @@ public final class PlaneTableManager {
         });
     }
 
-    private void installListeners(ObservableMap<IcaoAddress, ObservablePlaneState> planes) {
-        planes.addListener((MapChangeListener<IcaoAddress, ObservablePlaneState>) c -> {
+    private void installListeners(ObservableSet<ObservablePlaneState> planes) {
+        planes.addListener((SetChangeListener<ObservablePlaneState>) c -> {
             var tableItems = tableView.getItems();
-            if (c.wasRemoved())
-                tableItems.remove(c.getValueRemoved());
-            if (c.wasAdded())
-                tableItems.add(c.getValueAdded());
+            if (c.wasRemoved()) tableItems.remove(c.getElementRemoved());
+            if (c.wasAdded()) tableItems.add(c.getElementAdded());
         });
     }
 

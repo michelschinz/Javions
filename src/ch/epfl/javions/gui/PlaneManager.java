@@ -8,11 +8,9 @@ import ch.epfl.javions.WebMercator;
 import ch.epfl.javions.adsb.WakeVortexCategory;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.value.ObservableStringValue;
 import javafx.collections.ListChangeListener;
-import javafx.collections.MapChangeListener;
-import javafx.collections.ObservableMap;
+import javafx.collections.ObservableSet;
+import javafx.collections.SetChangeListener;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.control.Tooltip;
@@ -29,7 +27,6 @@ import java.util.List;
 
 public final class PlaneManager {
     private final MapParameters mapParameters;
-    private final ObservableMap<IcaoAddress, ObservablePlaneState> planeStates;
     private final ObjectProperty<IcaoAddress> selectedPlaneProperty;
     private final Pane pane;
 
@@ -47,7 +44,7 @@ public final class PlaneManager {
     }
 
     public PlaneManager(MapParameters mapParameters,
-                        ObservableMap<IcaoAddress, ObservablePlaneState> planeStates,
+                        ObservableSet<ObservablePlaneState> planeStates,
                         ObjectProperty<IcaoAddress> selectedPlaneProperty) {
         assert planeStates.isEmpty(); // TODO should we instead create the initial nodes?
 
@@ -56,28 +53,25 @@ public final class PlaneManager {
         pane.setPickOnBounds(false);
 
         this.mapParameters = mapParameters;
-        this.planeStates = planeStates;
         this.selectedPlaneProperty = selectedPlaneProperty;
         this.pane = pane;
 
-        installHandlers();
+        installHandlers(planeStates);
     }
 
-    private void installHandlers() {
-        planeStates.addListener((MapChangeListener<IcaoAddress, ObservablePlaneState>) change -> {
+    private void installHandlers(ObservableSet<ObservablePlaneState> planeStates) {
+        planeStates.addListener((SetChangeListener<ObservablePlaneState>) change -> {
             if (change.wasRemoved()) {
-                assert !change.wasAdded();
-                var idToRemove = change.getKey().toString();
+                var idToRemove = change.getElementRemoved().address().toString();
                 pane.getChildren().removeIf(n -> n.getId().equals(idToRemove));
             }
-            if (change.wasAdded()) {
-                assert !change.wasRemoved();
-                pane.getChildren().add(groupForPlane(change.getKey(), change.getValueAdded()));
-            }
+            if (change.wasAdded())
+                pane.getChildren().add(groupForPlane(change.getElementAdded()));
         });
     }
 
-    private Node groupForPlane(IcaoAddress address, ObservablePlaneState planeState) {
+    private Node groupForPlane(ObservablePlaneState planeState) {
+        var address = planeState.address();
         var planeNode = nodeForPlane(address, planeState);
         var trajectoryPath = polyLineForPlaneTrajectory(address, planeState);
         return new Group(trajectoryPath, planeNode);
