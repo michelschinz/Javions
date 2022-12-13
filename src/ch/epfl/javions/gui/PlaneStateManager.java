@@ -13,16 +13,19 @@ import java.util.Map;
 public final class PlaneStateManager {
     private final AircraftDatabase aircraftDatabase;
     private final ObservableSet<ObservablePlaneState> states;
+    private final ObservableSet<ObservablePlaneState> unmodifiableStates;
     private final Map<IcaoAddress, PlaneStateAccumulator> accumulators;
 
     public PlaneStateManager(AircraftDatabase aircraftDatabase) {
+        var states = FXCollections.<ObservablePlaneState>observableSet();
         this.aircraftDatabase = aircraftDatabase;
-        this.states = FXCollections.observableSet();
+        this.states = states;
+        this.unmodifiableStates = FXCollections.unmodifiableObservableSet(states);
         this.accumulators = new HashMap<>();
     }
 
     public ObservableSet<ObservablePlaneState> states() {
-        return states;
+        return unmodifiableStates;
     }
 
     public void updateWithMessage(Message message) {
