@@ -13,7 +13,6 @@ public final class PlaneStateAccumulator {
 
     private final PlaneStateSetter stateSetter;
     private AirbornePositionMessage lastPositionMessage = null;
-    private long lastMessageTimeStamp = -1;
 
     public PlaneStateAccumulator(PlaneStateSetter stateSetter) {
         this.stateSetter = stateSetter;
@@ -45,7 +44,7 @@ public final class PlaneStateAccumulator {
                 stateSetter.setCallSign(m.callSign());
             }
         }
-        lastMessageTimeStamp = message.timeStamp();
+        stateSetter.setLastMessageTimeStampNs(message.timeStamp());
     }
 
     private static boolean isValidMessagePair(AirbornePositionMessage m1, AirbornePositionMessage m2) {
@@ -53,9 +52,5 @@ public final class PlaneStateAccumulator {
                && m2 != null
                && m1.isEven() != m2.isEven()
                && Math.abs(m1.timeStamp() - m2.timeStamp()) <= MAX_INTER_MESSAGE_NS;
-    }
-
-    public long lastMessageTimeStamp() {
-        return lastMessageTimeStamp;
     }
 }

@@ -11,6 +11,7 @@ import javafx.collections.ObservableList;
 
 public final class ObservablePlaneState implements PlaneStateSetter {
     private final IcaoAddress address;
+    private final LongProperty lastMessageTimeStampNsProperty;
     private final ObjectProperty<WakeVortexCategory> categoryProperty;
     private final StringProperty callSignProperty;
     private final ObjectProperty<GeoPos> positionProperty;
@@ -25,6 +26,7 @@ public final class ObservablePlaneState implements PlaneStateSetter {
         var trajectory = FXCollections.<GeoPos>observableArrayList();
 
         this.address = address;
+        this.lastMessageTimeStampNsProperty = new SimpleLongProperty();
         this.categoryProperty = new SimpleObjectProperty<>();
         this.callSignProperty = new SimpleStringProperty("");
         this.positionProperty = new SimpleObjectProperty<>();
@@ -38,6 +40,19 @@ public final class ObservablePlaneState implements PlaneStateSetter {
 
     public IcaoAddress address() {
         return address;
+    }
+
+    public ReadOnlyLongProperty lastMessageTimeStampNsProperty() {
+        return lastMessageTimeStampNsProperty;
+    }
+
+    public long getLastMessageTimeStampNs() {
+        return lastMessageTimeStampNsProperty.get();
+    }
+
+    @Override
+    public void setLastMessageTimeStampNs(long timeStampNs) {
+        lastMessageTimeStampNsProperty.set(timeStampNs);
     }
 
     public String getRegistration() {

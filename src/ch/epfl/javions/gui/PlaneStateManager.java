@@ -4,17 +4,24 @@ import ch.epfl.javions.IcaoAddress;
 import ch.epfl.javions.PlaneStateAccumulator;
 import ch.epfl.javions.adsb.Message;
 import ch.epfl.javions.db.AircraftDatabase;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 
+import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
 public final class PlaneStateManager {
+    private static final long MAX_INTER_MESSAGE_DELAY =
+            Duration.ofMinutes(1).toNanos();
+
     private final AircraftDatabase aircraftDatabase;
     private final ObservableSet<ObservablePlaneState> states;
     private final ObservableSet<ObservablePlaneState> unmodifiableStates;
     private final Map<IcaoAddress, PlaneStateAccumulator> accumulators;
+    private final LongProperty lastMessageTimeStampNsProperty;
 
     public PlaneStateManager(AircraftDatabase aircraftDatabase) {
         var states = FXCollections.<ObservablePlaneState>observableSet();
@@ -22,6 +29,7 @@ public final class PlaneStateManager {
         this.states = states;
         this.unmodifiableStates = FXCollections.unmodifiableObservableSet(states);
         this.accumulators = new HashMap<>();
+        this.lastMessageTimeStampNsProperty = new SimpleLongProperty();
     }
 
     public ObservableSet<ObservablePlaneState> states() {
@@ -38,10 +46,19 @@ public final class PlaneStateManager {
         }
 
         accumulators.get(address).update(message);
+        lastMessageTimeStampNsProperty.set(message.timeStamp());
     }
 
     // Remove planes for which we didn't get a message recently
     public void purge() {
-
+        var aircraftIt = states.iterator();
+        while (aircraftIt.hasNext()) {
+            var state = aircraftIt.next();
+            var dT = lastMessageTimeStampNsProperty.get() - state.getLastMessageTimeStampNs();
+            if (dT > MAX_INTER_MESSAGE_DELAY) {
+                aircraftIt.remove();
+                accumulators.remove(state.address());
+            }
+        }
     }
 }

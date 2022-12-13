@@ -52,12 +52,13 @@ public final class PlaneManager {
 
     private Node groupForPlane(ObservablePlaneState planeState) {
         var address = planeState.address();
-        var planeNode = nodeForPlane(address, planeState);
+        var planeNode = nodeForPlane(planeState);
         var trajectoryPath = polyLineForPlaneTrajectory(address, planeState);
         return new Group(trajectoryPath, planeNode);
     }
 
-    private Node nodeForPlane(IcaoAddress address, ObservablePlaneState planeState) {
+    private Node nodeForPlane(ObservablePlaneState planeState) {
+        var address = planeState.address();
         var planePath = new SVGPath();
         planePath.getStyleClass().add("plane");
         planePath.setId(address.toString());
