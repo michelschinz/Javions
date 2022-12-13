@@ -3,9 +3,10 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.Preconditions;
 import javafx.scene.paint.Color;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.UncheckedIOException;
 
 import static java.nio.charset.StandardCharsets.US_ASCII;
 
