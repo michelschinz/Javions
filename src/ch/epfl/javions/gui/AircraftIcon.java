@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 
-public enum AircraftIcons {
+public enum AircraftIcon {
     AIRLINER,
     BALLOON,
     CESSNA,
@@ -18,7 +18,7 @@ public enum AircraftIcons {
     TWIN_SMALL,
     UNKNOWN;
 
-    public static AircraftIcons iconFor(String typeDesignator, String typeDescription) {
+    public static AircraftIcon iconFor(String typeDesignator, String typeDescription) {
         var icon = IconTables.TYPE_DESIGNATOR_TABLE.get(typeDesignator);
         return icon == null
                 ? UNKNOWN
@@ -36,7 +36,7 @@ public enum AircraftIcons {
 
     private final String svgPath;
 
-    AircraftIcons() {
+    AircraftIcon() {
         var resourceName = "/icons/%s.svgpath".formatted(name().toLowerCase());
         svgPath = loadSvgPath(resourceName);
     }

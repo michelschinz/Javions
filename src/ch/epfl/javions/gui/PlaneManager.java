@@ -40,7 +40,7 @@ public final class PlaneManager {
     }
 
     private static String svgPathForCategory(WakeVortexCategory category) {
-        return AircraftIcons.UNKNOWN.svgPath();
+        return AircraftIcon.UNKNOWN.svgPath();
     }
 
     public PlaneManager(MapParameters mapParameters,
@@ -82,7 +82,7 @@ public final class PlaneManager {
         planePath.getStyleClass().add("plane");
         planePath.setId(address.toString());
 
-        planePath.setContent(AircraftIcons.UNKNOWN.svgPath());
+        planePath.setContent(AircraftIcon.UNKNOWN.svgPath());
 
         planePath.fillProperty().bind(Bindings.createObjectBinding(() ->
                         ColorRamp.PLASMA.at(planeState.getAltitude() / (11_000 * Units.Distance.METER)),

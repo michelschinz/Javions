@@ -3,14 +3,14 @@ package ch.epfl.javions.gui;
 import java.util.HashMap;
 import java.util.Map;
 
-import static ch.epfl.javions.gui.AircraftIcons.*;
+import static ch.epfl.javions.gui.AircraftIcon.*;
 import static java.util.Map.entry;
 
 public final class IconTables {
-    public static final Map<String, AircraftIcons> TYPE_DESIGNATOR_TABLE = createTypeDesignatorTable();
-    public static final Map<String, AircraftIcons> TYPE_DESCRIPTION_TABLE = createTypeDescriptionTable();
+    public static final Map<String, AircraftIcon> TYPE_DESIGNATOR_TABLE = createTypeDesignatorTable();
+    public static final Map<String, AircraftIcon> TYPE_DESCRIPTION_TABLE = createTypeDescriptionTable();
 
-    private static Map<String, AircraftIcons> createTypeDescriptionTable() {
+    private static Map<String, AircraftIcon> createTypeDescriptionTable() {
         return Map.ofEntries(
                 entry("H", HELICOPTER),
                 entry("L1P", CESSNA),
@@ -25,8 +25,8 @@ public final class IconTables {
                 entry("L4J-H", HEAVY_4E));
     }
 
-    private static Map<String, AircraftIcons> createTypeDesignatorTable() {
-        var map = new HashMap<String, AircraftIcons>();
+    private static Map<String, AircraftIcon> createTypeDesignatorTable() {
+        var map = new HashMap<String, AircraftIcon>();
         map.put("A10", HI_PERF);
         map.put("A148", HI_PERF);
         map.put("A225", HEAVY_4E);
