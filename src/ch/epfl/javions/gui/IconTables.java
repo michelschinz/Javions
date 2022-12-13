@@ -26,6 +26,7 @@ public final class IconTables {
     }
 
     private static Map<String, AircraftIcon> createTypeDesignatorTable() {
+        // Note: we don't use Map.ofEntries here, as IntelliJ becomes slow if we do.
         var map = new HashMap<String, AircraftIcon>();
         map.put("A10", HI_PERF);
         map.put("A148", HI_PERF);
@@ -265,6 +266,6 @@ public final class IconTables {
         map.put("YK40", AIRLINER);
         map.put("YK42", AIRLINER);
         map.put("YURO", HI_PERF);
-        return map;
+        return Map.copyOf(map);
     }
 }

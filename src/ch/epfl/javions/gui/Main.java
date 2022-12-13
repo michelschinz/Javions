@@ -3,6 +3,7 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.AvrParser;
 import ch.epfl.javions.IcaoAddress;
 import ch.epfl.javions.adsb.Message;
+import ch.epfl.javions.db.AircraftDatabase;
 import ch.epfl.javions.demodulation.AdsbDemodulator;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
@@ -28,15 +29,20 @@ public final class Main extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
-        var cacheBasePath = Path.of("/Users/michelschinz/local/ppo/23/javions/osm-cache");
+    public void start(Stage primaryStage) throws IOException {
+        var basePath = Path.of("/Users/michelschinz/local/ppo/23/javions");
+        var cacheBasePath = basePath.resolve("osm-cache");
+        var dbBasePath = basePath.resolve("db");
+
+        var aircraftDatabase = new AircraftDatabase(dbBasePath.resolve("aircraft.csv"));
+
         var tileManager = new TileManager(cacheBasePath, OSM_TILE_SERVER);
         var mapParameters = new MapParameters(543_200, 370_650, 12);
 
         var baseMapManager = new BaseMapManager(tileManager, mapParameters);
 
         var messageQueue = new ConcurrentLinkedQueue<Message>();
-        var planeStateManager = new PlaneStateManager();
+        var planeStateManager = new PlaneStateManager(aircraftDatabase);
 
         var selectedAddressProperty = new SimpleObjectProperty<IcaoAddress>();
         var planeManager = new PlaneManager(mapParameters, planeStateManager.states(), selectedAddressProperty);

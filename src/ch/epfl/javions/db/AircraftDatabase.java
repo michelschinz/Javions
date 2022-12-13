@@ -6,7 +6,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -16,11 +15,11 @@ public final class AircraftDatabase {
     public record AircraftData(String registration,
                                String typeDesignator,
                                String model,
-                               String description) {
+                               String typeDescription) {
         public AircraftData {
             typeDesignator = typeDesignator.intern();
             model = model.intern();
-            description = description.intern();
+            typeDescription = typeDescription.intern();
         }
     }
 

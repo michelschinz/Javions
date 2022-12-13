@@ -1,11 +1,7 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.GeoPos;
-import ch.epfl.javions.IcaoAddress;
-import ch.epfl.javions.Units;
+import ch.epfl.javions.*;
 import ch.epfl.javions.Units.Angle;
-import ch.epfl.javions.WebMercator;
-import ch.epfl.javions.adsb.WakeVortexCategory;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ListChangeListener;
@@ -19,9 +15,6 @@ import javafx.scene.shape.Polyline;
 import javafx.scene.shape.SVGPath;
 import javafx.util.Duration;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,19 +22,6 @@ public final class PlaneManager {
     private final MapParameters mapParameters;
     private final ObjectProperty<IcaoAddress> selectedPlaneProperty;
     private final Pane pane;
-
-    private static String loadSvgPath(String name) {
-        try (var s = PlaneManager.class.getResourceAsStream(name)) {
-            if (s == null) throw new Error("Cannot find resource " + name);
-            return new String(s.readAllBytes(), StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        }
-    }
-
-    private static String svgPathForCategory(WakeVortexCategory category) {
-        return AircraftIcon.UNKNOWN.svgPath();
-    }
 
     public PlaneManager(MapParameters mapParameters,
                         ObservableSet<ObservablePlaneState> planeStates,
@@ -82,7 +62,7 @@ public final class PlaneManager {
         planePath.getStyleClass().add("plane");
         planePath.setId(address.toString());
 
-        planePath.setContent(AircraftIcon.UNKNOWN.svgPath());
+        planePath.setContent(iconFor(planeState.getTypeDesignator(), planeState.getTypeDescription()).svgPath());
 
         planePath.fillProperty().bind(Bindings.createObjectBinding(() ->
                         ColorRamp.PLASMA.at(planeState.getAltitude() / (11_000 * Units.Distance.METER)),
@@ -122,6 +102,14 @@ public final class PlaneManager {
         planePath.setOnMouseClicked(e -> selectedPlaneProperty.set(address));
 
         return planePath;
+    }
+
+    private AircraftIcon iconFor(String typeDesignator, String typeDescription) {
+        // TODO should the designator be valid (i.e. non-empty)?
+        var maybeIcon = IconTables.TYPE_DESIGNATOR_TABLE.getOrDefault(typeDesignator, AircraftIcon.UNKNOWN);
+        if (maybeIcon == AircraftIcon.UNKNOWN)
+            maybeIcon = IconTables.TYPE_DESCRIPTION_TABLE.getOrDefault(typeDescription, AircraftIcon.UNKNOWN);
+        return maybeIcon;
     }
 
     private Polyline polyLineForPlaneTrajectory(IcaoAddress address, ObservablePlaneState planeState) {

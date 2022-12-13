@@ -3,6 +3,7 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.IcaoAddress;
 import ch.epfl.javions.PlaneStateAccumulator;
 import ch.epfl.javions.adsb.Message;
+import ch.epfl.javions.db.AircraftDatabase;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 
@@ -10,10 +11,15 @@ import java.util.HashMap;
 import java.util.Map;
 
 public final class PlaneStateManager {
-    private final ObservableSet<ObservablePlaneState> states =
-            FXCollections.observableSet();
-    private final Map<IcaoAddress, PlaneStateAccumulator> accumulators =
-            new HashMap<>();
+    private final AircraftDatabase aircraftDatabase;
+    private final ObservableSet<ObservablePlaneState> states;
+    private final Map<IcaoAddress, PlaneStateAccumulator> accumulators;
+
+    public PlaneStateManager(AircraftDatabase aircraftDatabase) {
+        this.aircraftDatabase = aircraftDatabase;
+        this.states = FXCollections.observableSet();
+        this.accumulators = new HashMap<>();
+    }
 
     public ObservableSet<ObservablePlaneState> states() {
         return states;
@@ -23,7 +29,7 @@ public final class PlaneStateManager {
         var address = message.icaoAddress();
 
         if (!accumulators.containsKey(address)) {
-            var state = new ObservablePlaneState(address);
+            var state = new ObservablePlaneState(address, aircraftDatabase.get(address));
             states.add(state);
             accumulators.put(address, new PlaneStateAccumulator(state));
         }

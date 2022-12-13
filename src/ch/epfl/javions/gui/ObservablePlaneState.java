@@ -4,6 +4,7 @@ import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.IcaoAddress;
 import ch.epfl.javions.PlaneStateSetter;
 import ch.epfl.javions.adsb.WakeVortexCategory;
+import ch.epfl.javions.db.AircraftDatabase;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -18,8 +19,9 @@ public final class ObservablePlaneState implements PlaneStateSetter {
     private final DoubleProperty altitudeProperty;
     private final DoubleProperty velocityProperty;
     private final DoubleProperty trackOrHeadingProperty;
+    private final AircraftDatabase.AircraftData maybeAircraftData;
 
-    public ObservablePlaneState(IcaoAddress address) {
+    public ObservablePlaneState(IcaoAddress address, AircraftDatabase.AircraftData maybeAircraftData) {
         var trajectory = FXCollections.<GeoPos>observableArrayList();
 
         this.address = address;
@@ -31,10 +33,25 @@ public final class ObservablePlaneState implements PlaneStateSetter {
         this.altitudeProperty = new SimpleDoubleProperty(Double.NaN);
         this.velocityProperty = new SimpleDoubleProperty(Double.NaN);
         this.trackOrHeadingProperty = new SimpleDoubleProperty(Double.NaN);
+        this.maybeAircraftData = maybeAircraftData;
     }
 
     public IcaoAddress address() {
         return address;
+    }
+
+    public String getRegistration() {
+        // TODO return null or ""?
+        return maybeAircraftData != null ? maybeAircraftData.registration() : "";
+    }
+
+    public String getTypeDesignator() {
+        // TODO return null or ""?
+        return maybeAircraftData != null ? maybeAircraftData.typeDesignator() : "";
+    }
+
+    public String getTypeDescription() {
+        return maybeAircraftData != null ? maybeAircraftData.typeDescription() : "";
     }
 
     public ObjectProperty<WakeVortexCategory> categoryProperty() {
