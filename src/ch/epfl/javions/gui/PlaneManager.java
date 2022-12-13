@@ -20,12 +20,12 @@ import java.util.List;
 
 public final class PlaneManager {
     private final MapParameters mapParameters;
-    private final ObjectProperty<IcaoAddress> selectedPlaneProperty;
+    private final ObjectProperty<ObservablePlaneState> selectedPlaneProperty;
     private final Pane pane;
 
     public PlaneManager(MapParameters mapParameters,
                         ObservableSet<ObservablePlaneState> planeStates,
-                        ObjectProperty<IcaoAddress> selectedPlaneProperty) {
+                        ObjectProperty<ObservablePlaneState> selectedPlaneProperty) {
         assert planeStates.isEmpty(); // TODO should we instead create the initial nodes?
 
         var pane = new Pane();
@@ -99,7 +99,7 @@ public final class PlaneManager {
 
         planePath.rotateProperty().bind(planeState.trackOrHeadingProperty().multiply(Angle.RADIAN / Angle.DEGREE));
 
-        planePath.setOnMouseClicked(e -> selectedPlaneProperty.set(address));
+        planePath.setOnMouseClicked(e -> selectedPlaneProperty.set(planeState));
 
         return planePath;
     }

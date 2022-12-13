@@ -44,9 +44,9 @@ public final class Main extends Application {
         var messageQueue = new ConcurrentLinkedQueue<Message>();
         var planeStateManager = new PlaneStateManager(aircraftDatabase);
 
-        var selectedAddressProperty = new SimpleObjectProperty<IcaoAddress>();
-        var planeManager = new PlaneManager(mapParameters, planeStateManager.states(), selectedAddressProperty);
-        var planeTableManager = new PlaneTableManager(planeStateManager.states(), selectedAddressProperty);
+        var selectedAircraftProperty = new SimpleObjectProperty<ObservablePlaneState>();
+        var planeManager = new PlaneManager(mapParameters, planeStateManager.states(), selectedAircraftProperty);
+        var planeTableManager = new PlaneTableManager(planeStateManager.states(), selectedAircraftProperty);
         var mapPane = new StackPane(baseMapManager.pane(), planeManager.pane());
         var mainPane = new SplitPane(mapPane, planeTableManager.pane());
 

@@ -41,16 +41,17 @@ public final class ObservablePlaneState implements PlaneStateSetter {
     }
 
     public String getRegistration() {
-        // TODO return null or ""?
+        // TODO return null or ""? or even Optional.empty()?
         return maybeAircraftData != null ? maybeAircraftData.registration() : "";
     }
 
     public String getTypeDesignator() {
-        // TODO return null or ""?
+        // TODO return null or ""? or even Optional.empty()?
         return maybeAircraftData != null ? maybeAircraftData.typeDesignator() : "";
     }
 
     public String getTypeDescription() {
+        // TODO return null or ""? or even Optional.empty()?
         return maybeAircraftData != null ? maybeAircraftData.typeDescription() : "";
     }
 

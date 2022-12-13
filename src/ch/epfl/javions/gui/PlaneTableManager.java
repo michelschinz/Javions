@@ -1,6 +1,5 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.IcaoAddress;
 import ch.epfl.javions.Units;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -20,7 +19,7 @@ public final class PlaneTableManager {
     private final Pane pane;
 
     public PlaneTableManager(ObservableSet<ObservablePlaneState> planes,
-                             ObjectProperty<IcaoAddress> selectedAddressProperty) {
+                             ObjectProperty<ObservablePlaneState> selectedAddressProperty) {
         var tableView = createTableView();
         var pane = new BorderPane(tableView);
         pane.getStylesheets().add("table.css");
@@ -29,7 +28,10 @@ public final class PlaneTableManager {
         this.pane = pane;
 
         installListeners(planes);
-//        selectedAddressProperty.addListener((p, o, n) -> tableView.getSelectionModel().select(planes.get(n)));
+        selectedAddressProperty.addListener((p, o, n) -> {
+            tableView.getSelectionModel().select(n);
+            tableView.scrollTo(n);
+        });
     }
 
     private static TableView<ObservablePlaneState> createTableView() {
