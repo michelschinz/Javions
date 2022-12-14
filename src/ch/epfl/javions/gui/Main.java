@@ -8,6 +8,7 @@ import ch.epfl.javions.demodulation.AdsbDemodulator;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
 import javafx.scene.layout.StackPane;
@@ -49,6 +50,7 @@ public final class Main extends Application {
         var planeTableManager = new PlaneTableManager(planeStateManager.states(), selectedAircraftProperty);
         var mapPane = new StackPane(baseMapManager.pane(), planeManager.pane());
         var mainPane = new SplitPane(mapPane, planeTableManager.pane());
+        mainPane.setOrientation(Orientation.VERTICAL);
 
         var scene = new Scene(mainPane);
         primaryStage.setScene(scene);
