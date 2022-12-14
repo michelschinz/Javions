@@ -2,6 +2,8 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
+import ch.epfl.javions.db.AircraftDatabase;
+import ch.epfl.javions.db.AircraftDatabase.AircraftData;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.binding.StringExpression;
@@ -46,8 +48,8 @@ public final class PlaneTableManager {
     private static TableView<ObservablePlaneState> createTableView() {
         var columns = List.of(
                 newStringColumn("Vol", ObservablePlaneState::callSignProperty),
-                newStringColumn("Enreg.", s -> Bindings.createStringBinding(s::getRegistration)),
-                newStringColumn("Modèle", s -> Bindings.createStringBinding(s::getTypeDesignator)),
+                newStringColumn("Enreg.", fixedDataExtractor(AircraftData::registration)),
+                newStringColumn("Modèle", fixedDataExtractor(AircraftData::model)),
                 newDoubleColumn(
                         "Lon. (°)",
                         lonLatExtractor(GeoPos::longitude),
@@ -72,6 +74,10 @@ public final class PlaneTableManager {
         var tableView = new TableView<ObservablePlaneState>();
         tableView.getColumns().setAll(columns);
         return tableView;
+    }
+
+    private static Function<ObservablePlaneState, StringExpression> fixedDataExtractor(Function<AircraftData, String> f) {
+        return state -> Bindings.createStringBinding(() -> f.apply(state.getFixedData()));
     }
 
     private static Function<ObservablePlaneState, DoubleExpression> lonLatExtractor(ToDoubleFunction<GeoPos> function) {

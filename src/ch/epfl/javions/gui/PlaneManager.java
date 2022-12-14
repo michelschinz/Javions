@@ -63,7 +63,8 @@ public final class PlaneManager {
         var planePath = new SVGPath();
         planePath.getStyleClass().add("plane");
 
-        planePath.setContent(iconFor(planeState.getTypeDesignator(), planeState.getTypeDescription()).svgPath());
+        var data = planeState.getFixedData();
+        planePath.setContent(iconFor(data.typeDesignator(), data.typeDescription()).svgPath());
 
         planePath.fillProperty().bind(Bindings.createObjectBinding(() ->
                         ColorRamp.PLASMA.at(planeState.getAltitude() / (11_000 * Units.Distance.METER)),

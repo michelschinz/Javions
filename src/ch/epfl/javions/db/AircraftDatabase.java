@@ -16,6 +16,8 @@ public final class AircraftDatabase {
                                String typeDesignator,
                                String model,
                                String typeDescription) {
+        public static final AircraftData EMPTY = new AircraftData("", "", "", "");
+
         public AircraftData {
             typeDesignator = typeDesignator.intern();
             model = model.intern();
@@ -41,6 +43,6 @@ public final class AircraftDatabase {
     }
 
     public AircraftData get(IcaoAddress address) {
-        return aircraft.get(address);
+        return aircraft.getOrDefault(address, AircraftData.EMPTY);
     }
 }

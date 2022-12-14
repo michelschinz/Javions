@@ -55,19 +55,8 @@ public final class ObservablePlaneState implements PlaneStateSetter {
         lastMessageTimeStampNsProperty.set(timeStampNs);
     }
 
-    public String getRegistration() {
-        // TODO return null or ""? or even Optional.empty()?
-        return maybeAircraftData != null ? maybeAircraftData.registration() : "";
-    }
-
-    public String getTypeDesignator() {
-        // TODO return null or ""? or even Optional.empty()?
-        return maybeAircraftData != null ? maybeAircraftData.typeDesignator() : "";
-    }
-
-    public String getTypeDescription() {
-        // TODO return null or ""? or even Optional.empty()?
-        return maybeAircraftData != null ? maybeAircraftData.typeDescription() : "";
+    public AircraftDatabase.AircraftData getFixedData() {
+        return maybeAircraftData;
     }
 
     public ObjectProperty<WakeVortexCategory> categoryProperty() {
