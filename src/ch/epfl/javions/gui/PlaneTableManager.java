@@ -74,6 +74,8 @@ public final class PlaneTableManager {
                         0));
 
         var tableView = new TableView<ObservablePlaneState>();
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableView.setTableMenuButtonVisible(true);
         tableView.getColumns().setAll(columns);
         return tableView;
     }
