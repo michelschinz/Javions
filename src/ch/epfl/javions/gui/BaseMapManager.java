@@ -1,5 +1,7 @@
 package ch.epfl.javions.gui;
 
+import ch.epfl.javions.GeoPos;
+import ch.epfl.javions.WebMercator;
 import ch.epfl.javions.gui.TileManager.TileId;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleLongProperty;
@@ -78,6 +80,14 @@ public final class BaseMapManager {
 
     public Pane pane() {
         return pane;
+    }
+
+    public void centerOn(GeoPos centerPosition) {
+        var currentCenterX = mapParameters.getMinX() + canvas.getWidth() / 2d;
+        var currentCenterY = mapParameters.getMinY() + canvas.getHeight() / 2d;
+        var newCenterX = WebMercator.x(mapParameters.getZoom(), centerPosition.longitude());
+        var newCenterY = WebMercator.y(mapParameters.getZoom(), centerPosition.latitude());
+        mapParameters.scroll(newCenterX - currentCenterX, newCenterY - currentCenterY);
     }
 
     private void redrawOnNextPulse() {

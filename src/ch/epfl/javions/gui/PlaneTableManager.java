@@ -12,6 +12,7 @@ import javafx.collections.SetChangeListener;
 import javafx.scene.Node;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
+import javafx.scene.input.MouseButton;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 
@@ -19,6 +20,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Objects;
+import java.util.function.Consumer;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
@@ -26,6 +28,7 @@ import java.util.function.ToDoubleFunction;
 public final class PlaneTableManager {
     private final TableView<ObservablePlaneState> tableView;
     private final Pane pane;
+    private Consumer<ObservablePlaneState> doubleClickConsumer;
 
     public PlaneTableManager(ObservableSet<ObservablePlaneState> planes,
                              ObjectProperty<ObservablePlaneState> selectedAddressProperty) {
@@ -35,6 +38,13 @@ public final class PlaneTableManager {
 
         this.tableView = tableView;
         this.pane = pane;
+
+        tableView.setOnMouseClicked(e -> {
+            if (e.getClickCount() == 2
+                    && MouseButton.PRIMARY.equals(e.getButton())
+                    && doubleClickConsumer != null)
+                doubleClickConsumer.accept(tableView.getSelectionModel().getSelectedItem());
+        });
 
         installListeners(planes);
         selectedAddressProperty.addListener((p, o, n) -> {
@@ -157,5 +167,9 @@ public final class PlaneTableManager {
 
     public Node pane() {
         return pane;
+    }
+
+    public void setOnDoubleClick(Consumer<ObservablePlaneState> callback) {
+        doubleClickConsumer = callback;
     }
 }

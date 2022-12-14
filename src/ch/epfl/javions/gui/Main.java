@@ -48,6 +48,10 @@ public final class Main extends Application {
         var selectedAircraftProperty = new SimpleObjectProperty<ObservablePlaneState>();
         var planeManager = new PlaneManager(mapParameters, planeStateManager.states(), selectedAircraftProperty);
         var planeTableManager = new PlaneTableManager(planeStateManager.states(), selectedAircraftProperty);
+        planeTableManager.setOnDoubleClick(p -> {
+            if (p.getPosition() != null) baseMapManager.centerOn(p.getPosition());
+        });
+
         var mapPane = new StackPane(baseMapManager.pane(), planeManager.pane());
         var mainPane = new SplitPane(mapPane, planeTableManager.pane());
         mainPane.setOrientation(Orientation.VERTICAL);
