@@ -18,6 +18,7 @@ import javafx.scene.layout.Pane;
 import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
@@ -37,8 +38,12 @@ public final class PlaneTableManager {
 
         installListeners(planes);
         selectedAddressProperty.addListener((p, o, n) -> {
+            if (!Objects.equals(tableView.getSelectionModel().getSelectedItem(), n))
+                tableView.scrollTo(n);
             tableView.getSelectionModel().select(n);
-            tableView.scrollTo(n);
+        });
+        tableView.getSelectionModel().selectedItemProperty().addListener((p, o, n) -> {
+            selectedAddressProperty.set(n);
         });
     }
 
