@@ -2,6 +2,7 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.Units;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.DoubleProperty;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
@@ -12,7 +13,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 
+import java.text.NumberFormat;
+import java.text.ParseException;
 import java.util.List;
+import java.util.function.DoubleUnaryOperator;
+import java.util.function.Function;
 
 public final class PlaneTableManager {
     private final TableView<ObservablePlaneState> tableView;
@@ -40,34 +45,61 @@ public final class PlaneTableManager {
         var callSignColumn = new TableColumn<ObservablePlaneState, String>("Vol");
         callSignColumn.setCellValueFactory(new PropertyValueFactory<>("callSign"));
 
-        var altColumn = new TableColumn<ObservablePlaneState, String>("Alt. (m)");
-        addStyleClassToCellsOf(altColumn, "altitude");
-        altColumn.setCellValueFactory(f ->
-                Bindings.when(f.getValue().altitudeProperty().greaterThan(Double.NEGATIVE_INFINITY))
-                        .then(Integer.toString((int) f.getValue().getAltitude()))
-                        .otherwise(""));
-        altColumn.setComparator((s1, s2) -> s1.isBlank() || s2.isBlank()
-                ? s1.compareTo(s2)
-                : Integer.compare(Integer.parseInt(s1), Integer.parseInt(s2)));
-
-        var speedColumn = new TableColumn<ObservablePlaneState, String>("Vit. (km/h)");
-        addStyleClassToCellsOf(speedColumn, "speed");
-        speedColumn.setCellValueFactory(f ->
-                Bindings.when(f.getValue().velocityProperty().greaterThan(Double.NEGATIVE_INFINITY))
-                        .then(Integer.toString((int) (f.getValue().getVelocity() * (Units.Speed.METERS_PER_SECOND / Units.Speed.KILOMETERS_PER_HOUR))))
-                        .otherwise(""));
+        var altColumn = newNumericColumn(
+                "Alt. (m)",
+                ObservablePlaneState::altitudeProperty,
+                DoubleUnaryOperator.identity(),
+                0);
+        var speedColumn = newNumericColumn(
+                "Vit. (km/h)",
+                ObservablePlaneState::velocityProperty,
+                Units.converter(Units.Speed.KILOMETERS_PER_HOUR),
+                0);
 
         tableView.getColumns().setAll(List.of(callSignColumn, altColumn, speedColumn));
         return tableView;
     }
 
-    private static <S, T> void addStyleClassToCellsOf(TableColumn<S, T> column, String styleClass) {
+    private static TableColumn<ObservablePlaneState, String> newNumericColumn(
+            String title,
+            Function<ObservablePlaneState, DoubleProperty> propertyExtractor,
+            DoubleUnaryOperator valueTransformer,
+            int fractionDigits) {
+        var column = new TableColumn<ObservablePlaneState, String>(title);
+
+        // Change cell factory to add "numeric" style class to the cells.
         var originalCellFactory = column.getCellFactory();
         column.setCellFactory(c -> {
             var cell = originalCellFactory.call(c);
-            cell.getStyleClass().add(styleClass);
+            cell.getStyleClass().add("numeric");
             return cell;
         });
+
+        // Change value factory to print NaNs as empty strings
+        var formatter = NumberFormat.getInstance();
+        formatter.setMaximumFractionDigits(fractionDigits);
+
+        column.setCellValueFactory(f -> {
+            var p = propertyExtractor.apply(f.getValue());
+            return Bindings.when(p.greaterThan(Double.NEGATIVE_INFINITY))
+                    .then(formatter.format(valueTransformer.applyAsDouble(p.get())))
+                    .otherwise("");
+        });
+
+        // Change comparator to sort values numerically
+        column.setComparator((s1, s2) -> s1.isEmpty() || s2.isEmpty()
+                ? s2.compareTo(s1)
+                : Double.compare(parseSafeDouble(formatter, s1), parseSafeDouble(formatter, s2)));
+
+        return column;
+    }
+
+    private static double parseSafeDouble(NumberFormat format, String string) {
+        try {
+            return format.parse(string).doubleValue();
+        } catch (ParseException e) {
+            throw new Error(e);
+        }
     }
 
     private void installListeners(ObservableSet<ObservablePlaneState> planes) {

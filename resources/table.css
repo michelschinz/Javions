@@ -1,7 +1,4 @@
-.altitude {
+.numeric {
     -fx-alignment: baseline-right;
-}
-
-.speed {
-    -fx-alignment: baseline-right;
+    -fx-font-variant-numeric: tabular-num;
 }
