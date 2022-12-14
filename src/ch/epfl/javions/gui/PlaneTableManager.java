@@ -2,19 +2,16 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
-import ch.epfl.javions.db.AircraftDatabase;
 import ch.epfl.javions.db.AircraftDatabase.AircraftData;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.binding.StringExpression;
 import javafx.beans.property.ObjectProperty;
-import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.scene.Node;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 
@@ -76,10 +73,6 @@ public final class PlaneTableManager {
         return tableView;
     }
 
-    private static Function<ObservablePlaneState, StringExpression> fixedDataExtractor(Function<AircraftData, String> f) {
-        return state -> Bindings.createStringBinding(() -> f.apply(state.getFixedData()));
-    }
-
     private static Function<ObservablePlaneState, DoubleExpression> lonLatExtractor(ToDoubleFunction<GeoPos> function) {
         return state ->
                 Bindings.createDoubleBinding(() -> {
@@ -87,6 +80,13 @@ public final class PlaneTableManager {
                             return maybePosition == null ? Double.NaN : function.applyAsDouble(maybePosition);
                         },
                         state.positionProperty());
+    }
+
+    private static Function<ObservablePlaneState, StringExpression> fixedDataExtractor(Function<AircraftData, String> f) {
+        return state -> {
+            var value = f.apply(state.getFixedData());
+            return Bindings.createStringBinding(() -> value);
+        };
     }
 
     private static TableColumn<ObservablePlaneState, String> newStringColumn(
