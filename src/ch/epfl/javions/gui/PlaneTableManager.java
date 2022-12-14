@@ -59,26 +59,27 @@ public final class PlaneTableManager {
 
     private static TableView<ObservablePlaneState> createTableView() {
         var columns = List.of(
+                newStringColumn("Hex", s -> Bindings.createStringBinding(() -> s.address().toString())),
                 newStringColumn("Vol", ObservablePlaneState::callSignProperty),
-                newStringColumn("Enreg.", fixedDataExtractor(AircraftData::registration)),
+                newStringColumn("Enregistrement", fixedDataExtractor(AircraftData::registration)),
                 newStringColumn("Modèle", fixedDataExtractor(AircraftData::model)),
                 newDoubleColumn(
-                        "Lon. (°)",
+                        "Longitude (°)",
                         lonLatExtractor(GeoPos::longitude),
                         Units.converter(Units.Angle.DEGREE),
                         4),
                 newDoubleColumn(
-                        "Lat. (°)",
+                        "Latitude (°)",
                         lonLatExtractor(GeoPos::latitude),
                         Units.converter(Units.Angle.DEGREE),
                         4),
                 newDoubleColumn(
-                        "Alt. (m)",
+                        "Altitude (m)",
                         ObservablePlaneState::altitudeProperty,
                         DoubleUnaryOperator.identity(),
                         0),
                 newDoubleColumn(
-                        "Vit. (km/h)",
+                        "Vitesse (km/h)",
                         ObservablePlaneState::velocityProperty,
                         Units.converter(Units.Speed.KILOMETERS_PER_HOUR),
                         0));
