@@ -1,7 +1,9 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.*;
+import ch.epfl.javions.GeoPos;
+import ch.epfl.javions.Units;
 import ch.epfl.javions.Units.Angle;
+import ch.epfl.javions.WebMercator;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ListChangeListener;
@@ -43,7 +45,7 @@ public final class PlaneManager {
         planeStates.addListener((SetChangeListener<ObservablePlaneState>) change -> {
             if (change.wasRemoved()) {
                 var idToRemove = change.getElementRemoved().address().toString();
-                pane.getChildren().removeIf(n -> n.getId().equals(idToRemove));
+                pane.getChildren().removeIf(n -> idToRemove.equals(n.getId()));
             }
             if (change.wasAdded())
                 pane.getChildren().add(groupForPlane(change.getElementAdded()));
@@ -51,17 +53,15 @@ public final class PlaneManager {
     }
 
     private Node groupForPlane(ObservablePlaneState planeState) {
-        var address = planeState.address();
-        var planeNode = nodeForPlane(planeState);
-        var trajectoryPath = polyLineForPlaneTrajectory(address, planeState);
-        return new Group(trajectoryPath, planeNode);
+        var group = new Group(polyLineForPlaneTrajectory(planeState), nodeForPlane(planeState));
+        group.setId(planeState.address().toString());
+        return group;
     }
 
     private Node nodeForPlane(ObservablePlaneState planeState) {
         var address = planeState.address();
         var planePath = new SVGPath();
         planePath.getStyleClass().add("plane");
-        planePath.setId(address.toString());
 
         planePath.setContent(iconFor(planeState.getTypeDesignator(), planeState.getTypeDescription()).svgPath());
 
@@ -113,7 +113,7 @@ public final class PlaneManager {
         return maybeIcon;
     }
 
-    private Polyline polyLineForPlaneTrajectory(IcaoAddress address, ObservablePlaneState planeState) {
+    private Polyline polyLineForPlaneTrajectory(ObservablePlaneState planeState) {
         var l = new Polyline();
 
         planeState.trajectory().addListener((ListChangeListener<GeoPos>) c ->
@@ -124,7 +124,7 @@ public final class PlaneManager {
         l.layoutXProperty().bind(mapParameters.minXProperty().negate());
         l.layoutYProperty().bind(mapParameters.minYProperty().negate());
 
-        l.visibleProperty().bind(selectedPlaneProperty.isEqualTo(address));
+        l.visibleProperty().bind(selectedPlaneProperty.isEqualTo(planeState));
 
         l.getStyleClass().add("trajectory");
 
