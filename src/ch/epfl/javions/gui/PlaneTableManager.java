@@ -1,9 +1,12 @@
 package ch.epfl.javions.gui;
 
+import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.DoubleProperty;
+import javafx.beans.binding.DoubleExpression;
+import javafx.beans.binding.StringExpression;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyStringProperty;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.scene.Node;
@@ -18,6 +21,7 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
+import java.util.function.ToDoubleFunction;
 
 public final class PlaneTableManager {
     private final TableView<ObservablePlaneState> tableView;
@@ -40,29 +44,56 @@ public final class PlaneTableManager {
     }
 
     private static TableView<ObservablePlaneState> createTableView() {
+        var columns = List.of(
+                newStringColumn("Vol", ObservablePlaneState::callSignProperty),
+                newStringColumn("Enreg.", s -> Bindings.createStringBinding(s::getRegistration)),
+                newStringColumn("Modèle", s -> Bindings.createStringBinding(s::getTypeDesignator)),
+                newDoubleColumn(
+                        "Lon. (°)",
+                        lonLatExtractor(GeoPos::longitude),
+                        Units.converter(Units.Angle.DEGREE),
+                        4),
+                newDoubleColumn(
+                        "Lat. (°)",
+                        lonLatExtractor(GeoPos::latitude),
+                        Units.converter(Units.Angle.DEGREE),
+                        4),
+                newDoubleColumn(
+                        "Alt. (m)",
+                        ObservablePlaneState::altitudeProperty,
+                        DoubleUnaryOperator.identity(),
+                        0),
+                newDoubleColumn(
+                        "Vit. (km/h)",
+                        ObservablePlaneState::velocityProperty,
+                        Units.converter(Units.Speed.KILOMETERS_PER_HOUR),
+                        0));
+
         var tableView = new TableView<ObservablePlaneState>();
-
-        var callSignColumn = new TableColumn<ObservablePlaneState, String>("Vol");
-        callSignColumn.setCellValueFactory(new PropertyValueFactory<>("callSign"));
-
-        var altColumn = newNumericColumn(
-                "Alt. (m)",
-                ObservablePlaneState::altitudeProperty,
-                DoubleUnaryOperator.identity(),
-                0);
-        var speedColumn = newNumericColumn(
-                "Vit. (km/h)",
-                ObservablePlaneState::velocityProperty,
-                Units.converter(Units.Speed.KILOMETERS_PER_HOUR),
-                0);
-
-        tableView.getColumns().setAll(List.of(callSignColumn, altColumn, speedColumn));
+        tableView.getColumns().setAll(columns);
         return tableView;
     }
 
-    private static TableColumn<ObservablePlaneState, String> newNumericColumn(
+    private static Function<ObservablePlaneState, DoubleExpression> lonLatExtractor(ToDoubleFunction<GeoPos> function) {
+        return state ->
+                Bindings.createDoubleBinding(() -> {
+                            var maybePosition = state.getPosition();
+                            return maybePosition == null ? Double.NaN : function.applyAsDouble(maybePosition);
+                        },
+                        state.positionProperty());
+    }
+
+    private static TableColumn<ObservablePlaneState, String> newStringColumn(
             String title,
-            Function<ObservablePlaneState, DoubleProperty> propertyExtractor,
+            Function<ObservablePlaneState, StringExpression> propertyExtractor) {
+        var column = new TableColumn<ObservablePlaneState, String>(title);
+        column.setCellValueFactory(f -> propertyExtractor.apply(f.getValue()));
+        return column;
+    }
+
+    private static TableColumn<ObservablePlaneState, String> newDoubleColumn(
+            String title,
+            Function<ObservablePlaneState, DoubleExpression> propertyExtractor,
             DoubleUnaryOperator valueTransformer,
             int fractionDigits) {
         var column = new TableColumn<ObservablePlaneState, String>(title);
@@ -77,6 +108,7 @@ public final class PlaneTableManager {
 
         // Change value factory to print NaNs as empty strings
         var formatter = NumberFormat.getInstance();
+        formatter.setMinimumFractionDigits(fractionDigits);
         formatter.setMaximumFractionDigits(fractionDigits);
 
         column.setCellValueFactory(f -> {
