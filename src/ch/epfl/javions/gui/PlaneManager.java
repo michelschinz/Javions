@@ -55,6 +55,7 @@ public final class PlaneManager {
     private Node groupForPlane(ObservablePlaneState planeState) {
         var group = new Group(polyLineForPlaneTrajectory(planeState), nodeForPlane(planeState));
         group.setId(planeState.address().toString());
+        group.viewOrderProperty().bind(planeState.altitudeProperty().negate());
         return group;
     }
 
