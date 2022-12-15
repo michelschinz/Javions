@@ -10,20 +10,22 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
 public final class ObservablePlaneState implements PlaneStateSetter {
+    public record GeoPosWithAltitude(GeoPos position, double altitude) {}
+
     private final IcaoAddress address;
     private final LongProperty lastMessageTimeStampNsProperty;
     private final ObjectProperty<WakeVortexCategory> categoryProperty;
     private final StringProperty callSignProperty;
     private final ObjectProperty<GeoPos> positionProperty;
-    private final ObservableList<GeoPos> trajectory;
-    private final ObservableList<GeoPos> unmodifiableTrajectory;
+    private final ObservableList<GeoPosWithAltitude> trajectory;
+    private final ObservableList<GeoPosWithAltitude> unmodifiableTrajectory;
     private final DoubleProperty altitudeProperty;
     private final DoubleProperty velocityProperty;
     private final DoubleProperty trackOrHeadingProperty;
     private final AircraftDatabase.AircraftData maybeAircraftData;
 
     public ObservablePlaneState(IcaoAddress address, AircraftDatabase.AircraftData maybeAircraftData) {
-        var trajectory = FXCollections.<GeoPos>observableArrayList();
+        var trajectory = FXCollections.<GeoPosWithAltitude>observableArrayList();
 
         this.address = address;
         this.lastMessageTimeStampNsProperty = new SimpleLongProperty();
@@ -96,10 +98,10 @@ public final class ObservablePlaneState implements PlaneStateSetter {
     @Override
     public void setPosition(GeoPos position) {
         positionProperty.set(position);
-        trajectory.add(position);
+        trajectory.add(new GeoPosWithAltitude(position, getAltitude()));
     }
 
-    public ObservableList<GeoPos> trajectory() {
+    public ObservableList<GeoPosWithAltitude> trajectory() {
         return unmodifiableTrajectory;
     }
 
