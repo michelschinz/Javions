@@ -1,6 +1,7 @@
 package ch.epfl.javions;
 
 public enum MessageType {
+    UNKNOWN,
     AIRCRAFT_IDENTIFICATION,
     SURFACE_POSITION,
     AIRBORNE_POSITION,

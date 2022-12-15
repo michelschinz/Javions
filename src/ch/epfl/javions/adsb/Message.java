@@ -47,7 +47,7 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
             case 28 -> MessageType.AIRCRAFT_STATUS;
             case 29 -> MessageType.TARGET_STATE;
             case 31 -> MessageType.AIRCRAFT_OPERATION_STATUS;
-            default -> throw new Error();
+            default -> MessageType.UNKNOWN;
         };
     }
 
