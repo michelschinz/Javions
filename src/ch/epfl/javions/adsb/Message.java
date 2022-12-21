@@ -17,7 +17,7 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
     }
 
     static int rawCapability(ByteString msg) {
-        return Bits.extractUInt(msg.byteAt(0), 0, 3);
+        return Bits.extractUInt(msg.byteAt(4), 0, 3);
     }
 
     static int rawTypeCode(ByteString msg) {
