@@ -1,7 +1,6 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.javions.AvrParser;
-import ch.epfl.javions.IcaoAddress;
 import ch.epfl.javions.adsb.Message;
 import ch.epfl.javions.db.AircraftDatabase;
 import ch.epfl.javions.demodulation.AdsbDemodulator;

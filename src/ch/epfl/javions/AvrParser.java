@@ -1,7 +1,5 @@
 package ch.epfl.javions;
 
-import java.util.function.Consumer;
-
 /**
  * Parser for (long) ADSB frames in AVR format.
  *

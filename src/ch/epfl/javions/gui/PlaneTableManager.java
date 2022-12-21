@@ -52,9 +52,7 @@ public final class PlaneTableManager {
                 tableView.scrollTo(n);
             tableView.getSelectionModel().select(n);
         });
-        tableView.getSelectionModel().selectedItemProperty().addListener((p, o, n) -> {
-            selectedAddressProperty.set(n);
-        });
+        tableView.getSelectionModel().selectedItemProperty().addListener((p, o, n) -> selectedAddressProperty.set(n));
     }
 
     private static TableView<ObservablePlaneState> createTableView() {
