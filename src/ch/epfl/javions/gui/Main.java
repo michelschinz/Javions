@@ -34,7 +34,7 @@ public final class Main extends Application {
         var cacheBasePath = basePath.resolve("osm-cache");
         var dbBasePath = basePath.resolve("db");
 
-        var aircraftDatabase = new AircraftDatabase(dbBasePath.resolve("aircraft.csv"));
+        var aircraftDatabase = new AircraftDatabase(dbBasePath.resolve("aircraft.zip").toFile());
 
         var tileManager = new TileManager(cacheBasePath, OSM_TILE_SERVER);
         var mapParameters = new MapParameters(543_200, 370_650, 12);

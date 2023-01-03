@@ -3,12 +3,10 @@ package ch.epfl.javions.db;
 import ch.epfl.javions.IcaoAddress;
 import ch.epfl.javions.WakeTurbulenceCategory;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Map;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.zip.ZipFile;
 
 public final class AircraftDatabase {
     private static final String SEPARATOR = Pattern.quote(",");
@@ -20,32 +18,31 @@ public final class AircraftDatabase {
                                WakeTurbulenceCategory wakeTurbulenceCategory) {
         public static final AircraftData EMPTY =
                 new AircraftData("", "", "", "", WakeTurbulenceCategory.NONE);
-
-        public AircraftData {
-            typeDesignator = typeDesignator.intern();
-            model = model.intern();
-            typeDescription = typeDescription.intern();
-        }
     }
 
-    private final Map<IcaoAddress, AircraftData> aircraft;
+    private final File dbFile;
 
-    static Map<IcaoAddress, AircraftData> readAircraftDatabase(Path filePath) throws IOException {
-        try (var s = Files.newBufferedReader(filePath)) {
-            return s.lines()
-                    .skip(1)
-                    .map(l -> l.split(SEPARATOR))
-                    .collect(Collectors.toMap(
-                            l -> new IcaoAddress(Integer.parseInt(l[0], 16)),
-                            l -> new AircraftData(l[1], l[2], l[3], l[4], WakeTurbulenceCategory.of(l[5]))));
-        }
-    }
-
-    public AircraftDatabase(Path path) throws IOException {
-        aircraft = readAircraftDatabase(path);
+    public AircraftDatabase(File dbFile) {
+        this.dbFile = dbFile;
     }
 
     public AircraftData get(IcaoAddress address) {
-        return aircraft.getOrDefault(address, AircraftData.EMPTY);
+        var addressString = address.toString();
+        try {
+            try (var zipFile = new ZipFile(dbFile)) {
+                var entryName = addressString.substring(4, 6) + ".csv";
+                try (var s = zipFile.getInputStream(zipFile.getEntry(entryName))) {
+                    var reader = new BufferedReader(new InputStreamReader(s, StandardCharsets.UTF_8));
+                    return reader.lines()
+                            .filter(l -> l.startsWith(addressString))
+                            .map(l -> l.split(SEPARATOR))
+                            .map(l -> new AircraftData(l[1], l[2], l[3], l[4], WakeTurbulenceCategory.of(l[5])))
+                            .findFirst()
+                            .orElse(AircraftData.EMPTY);
+                }
+            }
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 }
