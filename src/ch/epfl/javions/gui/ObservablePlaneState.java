@@ -3,7 +3,6 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.IcaoAddress;
 import ch.epfl.javions.PlaneStateSetter;
-import ch.epfl.javions.adsb.WakeVortexCategory;
 import ch.epfl.javions.db.AircraftDatabase;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
@@ -14,7 +13,7 @@ public final class ObservablePlaneState implements PlaneStateSetter {
 
     private final IcaoAddress address;
     private final LongProperty lastMessageTimeStampNsProperty;
-    private final ObjectProperty<WakeVortexCategory> categoryProperty;
+    private final IntegerProperty categoryProperty;
     private final StringProperty callSignProperty;
     private final ObjectProperty<GeoPos> positionProperty;
     private final ObservableList<GeoPosWithAltitude> trajectory;
@@ -29,7 +28,7 @@ public final class ObservablePlaneState implements PlaneStateSetter {
 
         this.address = address;
         this.lastMessageTimeStampNsProperty = new SimpleLongProperty();
-        this.categoryProperty = new SimpleObjectProperty<>();
+        this.categoryProperty = new SimpleIntegerProperty();
         this.callSignProperty = new SimpleStringProperty("");
         this.positionProperty = new SimpleObjectProperty<>();
         this.trajectory = trajectory;
@@ -61,16 +60,16 @@ public final class ObservablePlaneState implements PlaneStateSetter {
         return maybeAircraftData;
     }
 
-    public ObjectProperty<WakeVortexCategory> categoryProperty() {
+    public IntegerProperty categoryProperty() {
         return categoryProperty;
     }
 
-    public WakeVortexCategory getCategory() {
+    public int getCategory() {
         return categoryProperty.get();
     }
 
     @Override
-    public void setCategory(WakeVortexCategory category) {
+    public void setCategory(int category) {
         categoryProperty.set(category);
     }
 

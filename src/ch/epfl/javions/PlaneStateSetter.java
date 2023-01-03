@@ -1,10 +1,8 @@
 package ch.epfl.javions;
 
-import ch.epfl.javions.adsb.WakeVortexCategory;
-
 public interface PlaneStateSetter {
     void setLastMessageTimeStampNs(long timeStampNs);
-    void setCategory(WakeVortexCategory category);
+    void setCategory(int category);
     void setCallSign(String callSign);
     void setPosition(GeoPos position);
     void setAltitude(double altitude);
