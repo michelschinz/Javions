@@ -1,5 +1,7 @@
 package ch.epfl.javions.gui;
 
+import ch.epfl.javions.WakeTurbulenceCategory;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -7,23 +9,9 @@ import static ch.epfl.javions.gui.AircraftIcon.*;
 import static java.util.Map.entry;
 
 public final class IconTables {
-    public static final Map<String, AircraftIcon> TYPE_DESIGNATOR_TABLE = createTypeDesignatorTable();
-    public static final Map<String, AircraftIcon> TYPE_DESCRIPTION_TABLE = createTypeDescriptionTable();
+    private IconTables() {}
 
-    private static Map<String, AircraftIcon> createTypeDescriptionTable() {
-        return Map.ofEntries(
-                entry("H", HELICOPTER),
-                entry("L1P", CESSNA),
-                entry("L1T", CESSNA),
-                entry("L1J", HI_PERF),
-                entry("L2P", TWIN_SMALL),
-                entry("L2T", TWIN_LARGE),
-                entry("L2J-L", JET_SWEPT),
-                entry("L2J-M", AIRLINER),
-                entry("L2J-H", HEAVY_2E),
-                entry("L4T", HEAVY_4E),
-                entry("L4J-H", HEAVY_4E));
-    }
+    public static final Map<String, AircraftIcon> TYPE_DESIGNATOR_TABLE = createTypeDesignatorTable();
 
     private static Map<String, AircraftIcon> createTypeDesignatorTable() {
         // Note: we don't use Map.ofEntries here, as IntelliJ becomes slow if we do.
@@ -267,5 +255,63 @@ public final class IconTables {
         map.put("YK42", AIRLINER);
         map.put("YURO", HI_PERF);
         return Map.copyOf(map);
+    }
+
+    public static AircraftIcon iconFor(String typeDesignator,
+                                       String typeDescription,
+                                       int category,
+                                       WakeTurbulenceCategory wakeTurbulenceCategory) {
+        var maybeIcon = TYPE_DESIGNATOR_TABLE.get(typeDesignator);
+        if (maybeIcon != null) return maybeIcon;
+
+        if (typeDescription.startsWith("H")) return HELICOPTER;
+
+        switch (typeDescription) {
+            case "L1P", "L1T" -> {
+                return CESSNA;
+            }
+            case "L1J" -> {
+                return HI_PERF;
+            }
+            case "L2P" -> {
+                return TWIN_SMALL;
+            }
+            case "L2T" -> {
+                return TWIN_LARGE;
+            }
+            case "L2J" -> {
+                switch (wakeTurbulenceCategory) {
+                    case LIGHT -> {
+                        return JET_SWEPT;
+                    }
+                    case MEDIUM -> {
+                        return AIRLINER;
+                    }
+                    case HEAVY -> {
+                        return HEAVY_2E;
+                    }
+                }
+            }
+            case "L4T" -> {
+                return HEAVY_4E;
+            }
+            case "L4J" -> {
+                if (wakeTurbulenceCategory == WakeTurbulenceCategory.HEAVY) return HEAVY_4E;
+            }
+        }
+
+        return switch (category) {
+            case 0xA1 -> CESSNA;
+            case 0xA2 -> JET_NONSWEPT;
+            case 0xA3 -> AIRLINER;
+            case 0xA4 -> HEAVY_2E;
+            case 0xA5 -> HEAVY_4E;
+            case 0xA6 -> HI_PERF;
+            case 0xA7 -> HELICOPTER;
+            case 0xB1 -> CESSNA;
+            case 0xB2 -> BALLOON;
+            case 0xB4 -> CESSNA;
+            default -> UNKNOWN;
+        };
     }
 }

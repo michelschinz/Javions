@@ -1,6 +1,7 @@
 package ch.epfl.javions.db;
 
 import ch.epfl.javions.IcaoAddress;
+import ch.epfl.javions.WakeTurbulenceCategory;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -15,8 +16,10 @@ public final class AircraftDatabase {
     public record AircraftData(String registration,
                                String typeDesignator,
                                String model,
-                               String typeDescription) {
-        public static final AircraftData EMPTY = new AircraftData("", "", "", "");
+                               String typeDescription,
+                               WakeTurbulenceCategory wakeTurbulenceCategory) {
+        public static final AircraftData EMPTY =
+                new AircraftData("", "", "", "", WakeTurbulenceCategory.NONE);
 
         public AircraftData {
             typeDesignator = typeDesignator.intern();
@@ -34,7 +37,7 @@ public final class AircraftDatabase {
                     .map(l -> l.split(SEPARATOR))
                     .collect(Collectors.toMap(
                             l -> new IcaoAddress(Integer.parseInt(l[0], 16)),
-                            l -> new AircraftData(l[1], l[2], l[3], l[4])));
+                            l -> new AircraftData(l[1], l[2], l[3], l[4], WakeTurbulenceCategory.of(l[5]))));
         }
     }
 

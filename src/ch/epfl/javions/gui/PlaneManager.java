@@ -3,6 +3,7 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.Units.Angle;
+import ch.epfl.javions.WakeTurbulenceCategory;
 import ch.epfl.javions.WebMercator;
 import ch.epfl.javions.gui.ObservablePlaneState.GeoPosWithAltitude;
 import javafx.beans.InvalidationListener;
@@ -71,7 +72,7 @@ public final class PlaneManager {
         planePath.getStyleClass().add("plane");
 
         var data = planeState.getFixedData();
-        planePath.setContent(iconFor(data.typeDesignator(), data.typeDescription()).svgPath());
+        planePath.setContent(iconFor(data.typeDesignator(), data.typeDescription(), planeState.getCategory(), data.wakeTurbulenceCategory()).svgPath());
 
         planePath.fillProperty().bind(Bindings.createObjectBinding(
                 () -> colorForAltitude(planeState.getAltitude()),
@@ -119,12 +120,9 @@ public final class PlaneManager {
         return ColorRamp.PLASMA.at(Math.pow(scaledAltitude, 1d / 3d));
     }
 
-    private AircraftIcon iconFor(String typeDesignator, String typeDescription) {
+    private AircraftIcon iconFor(String typeDesignator, String typeDescription, int category, WakeTurbulenceCategory wtc) {
         // TODO should the designator be valid (i.e. non-empty)?
-        var maybeIcon = IconTables.TYPE_DESIGNATOR_TABLE.getOrDefault(typeDesignator, AircraftIcon.UNKNOWN);
-        if (maybeIcon == AircraftIcon.UNKNOWN)
-            maybeIcon = IconTables.TYPE_DESCRIPTION_TABLE.getOrDefault(typeDescription, AircraftIcon.UNKNOWN);
-        return maybeIcon;
+        return IconTables.iconFor(typeDesignator, typeDescription, category, wtc);
     }
 
     private Group lineGroupForPlaneTrajectory(ObservablePlaneState planeState) {

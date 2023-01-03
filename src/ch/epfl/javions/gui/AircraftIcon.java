@@ -18,13 +18,6 @@ public enum AircraftIcon {
     TWIN_SMALL,
     UNKNOWN;
 
-    public static AircraftIcon iconFor(String typeDesignator, String typeDescription) {
-        var icon = IconTables.TYPE_DESIGNATOR_TABLE.get(typeDesignator);
-        return icon == null
-                ? UNKNOWN
-                : icon;
-    }
-
     private static String loadSvgPath(String name) {
         try (var s = PlaneManager.class.getResourceAsStream(name)) {
             if (s == null) throw new Error("Cannot find resource " + name);
