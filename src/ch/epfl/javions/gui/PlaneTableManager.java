@@ -59,7 +59,7 @@ public final class PlaneTableManager {
         var columns = List.of(
                 newStringColumn("Hex", s -> Bindings.createStringBinding(() -> s.address().toString())),
                 newStringColumn("Vol", ObservablePlaneState::callSignProperty),
-                newStringColumn("Enregistrement", fixedDataExtractor(AircraftData::registration)),
+                newStringColumn("Enregistrement", fixedDataExtractor(aircraftData -> aircraftData.registration().toString())),
                 newStringColumn("Modèle", fixedDataExtractor(AircraftData::model)),
                 newDoubleColumn(
                         "Longitude (°)",
