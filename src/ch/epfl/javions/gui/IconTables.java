@@ -303,16 +303,14 @@ public final class IconTables {
         }
 
         return switch (category) {
-            case 0xA1 -> CESSNA;
+            case 0xA1, 0xB1, 0xB4 -> CESSNA;
             case 0xA2 -> JET_NONSWEPT;
             case 0xA3 -> AIRLINER;
             case 0xA4 -> HEAVY_2E;
             case 0xA5 -> HEAVY_4E;
             case 0xA6 -> HI_PERF;
             case 0xA7 -> HELICOPTER;
-            case 0xB1 -> CESSNA;
             case 0xB2 -> BALLOON;
-            case 0xB4 -> CESSNA;
             default -> UNKNOWN;
         };
     }
