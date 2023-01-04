@@ -10,11 +10,7 @@ public final class Bits {
         return (int) ((value << (unusedBits - startBit)) >>> unusedBits);
     }
 
-    public static int extractBit(long value, int bit) {
-        return (int) ((value >> bit) & 1);
-    }
-
     public static boolean testBit(long value, int bit) {
-        return extractBit(value, bit) != 0;
+        return ((value >> bit) & 1) != 0;
     }
 }
