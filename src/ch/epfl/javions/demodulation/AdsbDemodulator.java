@@ -4,7 +4,6 @@ import ch.epfl.javions.ByteString;
 import ch.epfl.javions.Crc24;
 import ch.epfl.javions.adsb.Message;
 
-import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 
