@@ -18,7 +18,7 @@ public final class SamplesDecoder {
     public int readChunk(short[] chunk) throws IOException {
         assert chunk.length == chunkSize;
         var bytesRead = bytesReader.readChunk(byteChunk);
-        for (int i = 0; i < chunkSize; i += 1) {
+        for (var i = 0; i < chunkSize; i += 1) {
             var lsb = Byte.toUnsignedInt(byteChunk[i * Short.BYTES]);
             var msb = Byte.toUnsignedInt(byteChunk[i * Short.BYTES + 1]);
             chunk[i] = (short) ((msb << Byte.SIZE | lsb) - (1 << 11));
