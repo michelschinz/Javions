@@ -33,12 +33,15 @@ public final class AdsbDemodulator {
     }
 
     public Message nextMessage() throws IOException {
-        if (window.available() < 0) return null;
-
-        var message = (Message) null;
-        while ((message = currentMessage()) == null) window.advance();
-        window.advanceBy(LONG_MESSAGE_WIDTH);
-        return message;
+        while (window.available() >= LONG_MESSAGE_WIDTH) {
+            var message = currentMessage();
+            if (message != null) {
+                window.advanceBy(LONG_MESSAGE_WIDTH);
+                return message;
+            }
+            window.advance();
+        }
+        return null;
     }
 
     /**

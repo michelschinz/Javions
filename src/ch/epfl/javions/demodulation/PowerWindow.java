@@ -37,7 +37,7 @@ public final class PowerWindow {
     }
 
     public int get(int i) {
-        assert 0 <= i && i < windowSize;
+        assert 0 <= i && i < available;
         var j = headIndex + i;
         return chunks[j / CHUNK_SIZE][j % CHUNK_SIZE];
     }
