@@ -29,12 +29,8 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
         return message.bytesBetween(4, 11);
     }
 
-    static int rawIcaoAddress(ByteString msg) {
-        return (int) msg.bytesBetween(1, 4);
-    }
-
     static IcaoAddress icaoAddress(ByteString msg) {
-        return new IcaoAddress("%06X".formatted(rawIcaoAddress(msg)));
+        return new IcaoAddress("%06X".formatted((int) msg.bytesBetween(1, 4)));
     }
 
     static Message of(long timeStamp, ByteString bytes) {
