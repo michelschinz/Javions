@@ -10,6 +10,17 @@ import java.util.zip.ZipFile;
 public final class AircraftDatabase {
     private static final String SEPARATOR = Pattern.quote(",");
 
+    // Format: ICAO,Registration,Designator,Model,Description,WTC,Flags
+    private static AircraftData parseLine(String line) {
+        var columns = line.split(SEPARATOR);
+        return new AircraftData(
+                new AircraftRegistration(columns[1]),
+                new AircraftTypeDesignator(columns[2]),
+                columns[3],
+                new AircraftDescription(columns[4]),
+                WakeTurbulenceCategory.of(columns[5]));
+    }
+
     public record AircraftData(AircraftRegistration registration,
                                AircraftTypeDesignator typeDesignator,
                                String model,
@@ -30,27 +41,24 @@ public final class AircraftDatabase {
     }
 
     public AircraftData get(IcaoAddress address) {
-        var addressString = address.toString();
         try {
             try (var zipFile = new ZipFile(dbFile)) {
-                var entryName = addressString.substring(4, 6) + ".csv";
-                try (var s = zipFile.getInputStream(zipFile.getEntry(entryName))) {
+                try (var s = zipFile.getInputStream(zipFile.getEntry(entryName(address)))) {
                     var reader = new BufferedReader(new InputStreamReader(s, StandardCharsets.UTF_8));
+                    var addressString = address.toString();
                     return reader.lines()
-                            .filter(l -> l.startsWith(addressString))
-                            .map(l -> l.split(SEPARATOR))
-                            .map(l -> new AircraftData(
-                                    new AircraftRegistration(l[1]),
-                                    new AircraftTypeDesignator(l[2]),
-                                    l[3],
-                                    new AircraftDescription(l[4]),
-                                    WakeTurbulenceCategory.of(l[5])))
+                            .dropWhile(l -> addressString.compareTo(l) > 0)
                             .findFirst()
+                            .map(AircraftDatabase::parseLine)
                             .orElse(AircraftData.EMPTY);
                 }
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
         }
+    }
+
+    private static String entryName(IcaoAddress address) {
+        return address.toString().substring(4, 6) + ".csv";
     }
 }
