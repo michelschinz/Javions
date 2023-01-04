@@ -27,16 +27,14 @@ public final class AircraftDatabase {
 
     public AircraftData get(IcaoAddress address) {
         try {
-            try (var zipFile = new ZipFile(dbFile)) {
-                try (var s = zipFile.getInputStream(zipFile.getEntry(entryName(address)))) {
-                    var reader = new BufferedReader(new InputStreamReader(s, StandardCharsets.UTF_8));
-                    var addressString = address.toString();
-                    return reader.lines()
-                            .dropWhile(l -> addressString.compareTo(l) > 0)
-                            .findFirst()
-                            .map(AircraftDatabase::parseLine)
-                            .orElse(AircraftData.EMPTY);
-                }
+            try (var zipFile = new ZipFile(dbFile);
+                 var entryStream = zipFile.getInputStream(zipFile.getEntry(entryName(address)))) {
+                var reader = new BufferedReader(new InputStreamReader(entryStream, StandardCharsets.UTF_8));
+                return reader.lines()
+                        .dropWhile(l -> address.toString().compareTo(l) > 0)
+                        .findFirst()
+                        .map(AircraftDatabase::parseLine)
+                        .orElse(AircraftData.EMPTY);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
