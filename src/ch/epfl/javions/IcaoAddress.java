@@ -1,20 +1,11 @@
 package ch.epfl.javions;
 
-public record IcaoAddress(int address) {
-    public IcaoAddress {
-        Preconditions.checkArgument((address & 0xFF_FF_FF) == address);
-    }
+import java.util.regex.Pattern;
 
-    public static IcaoAddress of(String s) {
-        try {
-            return new IcaoAddress(Integer.parseInt(s, 16));
-        } catch (NumberFormatException e) {
-            throw new IllegalArgumentException(e);
-        }
-    }
+public final class IcaoAddress extends ConstrainedString {
+    private static final Pattern VALID = Pattern.compile("[0-9A-F]{6}");
 
-    @Override
-    public String toString() {
-        return "%06X".formatted(address);
+    public IcaoAddress(String address) {
+        super(VALID, address);
     }
 }

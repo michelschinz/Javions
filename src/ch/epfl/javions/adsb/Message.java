@@ -62,7 +62,7 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
     }
 
     static IcaoAddress icaoAddress(ByteString msg) {
-        return new IcaoAddress(rawIcaoAddress(msg));
+        return new IcaoAddress("%06X".formatted(rawIcaoAddress(msg)));
     }
 
     static Message of(long timeStamp, ByteString bytes) {
