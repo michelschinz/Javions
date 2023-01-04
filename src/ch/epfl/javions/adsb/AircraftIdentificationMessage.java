@@ -13,11 +13,11 @@ public record AircraftIdentificationMessage(
     private static final int CALLSIGN_LENGTH = 8;
     private static final int CALLSIGN_CHAR_BITS = 6;
 
-    public static int category(int typeCode, int capability) {
+    private static int category(int typeCode, int capability) {
         return (0xE - typeCode) << 4 | capability;
     }
 
-    public static String callSign(long payload) {
+    private static String callSign(long payload) {
         var callSignChars = new char[CALLSIGN_LENGTH];
         for (int i = 0; i < CALLSIGN_LENGTH; i += 1) {
             var startBitI = (CALLSIGN_LENGTH - 1 - i) * CALLSIGN_CHAR_BITS;
@@ -28,11 +28,10 @@ public record AircraftIdentificationMessage(
     }
 
     public static AircraftIdentificationMessage of(long timeStamp, ByteString messageData) {
-        var icao = Message.icaoAddress(messageData);
-        var typeCode = Message.rawTypeCode(messageData);
-        var capability = Message.rawCapability(messageData);
-        var category = category(typeCode, capability);
-        var callSign = callSign(Message.payload(messageData));
-        return new AircraftIdentificationMessage(timeStamp, icao, category, callSign);
+        return new AircraftIdentificationMessage(
+                timeStamp,
+                Message.icaoAddress(messageData),
+                category(Message.rawTypeCode(messageData), Message.rawCapability(messageData)),
+                callSign(Message.payload(messageData)));
     }
 }
