@@ -2,17 +2,19 @@ package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
+import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
 public sealed interface Message permits AirbornePositionMessage, AirborneVelocityMessage, AircraftIdentificationMessage {
     int BITS_LONG = 112;
     int BYTES_LONG = BITS_LONG / Byte.SIZE;
 
-    static int rawDownLinkFormat(int firstByte) {
-        return Bits.extractUInt(firstByte, 3, 5);
+    static boolean isExtendedSquitter(int firstByte) {
+        return Bits.extractUInt(firstByte, 3, 5) == 17;
     }
-    static int rawDownLinkFormat(ByteString message) {
-        return rawDownLinkFormat(message.byteAt(0));
+
+    static boolean isExtendedSquitter(ByteString message) {
+        return isExtendedSquitter(message.byteAt(0));
     }
 
     static int rawCapability(ByteString msg) {
@@ -36,7 +38,7 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
     }
 
     static Message of(long timeStamp, ByteString bytes) {
-        if (rawDownLinkFormat(bytes) != 17) return null; // FIXME clean-up
+        Preconditions.checkArgument(isExtendedSquitter(bytes));
 
         return switch (rawTypeCode(bytes)) {
             case 1, 2, 3, 4 -> AircraftIdentificationMessage.of(timeStamp, bytes);

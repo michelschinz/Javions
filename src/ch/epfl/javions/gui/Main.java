@@ -120,7 +120,7 @@ public final class Main extends Application {
             try (var s = Files.newBufferedReader(Path.of(messageFileName))) {
                 s.lines()
                         .map(AvrParser::parseAVR)
-                        .filter(m -> Message.rawDownLinkFormat(m) == 17)
+                        .filter(Message::isExtendedSquitter)
                         .map(m -> Message.of(fakeTimeStamp++, m))
                         .filter(Objects::nonNull)
                         .forEach(m -> {
