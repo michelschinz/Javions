@@ -25,7 +25,7 @@ public final class AdsbDemodulator {
 
     private static final int FIRST_BIT_OFFSET = 1 + PREAMBLE_WIDTH;
 
-    private static final Crc24 crc24 = new Crc24(Crc24.GENERATOR);
+    private static final Crc24 CRC_24 = new Crc24(Crc24.GENERATOR);
 
     private final PowerWindow window;
 
@@ -42,14 +42,14 @@ public final class AdsbDemodulator {
     }
 
     private Optional<Message> frameOfCurrentWindow() {
-        var p0 = preamblePower(0);
-        var p1 = preamblePower(1);
-        var p2 = preamblePower(2);
+        var p0 = totalPower(0, PREAMBLE_PEAKS);
+        var p1 = totalPower(1, PREAMBLE_PEAKS);
+        var p2 = totalPower(2, PREAMBLE_PEAKS);
 
         if (!(p0 < p1 && p1 > p2)) return Optional.empty();
 
         // Check signal/noise ratio
-        var v1 = preambleNoise(0);
+        var v1 = totalPower(0, PREAMBLE_VALLEYS);
         if (p1 < 2 * v1) return Optional.empty();
 
         // Extract first byte, to obtain length
@@ -60,10 +60,10 @@ public final class AdsbDemodulator {
         // Check CRC, fixing one-bit errors
         var frameBytes = new byte[Message.BYTES_LONG];
         frameBytes[0] = (byte) firstByte;
-        for (int i = 1; i < frameBytes.length; i += 1)
+        for (var i = 1; i < frameBytes.length; i += 1)
             frameBytes[i] = (byte) getByte(i);
 
-        return crc24.crc(frameBytes) == 0
+        return CRC_24.crc(frameBytes) == 0
                 ? Optional.ofNullable(Message.of(timeStamp(), ByteString.ofBytes(frameBytes)))
                 : Optional.empty();
     }
@@ -74,7 +74,7 @@ public final class AdsbDemodulator {
 
     private int getByte(int i) {
         var b = 0;
-        for (int j = 0; j < Byte.SIZE; j += 1)
+        for (var j = 0; j < Byte.SIZE; j += 1)
             b = (b << 1) | getBit(i * Byte.SIZE + j);
         return b;
     }
@@ -85,15 +85,9 @@ public final class AdsbDemodulator {
         return p1 < p2 ? 0 : 1;
     }
 
-    private int preamblePower(int offset) {
+    private int totalPower(int base, int[] offsets) {
         var power = 0;
-        for (int o : PREAMBLE_PEAKS) power += window.get(offset + o * PULSE_WIDTH);
-        return power;
-    }
-
-    private int preambleNoise(int offset) {
-        var power = 0;
-        for (int o : PREAMBLE_VALLEYS) power += window.get(offset + o * PULSE_WIDTH);
+        for (var o : offsets) power += window.get(base + o * PULSE_WIDTH);
         return power;
     }
 }
