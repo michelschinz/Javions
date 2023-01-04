@@ -1,4 +1,4 @@
-package ch.epfl.javions;
+package ch.epfl.javions.aircraft;
 
 public enum WakeTurbulenceCategory {
     NONE, LIGHT, MEDIUM, HEAVY;

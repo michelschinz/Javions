@@ -1,6 +1,7 @@
 package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.*;
+import ch.epfl.javions.aircraft.IcaoAddress;
 
 public record AirborneVelocityMessage(
         long timeStamp,

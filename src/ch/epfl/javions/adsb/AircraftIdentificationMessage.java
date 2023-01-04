@@ -2,7 +2,7 @@ package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
-import ch.epfl.javions.IcaoAddress;
+import ch.epfl.javions.aircraft.IcaoAddress;
 
 public record AircraftIdentificationMessage(
         long timeStamp,

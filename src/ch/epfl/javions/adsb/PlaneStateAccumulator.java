@@ -1,9 +1,4 @@
-package ch.epfl.javions;
-
-import ch.epfl.javions.adsb.AirbornePositionMessage;
-import ch.epfl.javions.adsb.AirborneVelocityMessage;
-import ch.epfl.javions.adsb.AircraftIdentificationMessage;
-import ch.epfl.javions.adsb.Message;
+package ch.epfl.javions.adsb;
 
 import java.time.Duration;
 

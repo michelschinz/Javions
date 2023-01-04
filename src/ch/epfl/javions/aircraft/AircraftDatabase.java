@@ -1,6 +1,4 @@
-package ch.epfl.javions.db;
-
-import ch.epfl.javions.*;
+package ch.epfl.javions.aircraft;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

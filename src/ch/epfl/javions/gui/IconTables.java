@@ -1,14 +1,13 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.AircraftDescription;
-import ch.epfl.javions.AircraftTypeDesignator;
-import ch.epfl.javions.WakeTurbulenceCategory;
+import ch.epfl.javions.aircraft.AircraftDescription;
+import ch.epfl.javions.aircraft.AircraftTypeDesignator;
+import ch.epfl.javions.aircraft.WakeTurbulenceCategory;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import static ch.epfl.javions.gui.AircraftIcon.*;
-import static java.util.Map.entry;
 
 public final class IconTables {
     private IconTables() {}

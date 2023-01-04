@@ -2,6 +2,9 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.*;
 import ch.epfl.javions.Units.Angle;
+import ch.epfl.javions.aircraft.AircraftDescription;
+import ch.epfl.javions.aircraft.AircraftTypeDesignator;
+import ch.epfl.javions.aircraft.WakeTurbulenceCategory;
 import ch.epfl.javions.gui.ObservablePlaneState.GeoPosWithAltitude;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;

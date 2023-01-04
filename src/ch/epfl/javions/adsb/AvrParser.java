@@ -1,4 +1,6 @@
-package ch.epfl.javions;
+package ch.epfl.javions.adsb;
+
+import ch.epfl.javions.ByteString;
 
 /**
  * Parser for (long) ADSB frames in AVR format.

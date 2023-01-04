@@ -2,7 +2,7 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
-import ch.epfl.javions.db.AircraftDatabase.AircraftData;
+import ch.epfl.javions.aircraft.AircraftDatabase.AircraftData;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.binding.StringExpression;

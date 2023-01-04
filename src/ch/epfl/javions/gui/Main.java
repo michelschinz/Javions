@@ -1,8 +1,8 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.AvrParser;
+import ch.epfl.javions.adsb.AvrParser;
 import ch.epfl.javions.adsb.Message;
-import ch.epfl.javions.db.AircraftDatabase;
+import ch.epfl.javions.aircraft.AircraftDatabase;
 import ch.epfl.javions.demodulation.AdsbDemodulator;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;

@@ -1,4 +1,4 @@
-package ch.epfl.javions;
+package ch.epfl.javions.adsb;
 
 public enum MessageType {
     UNKNOWN,

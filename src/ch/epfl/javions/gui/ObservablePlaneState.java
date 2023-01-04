@@ -1,9 +1,9 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.javions.GeoPos;
-import ch.epfl.javions.IcaoAddress;
-import ch.epfl.javions.PlaneStateSetter;
-import ch.epfl.javions.db.AircraftDatabase;
+import ch.epfl.javions.aircraft.IcaoAddress;
+import ch.epfl.javions.adsb.PlaneStateSetter;
+import ch.epfl.javions.aircraft.AircraftDatabase;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

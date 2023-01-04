@@ -1,9 +1,9 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.IcaoAddress;
-import ch.epfl.javions.PlaneStateAccumulator;
+import ch.epfl.javions.aircraft.IcaoAddress;
+import ch.epfl.javions.adsb.PlaneStateAccumulator;
 import ch.epfl.javions.adsb.Message;
-import ch.epfl.javions.db.AircraftDatabase;
+import ch.epfl.javions.aircraft.AircraftDatabase;
 import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleLongProperty;
 import javafx.collections.FXCollections;

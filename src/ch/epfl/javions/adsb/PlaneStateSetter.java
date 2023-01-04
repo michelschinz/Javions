@@ -1,4 +1,6 @@
-package ch.epfl.javions;
+package ch.epfl.javions.adsb;
+
+import ch.epfl.javions.GeoPos;
 
 public interface PlaneStateSetter {
     void setLastMessageTimeStampNs(long timeStampNs);

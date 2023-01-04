@@ -2,8 +2,7 @@ package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
-import ch.epfl.javions.IcaoAddress;
-import ch.epfl.javions.MessageType;
+import ch.epfl.javions.aircraft.IcaoAddress;
 
 public sealed interface Message permits AirbornePositionMessage, AirborneVelocityMessage, AircraftIdentificationMessage {
     int BITS_LONG = 112;
