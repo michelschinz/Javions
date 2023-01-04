@@ -24,25 +24,15 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
     }
 
     static long payload(ByteString message) {
-        var payload = 0L;
-        for (int i = 0; i < 7; i += 1) payload = (payload << 8) | message.byteAt(4 + i);
-        return payload;
-    }
-
-    static DownlinkFormat downlinkFormat(ByteString message) {
-        return switch (rawDownLinkFormat(message)) {
-            case 17 -> DownlinkFormat.EXTENDED_SQUITTER;
-            default -> throw new Error();
-        };
+        return message.bytesBetween(4, 11);
     }
 
     static MessageType typeCode(int rawTypeCode) {
         return switch (rawTypeCode) {
             case 1, 2, 3, 4 -> MessageType.AIRCRAFT_IDENTIFICATION;
             case 5, 6, 7, 8 -> MessageType.SURFACE_POSITION;
-            case 9, 10, 11, 12, 13, 14, 15, 16, 17, 18 -> MessageType.AIRBORNE_POSITION;
+            case 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22 -> MessageType.AIRBORNE_POSITION;
             case 19 -> MessageType.AIRBORNE_VELOCITIES;
-            case 20, 21, 22 -> MessageType.AIRBORNE_POSITION;
             case 28 -> MessageType.AIRCRAFT_STATUS;
             case 29 -> MessageType.TARGET_STATE;
             case 31 -> MessageType.AIRCRAFT_OPERATION_STATUS;
@@ -55,9 +45,7 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
     }
 
     static int rawIcaoAddress(ByteString msg) {
-        return msg.byteAt(1) << 16
-               | msg.byteAt(2) << 8
-               | msg.byteAt(3);
+        return (int) msg.bytesBetween(1, 4);
     }
 
     static IcaoAddress icaoAddress(ByteString msg) {

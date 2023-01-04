@@ -41,6 +41,14 @@ public final class ByteString {
         return Byte.toUnsignedInt(bytes[index]);
     }
 
+    public long bytesBetween(int fromIndex, int toIndex) {
+        Preconditions.checkArgument(0 <= fromIndex && fromIndex < toIndex && toIndex <= bytes.length);
+        Preconditions.checkArgument(toIndex - fromIndex <= Long.BYTES);
+        var result = 0L;
+        for (var i = fromIndex; i < toIndex; i += 1) result = (result << Byte.SIZE) | byteAt(i);
+        return result;
+    }
+
     @Override
     public boolean equals(Object o) {
         return (o instanceof ByteString that) && Arrays.equals(this.bytes, that.bytes);
