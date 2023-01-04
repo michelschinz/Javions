@@ -27,11 +27,11 @@ public record AircraftIdentificationMessage(
         return new String(callSignChars).trim();
     }
 
-    public static AircraftIdentificationMessage of(long timeStamp, ByteString messageData) {
+    public static AircraftIdentificationMessage of(long timeStamp, ByteString bytes) {
         return new AircraftIdentificationMessage(
                 timeStamp,
-                Message.icaoAddress(messageData),
-                category(Message.typeCode(messageData), Message.capability(messageData)),
-                callSign(Message.payload(messageData)));
+                Message.icaoAddress(bytes),
+                category(Message.typeCode(bytes), Message.capability(bytes)),
+                callSign(Message.payload(bytes)));
     }
 }

@@ -13,24 +13,24 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
         return Bits.extractUInt(firstByte, 3, 5) == 17;
     }
 
-    static boolean isExtendedSquitter(ByteString message) {
-        return isExtendedSquitter(message.byteAt(0));
+    static boolean isExtendedSquitter(ByteString bytes) {
+        return isExtendedSquitter(bytes.byteAt(0));
     }
 
-    static int capability(ByteString msg) {
-        return Bits.extractUInt(msg.byteAt(4), 0, 3);
+    static int capability(ByteString bytes) {
+        return Bits.extractUInt(bytes.byteAt(4), 0, 3);
     }
 
-    static int typeCode(ByteString msg) {
-        return msg.byteAt(4) >> 3;
+    static int typeCode(ByteString bytes) {
+        return bytes.byteAt(4) >> 3;
     }
 
-    static long payload(ByteString message) {
-        return message.bytesBetween(4, 11);
+    static long payload(ByteString bytes) {
+        return bytes.bytesBetween(4, 11);
     }
 
-    static IcaoAddress icaoAddress(ByteString msg) {
-        return new IcaoAddress("%06X".formatted((int) msg.bytesBetween(1, 4)));
+    static IcaoAddress icaoAddress(ByteString bytes) {
+        return new IcaoAddress("%06X".formatted((int) bytes.bytesBetween(1, 4)));
     }
 
     static Message of(long timeStamp, ByteString bytes) {

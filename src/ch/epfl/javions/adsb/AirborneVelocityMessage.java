@@ -123,13 +123,13 @@ public record AirborneVelocityMessage(
         };
     }
 
-    public static boolean isValid(ByteString message) {
-        var subType = subType(Message.payload(message));
+    public static boolean isValid(ByteString bytes) {
+        var subType = subType(Message.payload(bytes));
         return 1 <= subType && subType <= 4;
     }
 
-    public static AirborneVelocityMessage of(long timeStamp, ByteString message) {
-        var payload = Message.payload(message);
+    public static AirborneVelocityMessage of(long timeStamp, ByteString bytes) {
+        var payload = Message.payload(bytes);
         var subType = subType(payload);
         // TODO messages with invalid subtype probably contain other data nevertheless!
         //   => do not ignore them, but make "velocity" return NaN for example.
@@ -137,7 +137,7 @@ public record AirborneVelocityMessage(
 
         return new AirborneVelocityMessage(
                 timeStamp,
-                Message.icaoAddress(message),
+                Message.icaoAddress(bytes),
                 velocityType(payload),
                 velocity(payload),
                 trackOrHeading(payload));
