@@ -31,7 +31,7 @@ public record AircraftIdentificationMessage(
         return new AircraftIdentificationMessage(
                 timeStamp,
                 Message.icaoAddress(messageData),
-                category(Message.rawTypeCode(messageData), Message.rawCapability(messageData)),
+                category(Message.typeCode(messageData), Message.capability(messageData)),
                 callSign(Message.payload(messageData)));
     }
 }

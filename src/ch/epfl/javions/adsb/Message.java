@@ -17,11 +17,11 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
         return isExtendedSquitter(message.byteAt(0));
     }
 
-    static int rawCapability(ByteString msg) {
+    static int capability(ByteString msg) {
         return Bits.extractUInt(msg.byteAt(4), 0, 3);
     }
 
-    static int rawTypeCode(ByteString msg) {
+    static int typeCode(ByteString msg) {
         return msg.byteAt(4) >> 3;
     }
 
@@ -36,7 +36,7 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
     static Message of(long timeStamp, ByteString bytes) {
         Preconditions.checkArgument(isExtendedSquitter(bytes));
 
-        return switch (rawTypeCode(bytes)) {
+        return switch (typeCode(bytes)) {
             case 1, 2, 3, 4 -> AircraftIdentificationMessage.of(timeStamp, bytes);
             case 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 20, 21, 22 -> AirbornePositionMessage.of(timeStamp, bytes);
             case 19 -> AirborneVelocityMessage.of(timeStamp, bytes);
