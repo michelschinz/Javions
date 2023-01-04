@@ -35,14 +35,13 @@ public record AirbornePositionMessage(
 
     private static double altitude(long payload) {
         var encAltitude = Bits.extractUInt(payload, 36, 12);
-        var q = Bits.extractBit(encAltitude, ALTITUDE_Q_BIT_INDEX);
-        if (q == 0) {
-            // FIXME implement (see https://www.wikiwand.com/en/Gillham_code and http://www.ccsinfo.com/forum/viewtopic.php?p=140960#140960)
-            return Double.NaN;
-        } else {
+        if (Bits.testBit(encAltitude, ALTITUDE_Q_BIT_INDEX)) {
             var altitude = (encAltitude & ALTITUDE_Q_BIT_UPPER_MASK) >> 1
                     | (encAltitude & ALTITUDE_Q_BIT_LOWER_MASK);
             return ALTITUDE_ORIGIN + altitude * ALTITUDE_UNIT;
+        } else {
+            // FIXME implement (see https://www.wikiwand.com/en/Gillham_code and http://www.ccsinfo.com/forum/viewtopic.php?p=140960#140960)
+            return Double.NaN;
         }
     }
 

@@ -13,4 +13,8 @@ public final class Bits {
     public static int extractBit(long value, int bit) {
         return (int) ((value >> bit) & 1);
     }
+
+    public static boolean testBit(long value, int bit) {
+        return extractBit(value, bit) != 0;
+    }
 }

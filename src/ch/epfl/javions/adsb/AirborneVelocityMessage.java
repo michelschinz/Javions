@@ -42,7 +42,7 @@ public record AirborneVelocityMessage(
         assert velocityType(payload) == VelocityType.GROUND;
         var ew = Bits.extractUInt(payload, 21 + 11, 10) - 1;
         // TODO handle the case when there is no data (ew == 0)
-        if (Bits.extractBit(payload, 21 + 21) == 1) ew = -ew;
+        if (Bits.testBit(payload, 21 + 21)) ew = -ew;
         return ew;
     }
 
@@ -50,7 +50,7 @@ public record AirborneVelocityMessage(
         assert velocityType(payload) == VelocityType.GROUND;
         var ns = Bits.extractUInt(payload, 21 + 0, 10) - 1;
         // TODO handle the case when there is no data (ns == 0)
-        if (Bits.extractBit(payload, 21 + 10) == 1) ns = -ns;
+        if (Bits.testBit(payload, 21 + 10)) ns = -ns;
         return ns;
     }
 
