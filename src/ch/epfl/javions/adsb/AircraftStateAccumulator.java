@@ -2,14 +2,14 @@ package ch.epfl.javions.adsb;
 
 import java.time.Duration;
 
-public final class PlaneStateAccumulator {
+public final class AircraftStateAccumulator {
     private static final long MAX_INTER_MESSAGE_NS =
             Duration.ofSeconds(10).toNanos();
 
-    private final PlaneStateSetter stateSetter;
+    private final AircraftStateSetter stateSetter;
     private AirbornePositionMessage lastPositionMessage = null;
 
-    public PlaneStateAccumulator(PlaneStateSetter stateSetter) {
+    public AircraftStateAccumulator(AircraftStateSetter stateSetter) {
         this.stateSetter = stateSetter;
     }
 

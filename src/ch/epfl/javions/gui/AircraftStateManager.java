@@ -1,7 +1,7 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.javions.aircraft.IcaoAddress;
-import ch.epfl.javions.adsb.PlaneStateAccumulator;
+import ch.epfl.javions.adsb.AircraftStateAccumulator;
 import ch.epfl.javions.adsb.Message;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import javafx.beans.property.LongProperty;
@@ -13,18 +13,18 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
 
-public final class PlaneStateManager {
+public final class AircraftStateManager {
     private static final long MAX_INTER_MESSAGE_DELAY =
             Duration.ofMinutes(1).toNanos();
 
     private final AircraftDatabase aircraftDatabase;
-    private final ObservableSet<ObservablePlaneState> states;
-    private final ObservableSet<ObservablePlaneState> unmodifiableStates;
-    private final Map<IcaoAddress, PlaneStateAccumulator> accumulators;
+    private final ObservableSet<ObservableAircraftState> states;
+    private final ObservableSet<ObservableAircraftState> unmodifiableStates;
+    private final Map<IcaoAddress, AircraftStateAccumulator> accumulators;
     private final LongProperty lastMessageTimeStampNsProperty;
 
-    public PlaneStateManager(AircraftDatabase aircraftDatabase) {
-        var states = FXCollections.<ObservablePlaneState>observableSet();
+    public AircraftStateManager(AircraftDatabase aircraftDatabase) {
+        var states = FXCollections.<ObservableAircraftState>observableSet();
         this.aircraftDatabase = aircraftDatabase;
         this.states = states;
         this.unmodifiableStates = FXCollections.unmodifiableObservableSet(states);
@@ -32,7 +32,7 @@ public final class PlaneStateManager {
         this.lastMessageTimeStampNsProperty = new SimpleLongProperty();
     }
 
-    public ObservableSet<ObservablePlaneState> states() {
+    public ObservableSet<ObservableAircraftState> states() {
         return unmodifiableStates;
     }
 
@@ -40,16 +40,16 @@ public final class PlaneStateManager {
         var address = message.icaoAddress();
 
         if (!accumulators.containsKey(address)) {
-            var state = new ObservablePlaneState(address, aircraftDatabase.get(address));
+            var state = new ObservableAircraftState(address, aircraftDatabase.get(address));
             states.add(state);
-            accumulators.put(address, new PlaneStateAccumulator(state));
+            accumulators.put(address, new AircraftStateAccumulator(state));
         }
 
         accumulators.get(address).update(message);
         lastMessageTimeStampNsProperty.set(message.timeStamp());
     }
 
-    // Remove planes for which we didn't get a message recently
+    // Remove aircraft for which we didn't get a message recently
     public void purge() {
         var aircraftIt = states.iterator();
         while (aircraftIt.hasNext()) {

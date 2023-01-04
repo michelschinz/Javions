@@ -43,17 +43,17 @@ public final class Main extends Application {
         var baseMapManager = new BaseMapManager(tileManager, mapParameters);
 
         var messageQueue = new ConcurrentLinkedQueue<Message>();
-        var planeStateManager = new PlaneStateManager(aircraftDatabase);
+        var aircraftStateManager = new AircraftStateManager(aircraftDatabase);
 
-        var selectedAircraftProperty = new SimpleObjectProperty<ObservablePlaneState>();
-        var planeManager = new PlaneManager(mapParameters, planeStateManager.states(), selectedAircraftProperty);
-        var planeTableManager = new PlaneTableManager(planeStateManager.states(), selectedAircraftProperty);
-        planeTableManager.setOnDoubleClick(p -> {
+        var selectedAircraftProperty = new SimpleObjectProperty<ObservableAircraftState>();
+        var aircraftManager = new AircraftManager(mapParameters, aircraftStateManager.states(), selectedAircraftProperty);
+        var aircraftTableManager = new AircraftTableManager(aircraftStateManager.states(), selectedAircraftProperty);
+        aircraftTableManager.setOnDoubleClick(p -> {
             if (p.getPosition() != null) baseMapManager.centerOn(p.getPosition());
         });
 
-        var mapPane = new StackPane(baseMapManager.pane(), planeManager.pane());
-        var mainPane = new SplitPane(mapPane, planeTableManager.pane());
+        var mapPane = new StackPane(baseMapManager.pane(), aircraftManager.pane());
+        var mainPane = new SplitPane(mapPane, aircraftTableManager.pane());
         mainPane.setOrientation(Orientation.VERTICAL);
 
         var scene = new Scene(mainPane);
@@ -72,15 +72,15 @@ public final class Main extends Application {
         messageThread.setDaemon(true);
         messageThread.start();
 
-        var planeAnimationTimer = new AnimationTimer() {
+        var aircraftAnimationTimer = new AnimationTimer() {
             @Override
             public void handle(long now) {
                 while (!messageQueue.isEmpty())
-                    planeStateManager.updateWithMessage(messageQueue.remove());
-                planeStateManager.purge();
+                    aircraftStateManager.updateWithMessage(messageQueue.remove());
+                aircraftStateManager.purge();
             }
         };
-        planeAnimationTimer.start();
+        aircraftAnimationTimer.start();
     }
 
     private static final class AirSpyMessageThread extends Thread {

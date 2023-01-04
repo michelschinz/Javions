@@ -2,7 +2,7 @@ package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.GeoPos;
 
-public interface PlaneStateSetter {
+public interface AircraftStateSetter {
     void setLastMessageTimeStampNs(long timeStampNs);
     void setCategory(int category);
     void setCallSign(String callSign);

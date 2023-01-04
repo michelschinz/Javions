@@ -3,12 +3,12 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.aircraft.AircraftData;
 import ch.epfl.javions.aircraft.IcaoAddress;
-import ch.epfl.javions.adsb.PlaneStateSetter;
+import ch.epfl.javions.adsb.AircraftStateSetter;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
-public final class ObservablePlaneState implements PlaneStateSetter {
+public final class ObservableAircraftState implements AircraftStateSetter {
     public record GeoPosWithAltitude(GeoPos position, double altitude) {}
 
     private final IcaoAddress address;
@@ -23,7 +23,7 @@ public final class ObservablePlaneState implements PlaneStateSetter {
     private final DoubleProperty trackOrHeadingProperty;
     private final AircraftData maybeAircraftData;
 
-    public ObservablePlaneState(IcaoAddress address, AircraftData maybeAircraftData) {
+    public ObservableAircraftState(IcaoAddress address, AircraftData maybeAircraftData) {
         var trajectory = FXCollections.<GeoPosWithAltitude>observableArrayList();
 
         this.address = address;

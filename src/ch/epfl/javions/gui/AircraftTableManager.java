@@ -25,13 +25,13 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 
-public final class PlaneTableManager {
-    private final TableView<ObservablePlaneState> tableView;
+public final class AircraftTableManager {
+    private final TableView<ObservableAircraftState> tableView;
     private final Pane pane;
-    private Consumer<ObservablePlaneState> doubleClickConsumer;
+    private Consumer<ObservableAircraftState> doubleClickConsumer;
 
-    public PlaneTableManager(ObservableSet<ObservablePlaneState> planes,
-                             ObjectProperty<ObservablePlaneState> selectedAddressProperty) {
+    public AircraftTableManager(ObservableSet<ObservableAircraftState> aircraftStates,
+                                ObjectProperty<ObservableAircraftState> selectedAddressProperty) {
         var tableView = createTableView();
         var pane = new BorderPane(tableView);
         pane.getStylesheets().add("table.css");
@@ -46,7 +46,7 @@ public final class PlaneTableManager {
                 doubleClickConsumer.accept(tableView.getSelectionModel().getSelectedItem());
         });
 
-        installListeners(planes);
+        installListeners(aircraftStates);
         selectedAddressProperty.addListener((p, o, n) -> {
             if (!Objects.equals(tableView.getSelectionModel().getSelectedItem(), n))
                 tableView.scrollTo(n);
@@ -55,10 +55,10 @@ public final class PlaneTableManager {
         tableView.getSelectionModel().selectedItemProperty().addListener((p, o, n) -> selectedAddressProperty.set(n));
     }
 
-    private static TableView<ObservablePlaneState> createTableView() {
+    private static TableView<ObservableAircraftState> createTableView() {
         var columns = List.of(
                 newStringColumn("Hex", s -> Bindings.createStringBinding(() -> s.address().toString())),
-                newStringColumn("Vol", ObservablePlaneState::callSignProperty),
+                newStringColumn("Vol", ObservableAircraftState::callSignProperty),
                 newStringColumn("Enregistrement", fixedDataExtractor(aircraftData -> aircraftData.registration().toString())),
                 newStringColumn("Modèle", fixedDataExtractor(AircraftData::model)),
                 newDoubleColumn(
@@ -73,23 +73,23 @@ public final class PlaneTableManager {
                         4),
                 newDoubleColumn(
                         "Altitude (m)",
-                        ObservablePlaneState::altitudeProperty,
+                        ObservableAircraftState::altitudeProperty,
                         DoubleUnaryOperator.identity(),
                         0),
                 newDoubleColumn(
                         "Vitesse (km/h)",
-                        ObservablePlaneState::velocityProperty,
+                        ObservableAircraftState::velocityProperty,
                         Units.converter(Units.Speed.KILOMETERS_PER_HOUR),
                         0));
 
-        var tableView = new TableView<ObservablePlaneState>();
+        var tableView = new TableView<ObservableAircraftState>();
         tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
         tableView.setTableMenuButtonVisible(true);
         tableView.getColumns().setAll(columns);
         return tableView;
     }
 
-    private static Function<ObservablePlaneState, DoubleExpression> lonLatExtractor(ToDoubleFunction<GeoPos> function) {
+    private static Function<ObservableAircraftState, DoubleExpression> lonLatExtractor(ToDoubleFunction<GeoPos> function) {
         return state ->
                 Bindings.createDoubleBinding(() -> {
                             var maybePosition = state.getPosition();
@@ -98,27 +98,27 @@ public final class PlaneTableManager {
                         state.positionProperty());
     }
 
-    private static Function<ObservablePlaneState, StringExpression> fixedDataExtractor(Function<AircraftData, String> f) {
+    private static Function<ObservableAircraftState, StringExpression> fixedDataExtractor(Function<AircraftData, String> f) {
         return state -> {
             var value = f.apply(state.getFixedData());
             return Bindings.createStringBinding(() -> value);
         };
     }
 
-    private static TableColumn<ObservablePlaneState, String> newStringColumn(
+    private static TableColumn<ObservableAircraftState, String> newStringColumn(
             String title,
-            Function<ObservablePlaneState, StringExpression> propertyExtractor) {
-        var column = new TableColumn<ObservablePlaneState, String>(title);
+            Function<ObservableAircraftState, StringExpression> propertyExtractor) {
+        var column = new TableColumn<ObservableAircraftState, String>(title);
         column.setCellValueFactory(f -> propertyExtractor.apply(f.getValue()));
         return column;
     }
 
-    private static TableColumn<ObservablePlaneState, String> newDoubleColumn(
+    private static TableColumn<ObservableAircraftState, String> newDoubleColumn(
             String title,
-            Function<ObservablePlaneState, DoubleExpression> propertyExtractor,
+            Function<ObservableAircraftState, DoubleExpression> propertyExtractor,
             DoubleUnaryOperator valueTransformer,
             int fractionDigits) {
-        var column = new TableColumn<ObservablePlaneState, String>(title);
+        var column = new TableColumn<ObservableAircraftState, String>(title);
 
         // Change cell factory to add "numeric" style class to the cells.
         var originalCellFactory = column.getCellFactory();
@@ -156,8 +156,8 @@ public final class PlaneTableManager {
         }
     }
 
-    private void installListeners(ObservableSet<ObservablePlaneState> planes) {
-        planes.addListener((SetChangeListener<ObservablePlaneState>) c -> {
+    private void installListeners(ObservableSet<ObservableAircraftState> aircraftStates) {
+        aircraftStates.addListener((SetChangeListener<ObservableAircraftState>) c -> {
             var tableItems = tableView.getItems();
             if (c.wasRemoved()) tableItems.remove(c.getElementRemoved());
             if (c.wasAdded()) tableItems.add(c.getElementAdded());
@@ -168,7 +168,7 @@ public final class PlaneTableManager {
         return pane;
     }
 
-    public void setOnDoubleClick(Consumer<ObservablePlaneState> callback) {
+    public void setOnDoubleClick(Consumer<ObservableAircraftState> callback) {
         doubleClickConsumer = callback;
     }
 }

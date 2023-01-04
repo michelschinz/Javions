@@ -19,7 +19,7 @@ public enum AircraftIcon {
     UNKNOWN;
 
     private static String loadSvgPath(String name) {
-        try (var s = PlaneManager.class.getResourceAsStream(name)) {
+        try (var s = AircraftManager.class.getResourceAsStream(name)) {
             if (s == null) throw new Error("Cannot find resource " + name);
             return new String(s.readAllBytes(), StandardCharsets.UTF_8);
         } catch (IOException e) {

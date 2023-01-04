@@ -5,7 +5,7 @@ import ch.epfl.javions.Units.Angle;
 import ch.epfl.javions.aircraft.AircraftDescription;
 import ch.epfl.javions.aircraft.AircraftTypeDesignator;
 import ch.epfl.javions.aircraft.WakeTurbulenceCategory;
-import ch.epfl.javions.gui.ObservablePlaneState.GeoPosWithAltitude;
+import ch.epfl.javions.gui.ObservableAircraftState.GeoPosWithAltitude;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
@@ -27,91 +27,91 @@ import javafx.util.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class PlaneManager {
+public final class AircraftManager {
     private final MapParameters mapParameters;
-    private final ObjectProperty<ObservablePlaneState> selectedPlaneProperty;
+    private final ObjectProperty<ObservableAircraftState> selectedAircraftProperty;
     private final Pane pane;
 
-    public PlaneManager(MapParameters mapParameters,
-                        ObservableSet<ObservablePlaneState> planeStates,
-                        ObjectProperty<ObservablePlaneState> selectedPlaneProperty) {
-        assert planeStates.isEmpty(); // TODO should we instead create the initial nodes?
+    public AircraftManager(MapParameters mapParameters,
+                           ObservableSet<ObservableAircraftState> aircraftStates,
+                           ObjectProperty<ObservableAircraftState> selectedAircraftProperty) {
+        assert aircraftStates.isEmpty(); // TODO should we instead create the initial nodes?
 
         var pane = new Pane();
-        pane.getStylesheets().add("planes.css");
+        pane.getStylesheets().add("aircraft.css");
         pane.setPickOnBounds(false);
 
         this.mapParameters = mapParameters;
-        this.selectedPlaneProperty = selectedPlaneProperty;
+        this.selectedAircraftProperty = selectedAircraftProperty;
         this.pane = pane;
 
-        installHandlers(planeStates);
+        installHandlers(aircraftStates);
     }
 
-    private void installHandlers(ObservableSet<ObservablePlaneState> planeStates) {
-        planeStates.addListener((SetChangeListener<ObservablePlaneState>) change -> {
+    private void installHandlers(ObservableSet<ObservableAircraftState> aircraftStates) {
+        aircraftStates.addListener((SetChangeListener<ObservableAircraftState>) change -> {
             if (change.wasRemoved()) {
                 var idToRemove = change.getElementRemoved().address().toString();
                 pane.getChildren().removeIf(n -> idToRemove.equals(n.getId()));
             }
             if (change.wasAdded())
-                pane.getChildren().add(groupForPlane(change.getElementAdded()));
+                pane.getChildren().add(groupForAircraft(change.getElementAdded()));
         });
     }
 
-    private Node groupForPlane(ObservablePlaneState planeState) {
-        var group = new Group(lineGroupForPlaneTrajectory(planeState), nodeForPlane(planeState));
-        group.setId(planeState.address().toString());
-        group.viewOrderProperty().bind(planeState.altitudeProperty().negate());
+    private Node groupForAircraft(ObservableAircraftState aircraftState) {
+        var group = new Group(lineGroupForAircraftTrajectory(aircraftState), nodeForAircraft(aircraftState));
+        group.setId(aircraftState.address().toString());
+        group.viewOrderProperty().bind(aircraftState.altitudeProperty().negate());
         return group;
     }
 
-    private Node nodeForPlane(ObservablePlaneState planeState) {
-        var address = planeState.address();
-        var planePath = new SVGPath();
-        planePath.getStyleClass().add("plane");
+    private Node nodeForAircraft(ObservableAircraftState aircraftState) {
+        var address = aircraftState.address();
+        var aircraftPath = new SVGPath();
+        aircraftPath.getStyleClass().add("aircraft");
 
-        var data = planeState.getFixedData();
-        planePath.setContent(iconFor(data.typeDesignator(), data.description(), planeState.getCategory(), data.wakeTurbulenceCategory()).svgPath());
+        var data = aircraftState.getFixedData();
+        aircraftPath.setContent(iconFor(data.typeDesignator(), data.description(), aircraftState.getCategory(), data.wakeTurbulenceCategory()).svgPath());
 
-        planePath.fillProperty().bind(Bindings.createObjectBinding(
-                () -> colorForAltitude(planeState.getAltitude()),
-                planeState.altitudeProperty()));
+        aircraftPath.fillProperty().bind(Bindings.createObjectBinding(
+                () -> colorForAltitude(aircraftState.getAltitude()),
+                aircraftState.altitudeProperty()));
 
         Tooltip tip = new Tooltip();
-        tip.textProperty().bind(Bindings.when(planeState.callSignProperty().isEmpty())
+        tip.textProperty().bind(Bindings.when(aircraftState.callSignProperty().isEmpty())
                 .then("(%s)".formatted(address.toString()))
-                .otherwise(planeState.callSignProperty()));
+                .otherwise(aircraftState.callSignProperty()));
         tip.setShowDelay(Duration.ZERO);
         tip.setHideDelay(Duration.seconds(1));
-        Tooltip.install(planePath, tip);
+        Tooltip.install(aircraftPath, tip);
 
-        planePath.layoutXProperty().bind(Bindings.createDoubleBinding(
+        aircraftPath.layoutXProperty().bind(Bindings.createDoubleBinding(
                 () -> {
-                    var pos = planeState.getPosition();
+                    var pos = aircraftState.getPosition();
                     return pos != null
                             ? WebMercator.x(mapParameters.getZoom(), pos.longitude()) - mapParameters.getMinX()
                             : Double.NaN;
                 },
-                planeState.positionProperty(),
+                aircraftState.positionProperty(),
                 mapParameters.zoomProperty(),
                 mapParameters.minXProperty()));
-        planePath.layoutYProperty().bind(Bindings.createDoubleBinding(
+        aircraftPath.layoutYProperty().bind(Bindings.createDoubleBinding(
                 () -> {
-                    var pos = planeState.getPosition();
+                    var pos = aircraftState.getPosition();
                     return pos != null
                             ? WebMercator.y(mapParameters.getZoom(), pos.latitude()) - mapParameters.getMinY()
                             : Double.NaN;
                 },
-                planeState.positionProperty(),
+                aircraftState.positionProperty(),
                 mapParameters.zoomProperty(),
                 mapParameters.minYProperty()));
 
-        planePath.rotateProperty().bind(planeState.trackOrHeadingProperty().multiply(Angle.RADIAN / Angle.DEGREE));
+        aircraftPath.rotateProperty().bind(aircraftState.trackOrHeadingProperty().multiply(Angle.RADIAN / Angle.DEGREE));
 
-        planePath.setOnMouseClicked(e -> selectedPlaneProperty.set(planeState));
+        aircraftPath.setOnMouseClicked(e -> selectedAircraftProperty.set(aircraftState));
 
-        return planePath;
+        return aircraftPath;
     }
 
     private static Color colorForAltitude(double altitude) {
@@ -128,18 +128,18 @@ public final class PlaneManager {
         return IconTables.iconFor(typeDesignator, typeDescription, category, wtc);
     }
 
-    private Group lineGroupForPlaneTrajectory(ObservablePlaneState planeState) {
+    private Group lineGroupForAircraftTrajectory(ObservableAircraftState aircraftState) {
         var lineGroup = new Group();
 
-        planeState.trajectory().addListener((InvalidationListener) c ->
-                rebuildTrajectory(lineGroup, mapParameters.getZoom(), planeState.trajectory()));
+        aircraftState.trajectory().addListener((InvalidationListener) c ->
+                rebuildTrajectory(lineGroup, mapParameters.getZoom(), aircraftState.trajectory()));
         mapParameters.zoomProperty().addListener((p, o, n) ->
-                rebuildTrajectory(lineGroup, n.intValue(), planeState.trajectory()));
+                rebuildTrajectory(lineGroup, n.intValue(), aircraftState.trajectory()));
 
         lineGroup.layoutXProperty().bind(mapParameters.minXProperty().negate());
         lineGroup.layoutYProperty().bind(mapParameters.minYProperty().negate());
 
-        lineGroup.visibleProperty().bind(selectedPlaneProperty.isEqualTo(planeState));
+        lineGroup.visibleProperty().bind(selectedAircraftProperty.isEqualTo(aircraftState));
 
         lineGroup.getStyleClass().add("trajectory");
 
