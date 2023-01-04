@@ -14,8 +14,11 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.io.EOFException;
+import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
@@ -29,12 +32,12 @@ public final class Main extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) throws IOException {
-        var basePath = Path.of("/Users/michelschinz/local/ppo/23/javions");
-        var cacheBasePath = basePath.resolve("osm-cache");
-        var dbBasePath = basePath.resolve("db");
+    public void start(Stage primaryStage) throws Exception {
+        var cacheBasePath = Path.of("/Users/michelschinz/local/ppo/23/javions/osm-cache");
+        var dbResource = getClass().getResource("/aircraft.zip");
+        assert dbResource != null;
 
-        var aircraftDatabase = new AircraftDatabase(dbBasePath.resolve("aircraft.zip").toFile());
+        var aircraftDatabase = new AircraftDatabase(new File(dbResource.toURI()));
 
         var tileManager = new TileManager(cacheBasePath, OSM_TILE_SERVER);
         var mapParameters = new MapParameters(543_200, 370_650, 12);
