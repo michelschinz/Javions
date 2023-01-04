@@ -33,7 +33,7 @@ public final class AdsbDemodulator {
     }
 
     public Message nextMessage() throws IOException {
-        if (window.available() < 0) throw new EOFException();
+        if (window.available() < 0) return null;
 
         var message = (Message) null;
         while ((message = currentMessage()) == null) window.advance();
