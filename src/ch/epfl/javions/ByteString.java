@@ -25,10 +25,6 @@ public final class ByteString {
         return new ByteString(bytes.clone());
     }
 
-    public static ByteString ofBytes(byte[] bytes, int fromIndex, int toIndex) {
-        return new ByteString(Arrays.copyOfRange(bytes, fromIndex, toIndex));
-    }
-
     private ByteString(byte[] bytes) {
         this.bytes = bytes;
     }
