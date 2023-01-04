@@ -7,7 +7,6 @@ import ch.epfl.javions.adsb.Message;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Optional;
 
 public final class AdsbDemodulator {
     // Number of samples per pulse (half bit, i.e. half a microsecond).
@@ -33,29 +32,33 @@ public final class AdsbDemodulator {
         this.window = new PowerWindow(samplesStream, LONG_MESSAGE_WIDTH);
     }
 
-    public Optional<Message> nextFrame() throws IOException {
+    public Message nextMessage() throws IOException {
         if (window.available() < 0) throw new EOFException();
 
-        var maybeFrame = frameOfCurrentWindow();
-        window.advanceBy(maybeFrame.isPresent() ? LONG_MESSAGE_WIDTH : 1);
-        return maybeFrame;
+        var message = (Message) null;
+        while ((message = currentMessage()) == null) window.advance();
+        window.advanceBy(LONG_MESSAGE_WIDTH);
+        return message;
     }
 
-    private Optional<Message> frameOfCurrentWindow() {
+    /**
+     * Returns the message at the current position of the window, or null if there is no message.
+     */
+    private Message currentMessage() {
         var p0 = totalPower(0, PREAMBLE_PEAKS);
         var p1 = totalPower(1, PREAMBLE_PEAKS);
         var p2 = totalPower(2, PREAMBLE_PEAKS);
 
-        if (!(p0 < p1 && p1 > p2)) return Optional.empty();
+        if (!(p0 < p1 && p1 > p2)) return null;
 
         // Check signal/noise ratio
         var v1 = totalPower(0, PREAMBLE_VALLEYS);
-        if (p1 < 2 * v1) return Optional.empty();
+        if (p1 < 2 * v1) return null;
 
         // Extract first byte, to obtain length
         var firstByte = getByte(0);
         var df = Message.rawDownLinkFormat(firstByte);
-        if (df != 17) return Optional.empty();
+        if (df != 17) return null;
 
         // Check CRC, fixing one-bit errors
         var frameBytes = new byte[Message.BYTES_LONG];
@@ -64,8 +67,8 @@ public final class AdsbDemodulator {
             frameBytes[i] = (byte) getByte(i);
 
         return CRC_24.crc(frameBytes) == 0
-                ? Optional.ofNullable(Message.of(timeStamp(), ByteString.ofBytes(frameBytes)))
-                : Optional.empty();
+                ? Message.of(timeStamp(), ByteString.ofBytes(frameBytes))
+                : null;
     }
 
     private long timeStamp() {

@@ -94,7 +94,7 @@ public final class Main extends Application {
         public void run() {
             try {
                 var demodulator = new AdsbDemodulator(System.in);
-                while (true) demodulator.nextFrame().ifPresent(messages::add);
+                while (true) messages.add(demodulator.nextMessage());
             } catch (EOFException e) {
                 // Nothing to do.
             } catch (IOException e) {
