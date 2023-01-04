@@ -67,14 +67,6 @@ public final class Crc24 {
         return crc(table, message);
     }
 
-    public int crc(ByteString byteString) {
-        var crc = 0;
-        for (int i = 0; i < byteString.size(); i += 1)
-            crc = (crc << 8) ^ table[((crc >> 16) ^ byteString.byteAt(i)) & 0xFF];
-        return crc & MASK_LSBS_24;
-
-    }
-
     public int findOneBitError(int invalidCrc) {
         var i = Arrays.binarySearch(errorTable[0], invalidCrc);
         return i >= 0 ? errorTable[1][i] : -1;
