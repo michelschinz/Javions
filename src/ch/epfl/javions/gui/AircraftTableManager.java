@@ -59,7 +59,7 @@ public final class AircraftTableManager {
         var columns = List.of(
                 newStringColumn("Hex", s -> Bindings.createStringBinding(() -> s.address().toString())),
                 newStringColumn("Vol", ObservableAircraftState::callSignProperty),
-                newStringColumn("Enregistrement", fixedDataExtractor(aircraftData -> aircraftData.registration().toString())),
+                newStringColumn("Immatriculation", fixedDataExtractor(aircraftData -> aircraftData.registration().toString())),
                 newStringColumn("Modèle", fixedDataExtractor(AircraftData::model)),
                 newDoubleColumn(
                         "Longitude (°)",
