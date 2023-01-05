@@ -2,9 +2,6 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.*;
 import ch.epfl.javions.Units.Angle;
-import ch.epfl.javions.aircraft.AircraftDescription;
-import ch.epfl.javions.aircraft.AircraftTypeDesignator;
-import ch.epfl.javions.aircraft.WakeTurbulenceCategory;
 import ch.epfl.javions.gui.ObservableAircraftState.GeoPosWithAltitude;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
@@ -71,8 +68,16 @@ public final class AircraftManager {
         var aircraftPath = new SVGPath();
         aircraftPath.getStyleClass().add("aircraft");
 
-        var data = aircraftState.getFixedData();
-        aircraftPath.setContent(iconFor(data.typeDesignator(), data.description(), aircraftState.getCategory(), data.wakeTurbulenceCategory()).svgPath());
+        // TODO the category can change, we should observe it!
+        // TODO should the designator be valid (i.e. non-empty)?
+        var aircraftIcon = aircraftState.getFixedData()
+                .map(fixedData -> IconTables.iconFor(
+                        fixedData.typeDesignator(),
+                        fixedData.description(),
+                        aircraftState.getCategory(),
+                        fixedData.wakeTurbulenceCategory()))
+                .orElse(AircraftIcon.UNKNOWN);
+        aircraftPath.setContent(aircraftIcon.svgPath());
 
         aircraftPath.fillProperty().bind(Bindings.createObjectBinding(
                 () -> colorForAltitude(aircraftState.getAltitude()),
@@ -118,14 +123,6 @@ public final class AircraftManager {
         // FIXME improve (and avoid the arbitrary constant)
         var scaledAltitude = altitude / (11_000d * Units.Distance.METER);
         return ColorRamp.PLASMA.at(Math.pow(scaledAltitude, 1d / 3d));
-    }
-
-    private AircraftIcon iconFor(AircraftTypeDesignator typeDesignator,
-                                 AircraftDescription typeDescription,
-                                 int category,
-                                 WakeTurbulenceCategory wtc) {
-        // TODO should the designator be valid (i.e. non-empty)?
-        return IconTables.iconFor(typeDesignator, typeDescription, category, wtc);
     }
 
     private Group lineGroupForAircraftTrajectory(ObservableAircraftState aircraftState) {

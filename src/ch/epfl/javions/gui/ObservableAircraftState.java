@@ -8,6 +8,8 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.util.Optional;
+
 public final class ObservableAircraftState implements AircraftStateSetter {
     public record GeoPosWithAltitude(GeoPos position, double altitude) {}
 
@@ -21,9 +23,9 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final DoubleProperty altitudeProperty;
     private final DoubleProperty velocityProperty;
     private final DoubleProperty trackOrHeadingProperty;
-    private final AircraftData maybeAircraftData;
+    private final Optional<AircraftData> maybeAircraftData;
 
-    public ObservableAircraftState(IcaoAddress address, AircraftData maybeAircraftData) {
+    public ObservableAircraftState(IcaoAddress address, Optional<AircraftData> maybeAircraftData) {
         var trajectory = FXCollections.<GeoPosWithAltitude>observableArrayList();
 
         this.address = address;
@@ -56,7 +58,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         lastMessageTimeStampNsProperty.set(timeStampNs);
     }
 
-    public AircraftData getFixedData() {
+    public Optional<AircraftData> getFixedData() {
         return maybeAircraftData;
     }
 

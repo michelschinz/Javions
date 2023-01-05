@@ -6,8 +6,8 @@ import java.util.regex.Pattern;
 public abstract class ConstrainedString {
     private final String string;
 
-    protected ConstrainedString(Pattern pattern, String string) {
-        Preconditions.checkArgument(pattern.matcher(string).matches());
+    protected ConstrainedString(boolean allowEmpty, Pattern pattern, String string) {
+        Preconditions.checkArgument((allowEmpty && string.isEmpty()) || pattern.matcher(string).matches());
         this.string = string.intern();
     }
 

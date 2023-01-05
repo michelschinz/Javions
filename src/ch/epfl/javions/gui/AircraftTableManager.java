@@ -20,6 +20,7 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -59,7 +60,7 @@ public final class AircraftTableManager {
         var columns = List.of(
                 newStringColumn("Hex", s -> Bindings.createStringBinding(() -> s.address().toString())),
                 newStringColumn("Vol", ObservableAircraftState::callSignProperty),
-                newStringColumn("Immatriculation", fixedDataExtractor(aircraftData -> aircraftData.registration().toString())),
+                newStringColumn("Immatriculation", fixedDataExtractor(AircraftData::registration)),
                 newStringColumn("Modèle", fixedDataExtractor(AircraftData::model)),
                 newDoubleColumn(
                         "Longitude (°)",
@@ -98,10 +99,13 @@ public final class AircraftTableManager {
                         state.positionProperty());
     }
 
-    private static Function<ObservableAircraftState, StringExpression> fixedDataExtractor(Function<AircraftData, String> f) {
+    private static <T> Function<ObservableAircraftState, StringExpression> fixedDataExtractor(Function<AircraftData, T> f) {
         return state -> {
-            var value = f.apply(state.getFixedData());
-            return Bindings.createStringBinding(() -> value);
+            var string = state.getFixedData()
+                    .map(f)
+                    .map(Object::toString)
+                    .orElse("");
+            return Bindings.createStringBinding(() -> string);
         };
     }
 

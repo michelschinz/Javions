@@ -2,6 +2,7 @@ package ch.epfl.javions.aircraft;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.zip.ZipFile;
 
@@ -25,7 +26,7 @@ public final class AircraftDatabase {
         this.dbFile = dbFile;
     }
 
-    public AircraftData get(IcaoAddress address) {
+    public Optional<AircraftData> get(IcaoAddress address) {
         try {
             try (var zipFile = new ZipFile(dbFile);
                  var entryStream = zipFile.getInputStream(zipFile.getEntry(entryName(address)))) {
@@ -33,8 +34,7 @@ public final class AircraftDatabase {
                 return reader.lines()
                         .dropWhile(l -> address.toString().compareTo(l) > 0)
                         .findFirst()
-                        .map(AircraftDatabase::parseLine)
-                        .orElse(AircraftData.EMPTY);
+                        .map(AircraftDatabase::parseLine);
             }
         } catch (IOException e) {
             throw new UncheckedIOException(e);
