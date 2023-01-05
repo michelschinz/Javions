@@ -71,7 +71,7 @@ public final class AircraftManager {
         // TODO the category can change, we should observe it!
         // TODO should the designator be valid (i.e. non-empty)?
         var aircraftIcon = aircraftState.getFixedData()
-                .map(fixedData -> IconTables.iconFor(
+                .map(fixedData -> AircraftIcon.iconFor(
                         fixedData.typeDesignator(),
                         fixedData.description(),
                         aircraftState.getCategory(),
