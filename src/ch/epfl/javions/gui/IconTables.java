@@ -7,6 +7,7 @@ import ch.epfl.javions.aircraft.WakeTurbulenceCategory;
 import java.util.HashMap;
 import java.util.Map;
 
+import static ch.epfl.javions.aircraft.WakeTurbulenceCategory.HEAVY;
 import static ch.epfl.javions.gui.AircraftIcon.*;
 
 public final class IconTables {
@@ -262,45 +263,29 @@ public final class IconTables {
                                        AircraftDescription typeDescription,
                                        int category,
                                        WakeTurbulenceCategory wakeTurbulenceCategory) {
-        var maybeIcon = TYPE_DESIGNATOR_TABLE.get(typeDesignator);
-        if (maybeIcon != null) return maybeIcon;
+        var maybeDesignatorIcon = TYPE_DESIGNATOR_TABLE.get(typeDesignator);
+        if (maybeDesignatorIcon != null) return maybeDesignatorIcon;
 
         var description = typeDescription.toString();
         if (description.startsWith("H")) return HELICOPTER;
 
-        switch (description) {
-            case "L1P", "L1T" -> {
-                return CESSNA;
-            }
-            case "L1J" -> {
-                return HI_PERF;
-            }
-            case "L2P" -> {
-                return TWIN_SMALL;
-            }
-            case "L2T" -> {
-                return TWIN_LARGE;
-            }
-            case "L2J" -> {
-                switch (wakeTurbulenceCategory) {
-                    case LIGHT -> {
-                        return JET_SWEPT;
-                    }
-                    case MEDIUM -> {
-                        return AIRLINER;
-                    }
-                    case HEAVY -> {
-                        return HEAVY_2E;
-                    }
-                }
-            }
-            case "L4T" -> {
-                return HEAVY_4E;
-            }
-            case "L4J" -> {
-                if (wakeTurbulenceCategory == WakeTurbulenceCategory.HEAVY) return HEAVY_4E;
-            }
-        }
+        var maybeDescriptionIcon = switch (description) {
+            case "L1P", "L1T" -> CESSNA;
+            case "L1J" -> HI_PERF;
+            case "L2P" -> TWIN_SMALL;
+            case "L2T" -> TWIN_LARGE;
+            case "L2J" -> switch (wakeTurbulenceCategory) {
+                case LIGHT -> JET_SWEPT;
+                case MEDIUM -> AIRLINER;
+                case HEAVY -> HEAVY_2E;
+                default -> null;
+            };
+            case "L4T" -> HEAVY_4E;
+            case "L4J" -> wakeTurbulenceCategory == HEAVY ? HEAVY_4E : null;
+            default -> null;
+        };
+
+        if (maybeDescriptionIcon != null) return maybeDescriptionIcon;
 
         return switch (category) {
             case 0xA1, 0xB1, 0xB4 -> CESSNA;
