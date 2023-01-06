@@ -9,12 +9,12 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
     int BITS_LONG = 112;
     int BYTES_LONG = BITS_LONG / Byte.SIZE;
 
-    static boolean isExtendedSquitter(int firstByte) {
-        return Bits.extractUInt(firstByte, 3, 5) == 17;
+    static int byteLength(int firstByte) {
+        return downLinkFormat(firstByte) == 17 ? BYTES_LONG : 0;
     }
 
-    static boolean isExtendedSquitter(ByteString bytes) {
-        return isExtendedSquitter(bytes.byteAt(0));
+    static int downLinkFormat(int firstByte) {
+        return Bits.extractUInt(firstByte, 3, 5);
     }
 
     static int capability(ByteString bytes) {
@@ -34,7 +34,7 @@ public sealed interface Message permits AirbornePositionMessage, AirborneVelocit
     }
 
     static Message of(long timeStamp, ByteString bytes) {
-        Preconditions.checkArgument(isExtendedSquitter(bytes));
+        Preconditions.checkArgument(byteLength(bytes.byteAt(0)) > 0);
 
         return switch (typeCode(bytes)) {
             case 1, 2, 3, 4 -> AircraftIdentificationMessage.of(timeStamp, bytes);

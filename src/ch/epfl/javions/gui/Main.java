@@ -122,7 +122,7 @@ public final class Main extends Application {
             try (var s = Files.newBufferedReader(Path.of(messageFileName))) {
                 s.lines()
                         .map(AvrParser::parseAVR)
-                        .filter(Message::isExtendedSquitter)
+                        .filter(m -> Message.byteLength(m.byteAt(0)) > 0)
                         .map(m -> Message.of(fakeTimeStamp++, m))
                         .filter(Objects::nonNull)
                         .forEach(m -> {

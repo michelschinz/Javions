@@ -59,12 +59,14 @@ public final class AdsbDemodulator {
 
         // Extract first byte, to obtain length
         var firstByte = getByte(0);
-        if (!Message.isExtendedSquitter(firstByte)) return null;
+        var length = Message.byteLength(firstByte);
+        if (length == 0) return null;
 
-        // Check CRC, fixing one-bit errors
-        var frameBytes = new byte[Message.BYTES_LONG];
+        // Check CRC
+        // TODO fix one-bit errors
+        var frameBytes = new byte[length];
         frameBytes[0] = (byte) firstByte;
-        for (var i = 1; i < frameBytes.length; i += 1)
+        for (var i = 1; i < length; i += 1)
             frameBytes[i] = (byte) getByte(i);
 
         return CRC_24.crc(frameBytes) == 0
