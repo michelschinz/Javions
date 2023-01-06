@@ -21,7 +21,7 @@ public final class AircraftStateManager {
     private final ObservableSet<ObservableAircraftState> states;
     private final ObservableSet<ObservableAircraftState> unmodifiableStates;
     private final Map<IcaoAddress, AircraftStateAccumulator> accumulators;
-    private final LongProperty lastMessageTimeStampNsProperty;
+    private long lastMessageTimeStampNs;
 
     public AircraftStateManager(AircraftDatabase aircraftDatabase) {
         var states = FXCollections.<ObservableAircraftState>observableSet();
@@ -29,7 +29,7 @@ public final class AircraftStateManager {
         this.states = states;
         this.unmodifiableStates = FXCollections.unmodifiableObservableSet(states);
         this.accumulators = new HashMap<>();
-        this.lastMessageTimeStampNsProperty = new SimpleLongProperty();
+        this.lastMessageTimeStampNs = 0L;
     }
 
     public ObservableSet<ObservableAircraftState> states() {
@@ -46,7 +46,7 @@ public final class AircraftStateManager {
         }
 
         accumulators.get(address).update(message);
-        lastMessageTimeStampNsProperty.set(message.timeStamp());
+        lastMessageTimeStampNs = message.timeStamp();
     }
 
     // Remove aircraft for which we didn't get a message recently
@@ -54,7 +54,7 @@ public final class AircraftStateManager {
         var aircraftIt = states.iterator();
         while (aircraftIt.hasNext()) {
             var state = aircraftIt.next();
-            var dT = lastMessageTimeStampNsProperty.get() - state.getLastMessageTimeStampNs();
+            var dT = lastMessageTimeStampNs - state.getLastMessageTimeStampNs();
             if (dT > MAX_INTER_MESSAGE_DELAY) {
                 aircraftIt.remove();
                 accumulators.remove(state.address());
