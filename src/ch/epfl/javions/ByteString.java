@@ -2,6 +2,7 @@ package ch.epfl.javions;
 
 import java.util.Arrays;
 import java.util.HexFormat;
+import java.util.Objects;
 
 /**
  * An immutable byte string.
@@ -38,7 +39,7 @@ public final class ByteString {
     }
 
     public long bytesBetween(int fromIndex, int toIndex) {
-        Preconditions.checkArgument(0 <= fromIndex && fromIndex < toIndex && toIndex <= bytes.length);
+        Objects.checkFromToIndex(fromIndex, toIndex, bytes.length);
         Preconditions.checkArgument(toIndex - fromIndex <= Long.BYTES);
         var result = 0L;
         for (var i = fromIndex; i < toIndex; i += 1) result = (result << Byte.SIZE) | byteAt(i);

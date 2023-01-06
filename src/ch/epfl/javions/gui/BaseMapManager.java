@@ -11,6 +11,7 @@ import javafx.scene.canvas.Canvas;
 import javafx.scene.layout.Pane;
 
 import java.io.IOException;
+import java.util.Objects;
 
 import static ch.epfl.javions.gui.TileManager.TILE_SIZE;
 
@@ -27,8 +28,8 @@ public final class BaseMapManager {
         var canvas = new Canvas();
         var pane = new Pane(canvas);
 
-        this.tileManager = tileManager;
-        this.mapParameters = mapParameters;
+        this.tileManager = Objects.requireNonNull(tileManager);
+        this.mapParameters = Objects.requireNonNull(mapParameters);
         this.canvas = canvas;
         this.pane = pane;
 

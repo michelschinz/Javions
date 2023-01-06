@@ -1,7 +1,10 @@
 package ch.epfl.javions.demodulation;
 
+import ch.epfl.javions.Preconditions;
+
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 
 public final class PowerWindow {
     private static final int CHUNK_SIZE = 1 << 16;
@@ -14,7 +17,7 @@ public final class PowerWindow {
     private int available;
 
     public PowerWindow(InputStream stream, int windowSize) throws IOException {
-        assert 0 < windowSize && windowSize <= CHUNK_SIZE;
+        Preconditions.checkArgument(0 < windowSize && windowSize <= CHUNK_SIZE);
 
         var powerComputer = new PowerComputer(stream, CHUNK_SIZE);
         var chunks = new int[2][CHUNK_SIZE];
@@ -37,8 +40,7 @@ public final class PowerWindow {
     }
 
     public int get(int i) {
-        assert 0 <= i && i < available;
-        var j = headIndex + i;
+        var j = headIndex + Objects.checkIndex(i, available);
         return chunks[j / CHUNK_SIZE][j % CHUNK_SIZE];
     }
 
@@ -62,7 +64,7 @@ public final class PowerWindow {
     }
 
     public void advanceBy(int offset) throws IOException {
-        assert 0 <= offset;
+        Preconditions.checkArgument(offset >= 0);
         // TODO optimize?
         for (var i = 0; i < offset; i += 1) advance();
     }

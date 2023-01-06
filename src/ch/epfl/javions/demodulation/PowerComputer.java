@@ -1,5 +1,7 @@
 package ch.epfl.javions.demodulation;
 
+import ch.epfl.javions.Preconditions;
+
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -16,8 +18,7 @@ public final class PowerComputer {
 
     // chunkSize must be a multiple of FILTER_SIZE (4)
     public PowerComputer(InputStream stream, int chunkSize) {
-        assert 0 < chunkSize;
-        assert chunkSize % FILTER_SIZE == 0;
+        Preconditions.checkArgument(chunkSize > 0 && chunkSize % FILTER_SIZE == 0);
         var samplesChunkSize = 2 * chunkSize;
 
         this.chunkSize = chunkSize;
@@ -28,7 +29,8 @@ public final class PowerComputer {
     }
 
     public int readChunk(int[] chunk) throws IOException {
-        assert chunk.length == chunkSize;
+        Preconditions.checkArgument(chunk.length == chunkSize);
+
         var samplesRead = samplesDecoder.readChunk(samplesChunk);
         var i = 0;
         while (i < chunkSize) {

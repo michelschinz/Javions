@@ -15,16 +15,17 @@ public final class BitUnpacker<T extends Enum<T>> {
 
     @SafeVarargs
     public BitUnpacker(Field<T>... fields) {
+        Preconditions.checkArgument(fields.length > 0);
         var firstBit = new byte[fields.length + 1];
 
         var start = 0;
         for (int i = 0; i < fields.length; i++) {
             var field = fields[i];
-            if (field.label().ordinal() != i) throw new IllegalArgumentException();
+            Preconditions.checkArgument(field.label().ordinal() == i);
             firstBit[i] = (byte) start;
             start += field.size();
-            if (start > Long.SIZE) throw new IllegalArgumentException();
         }
+        Preconditions.checkArgument(start <= Long.SIZE);
         firstBit[fields.length] = (byte) start;
 
         this.firstBit = firstBit;

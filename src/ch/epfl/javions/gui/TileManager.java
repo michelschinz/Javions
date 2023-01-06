@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public final class TileManager {
     public static final int TILE_SIZE = 256;
@@ -44,8 +45,8 @@ public final class TileManager {
     private final Map<TileId, Image> cache;
 
     public TileManager(Path cacheBasePath, String tileServerHost) {
-        this.cacheBasePath = cacheBasePath;
-        this.tileServerHost = tileServerHost;
+        this.cacheBasePath = Objects.requireNonNull(cacheBasePath);
+        this.tileServerHost = Objects.requireNonNull(tileServerHost);
         this.cache = new LinkedHashMap<>(MAX_CACHE_SIZE, 0.75f, true);
     }
 

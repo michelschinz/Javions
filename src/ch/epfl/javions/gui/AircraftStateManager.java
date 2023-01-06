@@ -12,6 +12,7 @@ import javafx.collections.ObservableSet;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 public final class AircraftStateManager {
     private static final long MAX_INTER_MESSAGE_DELAY =
@@ -25,7 +26,7 @@ public final class AircraftStateManager {
 
     public AircraftStateManager(AircraftDatabase aircraftDatabase) {
         var states = FXCollections.<ObservableAircraftState>observableSet();
-        this.aircraftDatabase = aircraftDatabase;
+        this.aircraftDatabase = Objects.requireNonNull(aircraftDatabase);
         this.states = states;
         this.unmodifiableStates = FXCollections.unmodifiableObservableSet(states);
         this.accumulators = new HashMap<>();
