@@ -63,7 +63,7 @@ public final class TileManager {
         if (!Files.exists(imagePath)) {
             Files.createDirectories(imagePath.getParent());
             var connection = tileId.url(tileServerHost).openConnection();
-            connection.setRequestProperty("User-Agent", "JaVelo");
+            connection.setRequestProperty("User-Agent", "Javions");
             try (var inStream = connection.getInputStream();
                  var outStream = new FileOutputStream(imagePath.toFile())) {
                 inStream.transferTo(outStream);
