@@ -87,6 +87,7 @@ public final class Main extends Application {
         private final ConcurrentLinkedQueue<Message> messages;
 
         public AirSpyMessageThread(ConcurrentLinkedQueue<Message> messages) {
+            super("AirSpyMessageThread");
             this.messages = messages;
         }
 
@@ -111,6 +112,7 @@ public final class Main extends Application {
         private long fakeTimeStamp = 0L;
 
         public AvrMessageThread(String messageFileName, ConcurrentLinkedQueue<Message> messageQueue) {
+            super("AvrMessageThread");
             this.messageFileName = messageFileName;
             this.messageQueue = messageQueue;
         }
