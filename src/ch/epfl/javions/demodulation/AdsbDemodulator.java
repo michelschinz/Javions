@@ -23,7 +23,7 @@ public final class AdsbDemodulator {
 
     private static final int FIRST_BIT_OFFSET = 1 + PREAMBLE_WIDTH;
 
-    private static final Crc24 CRC_24 = new Crc24(Crc24.GENERATOR);
+    private static final Crc24 CRC_24 = new Crc24(Crc24.GENERATOR, Message.BYTES_LONG);
 
     private final PowerWindow window;
 

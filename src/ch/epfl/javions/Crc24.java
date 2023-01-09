@@ -12,9 +12,9 @@ public final class Crc24 {
     private final int[] table;
     private final int[][] errorTable;
 
-    public Crc24(int generator) {
+    public Crc24(int generator, int maxMessageBytes) {
         var crcTable = buildTable(generator);
-        var errorTable = buildErrorTable(crcTable);
+        var errorTable = buildErrorTable(crcTable, maxMessageBytes);
 
         this.table = crcTable;
         this.errorTable = errorTable;
@@ -33,10 +33,10 @@ public final class Crc24 {
         return table;
     }
 
-    private static int[][] buildErrorTable(int[] crcTable) {
+    private static int[][] buildErrorTable(int[] crcTable, int maxMessageBytes) {
         record CrcAndIndex(int crc, int index) { }
 
-        var msg = new byte[112 / Byte.SIZE];
+        var msg = new byte[maxMessageBytes];
         var table = new CrcAndIndex[msg.length * Byte.SIZE];
         var i = 0;
         for (var byteIndex = 0; byteIndex < msg.length; byteIndex += 1) {
