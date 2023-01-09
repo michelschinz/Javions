@@ -63,15 +63,21 @@ public final class AdsbDemodulator {
         if (length == 0) return null;
 
         // Check CRC
-        // TODO fix one-bit errors
         var frameBytes = new byte[length];
         frameBytes[0] = (byte) firstByte;
         for (var i = 1; i < length; i += 1)
             frameBytes[i] = (byte) getByte(i);
 
-        return CRC_24.crc(frameBytes) == 0
-                ? Message.of(timeStamp(), ByteString.ofBytes(frameBytes))
-                : null;
+        var crc = CRC_24.crc(frameBytes);
+        if (crc == 0) return Message.of(timeStamp(), ByteString.ofBytes(frameBytes));
+
+        // If the CRC can be fixed by flipping one bit, do it
+        var maybeIncorrectBit = CRC_24.findOneBitError(crc);
+        if (maybeIncorrectBit == -1) return null;
+
+        frameBytes[maybeIncorrectBit / 8] ^= (1 << 7) >> (maybeIncorrectBit % 8);
+        assert CRC_24.crc(frameBytes) == 0;
+        return Message.of(timeStamp(), ByteString.ofBytes(frameBytes));
     }
 
     private long timeStamp() {
