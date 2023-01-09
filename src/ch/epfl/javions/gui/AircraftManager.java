@@ -1,25 +1,31 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.*;
+import ch.epfl.javions.GeoPos;
+import ch.epfl.javions.Units;
 import ch.epfl.javions.Units.Angle;
+import ch.epfl.javions.WebMercator;
+import ch.epfl.javions.aircraft.AircraftData;
 import ch.epfl.javions.gui.ObservableAircraftState.GeoPosWithAltitude;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.binding.DoubleExpression;
+import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.geometry.Point2D;
 import javafx.scene.Group;
 import javafx.scene.Node;
-import javafx.scene.control.Tooltip;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.paint.CycleMethod;
 import javafx.scene.paint.LinearGradient;
 import javafx.scene.paint.Stop;
 import javafx.scene.shape.Line;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.SVGPath;
-import javafx.util.Duration;
+import javafx.scene.text.Text;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -57,14 +63,33 @@ public final class AircraftManager {
     }
 
     private Node groupForAircraft(ObservableAircraftState aircraftState) {
-        var group = new Group(lineGroupForAircraftTrajectory(aircraftState), nodeForAircraft(aircraftState));
+        var layoutX = Bindings.createDoubleBinding(() ->
+                        aircraftState.getPosition() != null
+                                ? mapParameters.viewX(aircraftState.getPosition())
+                                : Double.NaN,
+                aircraftState.positionProperty(),
+                mapParameters.zoomProperty(),
+                mapParameters.minXProperty());
+        var layoutY = Bindings.createDoubleBinding(() ->
+                        aircraftState.getPosition() != null
+                                ? mapParameters.viewY(aircraftState.getPosition())
+                                : Double.NaN,
+                aircraftState.positionProperty(),
+                mapParameters.zoomProperty(),
+                mapParameters.minYProperty());
+
+        var group = new Group(
+                trajectory(aircraftState),
+                label(aircraftState, layoutX, layoutY),
+                icon(aircraftState, layoutX, layoutY));
         group.setId(aircraftState.address().toString());
         group.viewOrderProperty().bind(aircraftState.altitudeProperty().negate());
         return group;
     }
 
-    private Node nodeForAircraft(ObservableAircraftState aircraftState) {
-        var address = aircraftState.address();
+    private Node icon(ObservableAircraftState aircraftState,
+                      DoubleBinding layoutX,
+                      DoubleBinding layoutY) {
         var aircraftPath = new SVGPath();
         aircraftPath.getStyleClass().add("aircraft");
 
@@ -83,34 +108,8 @@ public final class AircraftManager {
                 () -> colorForAltitude(aircraftState.getAltitude()),
                 aircraftState.altitudeProperty()));
 
-        Tooltip tip = new Tooltip();
-        tip.textProperty().bind(Bindings.when(aircraftState.callSignProperty().isEmpty())
-                .then("(%s)".formatted(address.toString()))
-                .otherwise(aircraftState.callSignProperty()));
-        tip.setShowDelay(Duration.ZERO);
-        tip.setHideDelay(Duration.seconds(1));
-        Tooltip.install(aircraftPath, tip);
-
-        aircraftPath.layoutXProperty().bind(Bindings.createDoubleBinding(
-                () -> {
-                    var pos = aircraftState.getPosition();
-                    return pos != null
-                            ? WebMercator.x(mapParameters.getZoom(), pos.longitude()) - mapParameters.getMinX()
-                            : Double.NaN;
-                },
-                aircraftState.positionProperty(),
-                mapParameters.zoomProperty(),
-                mapParameters.minXProperty()));
-        aircraftPath.layoutYProperty().bind(Bindings.createDoubleBinding(
-                () -> {
-                    var pos = aircraftState.getPosition();
-                    return pos != null
-                            ? WebMercator.y(mapParameters.getZoom(), pos.latitude()) - mapParameters.getMinY()
-                            : Double.NaN;
-                },
-                aircraftState.positionProperty(),
-                mapParameters.zoomProperty(),
-                mapParameters.minYProperty()));
+        aircraftPath.layoutXProperty().bind(layoutX);
+        aircraftPath.layoutYProperty().bind(layoutY);
 
         aircraftPath.rotateProperty().bind(aircraftState.trackOrHeadingProperty().multiply(Angle.RADIAN / Angle.DEGREE));
 
@@ -119,13 +118,55 @@ public final class AircraftManager {
         return aircraftPath;
     }
 
+    private StringBinding optionalNumericString(DoubleExpression expression, double factor, String suffix) {
+        return Bindings.createStringBinding(() -> {
+            var value = expression.get();
+            return Double.isNaN(value)
+                    ? "? " + suffix
+                    : String.format("%.0f %s", value * factor, suffix);
+        }, expression);
+    }
+
+    private Node label(ObservableAircraftState aircraftState,
+                       DoubleBinding layoutX,
+                       DoubleBinding layoutY) {
+        var name = aircraftState.getFixedData()
+                .<Object>map(AircraftData::registration)
+                .orElseGet(() -> {
+                    var callSign = Bindings.convert(aircraftState.callSignProperty());
+                    var icao24 = Bindings.createStringBinding(aircraftState.address()::toString);
+                    return Bindings.when(callSign.isNotEmpty()).then(callSign).otherwise(icao24);
+                });
+
+        var velocity = optionalNumericString(aircraftState.velocityProperty(),
+                1d / Units.Speed.KILOMETERS_PER_HOUR,
+                "km/h");
+        var altitude = optionalNumericString(aircraftState.altitudeProperty(),
+                1d / Units.Distance.METER,
+                "m");
+
+        var label = new Text();
+        label.textProperty().bind(Bindings.format("%s\n%s %s", name, velocity, altitude));
+
+        var background = new Rectangle();
+        background.widthProperty().bind(label.layoutBoundsProperty().map(b -> b.getWidth() + 4));
+        background.heightProperty().bind(label.layoutBoundsProperty().map(b -> b.getHeight() + 4));
+
+        var group = new Group(background, label);
+        group.getStyleClass().add("label");
+        group.layoutXProperty().bind(layoutX);
+        group.layoutYProperty().bind(layoutY);
+
+        return group;
+    }
+
     private static Color colorForAltitude(double altitude) {
         // FIXME improve (and avoid the arbitrary constant)
         var scaledAltitude = altitude / (11_000d * Units.Distance.METER);
         return ColorRamp.PLASMA.at(Math.pow(scaledAltitude, 1d / 3d));
     }
 
-    private Group lineGroupForAircraftTrajectory(ObservableAircraftState aircraftState) {
+    private Group trajectory(ObservableAircraftState aircraftState) {
         var lineGroup = new Group();
 
         aircraftState.trajectory().addListener((InvalidationListener) c ->

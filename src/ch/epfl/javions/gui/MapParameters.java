@@ -1,5 +1,7 @@
 package ch.epfl.javions.gui;
 
+import ch.epfl.javions.GeoPos;
+import ch.epfl.javions.WebMercator;
 import javafx.beans.property.*;
 import javafx.geometry.Point2D;
 
@@ -39,6 +41,14 @@ public final class MapParameters {
 
     public int getZoom() {
         return zoomProperty.get();
+    }
+
+    public double viewX(GeoPos pos) {
+        return WebMercator.x(getZoom(), pos.longitude()) - getMinX();
+    }
+
+    public double viewY(GeoPos pos) {
+        return WebMercator.y(getZoom(), pos.latitude()) - getMinY();
     }
 
     public void scroll(double dX, double dY) {
