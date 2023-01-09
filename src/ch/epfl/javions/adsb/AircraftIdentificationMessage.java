@@ -19,7 +19,7 @@ public record AircraftIdentificationMessage(
 
     private static String callSign(long payload) {
         var callSignChars = new char[CALLSIGN_LENGTH];
-        for (int i = 0; i < CALLSIGN_LENGTH; i += 1) {
+        for (var i = 0; i < CALLSIGN_LENGTH; i += 1) {
             var startBitI = (CALLSIGN_LENGTH - 1 - i) * CALLSIGN_CHAR_BITS;
             var n = Bits.extractUInt(payload, startBitI, CALLSIGN_CHAR_BITS);
             callSignChars[i] = (char) ((n < 32 ? 0b0100_0000 : 0) | n);

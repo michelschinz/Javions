@@ -19,7 +19,7 @@ public final class BitUnpacker<T extends Enum<T>> {
         var firstBit = new byte[fields.length + 1];
 
         var start = 0;
-        for (int i = 0; i < fields.length; i++) {
+        for (var i = 0; i < fields.length; i++) {
             var field = fields[i];
             Preconditions.checkArgument(field.label().ordinal() == i);
             firstBit[i] = (byte) start;
