@@ -6,14 +6,15 @@ import ch.epfl.javions.aircraft.AircraftDatabase;
 import ch.epfl.javions.demodulation.AdsbDemodulator;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
 import javafx.scene.control.SplitPane;
+import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
@@ -42,7 +43,6 @@ public final class Main extends Application {
 
         var baseMapManager = new BaseMapManager(tileManager, mapParameters);
 
-        var messageQueue = new ConcurrentLinkedQueue<Message>();
         var aircraftStateManager = new AircraftStateManager(aircraftDatabase);
 
         var selectedAircraftProperty = new SimpleObjectProperty<ObservableAircraftState>();
@@ -53,7 +53,13 @@ public final class Main extends Application {
         });
 
         var mapPane = new StackPane(baseMapManager.pane(), aircraftManager.pane());
-        var mainPane = new SplitPane(mapPane, aircraftTableManager.pane());
+
+        var statusManager = new StatusLineManager();
+        statusManager.aircraftCountProperty().bind(Bindings.size(aircraftStateManager.states()));
+
+        var bottomPane = new BorderPane(aircraftTableManager.pane(), statusManager.pane(), null, null, null);
+
+        var mainPane = new SplitPane(mapPane, bottomPane);
         mainPane.setOrientation(Orientation.VERTICAL);
 
         var scene = new Scene(mainPane);
@@ -65,6 +71,7 @@ public final class Main extends Application {
         primaryStage.setTitle("Javions");
         primaryStage.show();
 
+        var messageQueue = new ConcurrentLinkedQueue<Message>();
         var programArguments = getParameters().getRaw();
         var messageThread = programArguments.size() == 1
                 ? new AvrMessageThread(programArguments.get(0), messageQueue)
@@ -75,8 +82,12 @@ public final class Main extends Application {
         var aircraftAnimationTimer = new AnimationTimer() {
             @Override
             public void handle(long now) {
-                while (!messageQueue.isEmpty())
+                var messagesReceived = 0;
+                while (!messageQueue.isEmpty()) {
                     aircraftStateManager.updateWithMessage(messageQueue.remove());
+                    messagesReceived += 1;
+                }
+                statusManager.messageCountProperty().set(statusManager.messageCountProperty().get() + messagesReceived);
                 aircraftStateManager.purge();
             }
         };
