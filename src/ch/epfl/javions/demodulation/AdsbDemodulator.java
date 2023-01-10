@@ -75,9 +75,14 @@ public final class AdsbDemodulator {
         var maybeIncorrectBit = CRC_24.findOneBitError(crc);
         if (maybeIncorrectBit == -1) return null;
 
-        frameBytes[maybeIncorrectBit / 8] ^= (1 << 7) >> (maybeIncorrectBit % 8);
+        var incorrectByteIndex = maybeIncorrectBit / 8;
+        frameBytes[incorrectByteIndex] ^= (1 << 7) >> (maybeIncorrectBit % 8);
         assert CRC_24.crc(frameBytes) == 0;
-        return Message.of(timeStamp(), ByteString.ofBytes(frameBytes));
+
+        // If we fixed the first byte, we have to re-check that the message is valid
+        return incorrectByteIndex != 0 || Message.byteLength(frameBytes[0]) == length
+                ? Message.of(timeStamp(), ByteString.ofBytes(frameBytes))
+                : null;
     }
 
     private long timeStamp() {
