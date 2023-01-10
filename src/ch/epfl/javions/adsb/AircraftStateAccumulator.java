@@ -38,6 +38,8 @@ public final class AircraftStateAccumulator {
                 stateSetter.setCategory(m.category());
                 stateSetter.setCallSign(m.callSign());
             }
+
+            default -> throw new Error();
         }
         stateSetter.setLastMessageTimeStampNs(message.timeStamp());
     }

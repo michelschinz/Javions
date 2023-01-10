@@ -1,17 +1,12 @@
 package ch.epfl.javions.adsb;
 
-import ch.epfl.javions.*;
-import ch.epfl.javions.aircraft.IcaoAddress;
+import ch.epfl.javions.BitUnpacker;
+import ch.epfl.javions.Math2;
+import ch.epfl.javions.Units;
 
 import static ch.epfl.javions.BitUnpacker.field;
 
-public record AirborneVelocityMessage(
-        long timeStamp,
-        IcaoAddress icaoAddress,
-        VelocityType velocityType,
-        double velocity,
-        double trackOrHeading
-) implements Message {
+public final class AirborneVelocityMessage extends Message {
     public enum VelocityType {GROUND, AIR}
 
     private enum Field {
@@ -76,12 +71,16 @@ public record AirborneVelocityMessage(
         return 1 <= subType && subType <= 4 && velocityEW(payload) != 0 && velocityNS(payload) != 0;
     }
 
-    public static VelocityType velocityType(long payload) {
+    private static VelocityType velocityType(long payload) {
         return switch (subType(payload)) {
             case 1, 2 -> VelocityType.GROUND;
             case 3, 4 -> VelocityType.AIR;
             default -> null; // TODO do something else?
         };
+    }
+
+    public VelocityType velocityType() {
+        return velocityType(rawMessage.payload());
     }
 
     private static int velocityEW(long payload) {
@@ -109,37 +108,23 @@ public record AirborneVelocityMessage(
         return Math.scalb(UNPACKER.unpack(FIELD_HEADING, payload), -10) * Units.Angle.TURN;
     }
 
-    public static double velocity(long payload) {
+    public double velocity() {
+        var payload = rawMessage.payload();
         return switch (velocityType(payload)) {
             case GROUND -> Math.hypot(velocityNS(payload), velocityEW(payload));
             case AIR -> UNPACKER.unpack(FIELD_AIRSPEED, payload) - 1;
         } * unit(payload);
     }
 
-    public static double trackOrHeading(long payload) {
+    public double trackOrHeading() {
+        var payload = rawMessage.payload();
         return switch (velocityType(payload)) {
             case GROUND -> track(payload);
             case AIR -> heading(payload);
         };
     }
 
-    public static boolean isValid(ByteString bytes) {
-        var subType = subType(Message.payload(bytes));
-        return 1 <= subType && subType <= 4;
-    }
-
-    public static AirborneVelocityMessage of(long timeStamp, ByteString bytes) {
-        var payload = Message.payload(bytes);
-        var subType = subType(payload);
-        // TODO messages with invalid subtype probably contain other data nevertheless!
-        //   => do not ignore them, but make "velocity" return NaN for example.
-        if (!(1 <= subType && subType <= 4)) return null;
-
-        return new AirborneVelocityMessage(
-                timeStamp,
-                Message.icaoAddress(bytes),
-                velocityType(payload),
-                velocity(payload),
-                trackOrHeading(payload));
+    public AirborneVelocityMessage(RawAdsbMessage rawMessage) {
+        super(rawMessage);
     }
 }

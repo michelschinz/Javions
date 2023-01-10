@@ -2,6 +2,8 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.adsb.AvrParser;
 import ch.epfl.javions.adsb.Message;
+import ch.epfl.javions.adsb.MessageParser;
+import ch.epfl.javions.adsb.RawAdsbMessage;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import ch.epfl.javions.demodulation.AdsbDemodulator;
 import javafx.animation.AnimationTimer;
@@ -107,9 +109,10 @@ public final class Main extends Application {
             try {
                 var demodulator = new AdsbDemodulator(System.in);
                 while (true) {
-                    var message = demodulator.nextMessage();
+                    var rawMessage = demodulator.nextMessage();
+                    if (rawMessage == null) break;
+                    var message = MessageParser.parse(rawMessage);
                     if (message != null) messages.add(message);
-                    else break;
                 }
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
@@ -133,8 +136,9 @@ public final class Main extends Application {
             try (var s = Files.newBufferedReader(Path.of(messageFileName))) {
                 s.lines()
                         .map(AvrParser::parseAVR)
-                        .filter(m -> Message.byteLength(m.byteAt(0)) > 0)
-                        .map(m -> Message.of(fakeTimeStamp++, m))
+                        .map(m -> new RawAdsbMessage(fakeTimeStamp++, m))
+                        .filter(m -> m.downLinkFormat() == 17)
+                        .map(MessageParser::parse)
                         .filter(Objects::nonNull)
                         .forEach(m -> {
                             try {

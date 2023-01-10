@@ -2,20 +2,11 @@ package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.BitUnpacker;
 import ch.epfl.javions.Bits;
-import ch.epfl.javions.ByteString;
-import ch.epfl.javions.aircraft.IcaoAddress;
 import ch.epfl.javions.Units;
 
 import static ch.epfl.javions.BitUnpacker.field;
 
-public record AirbornePositionMessage(
-        long timeStamp,
-        IcaoAddress icaoAddress,
-        boolean isEven,
-        int cprLon,
-        int cprLat,
-        double altitude
-) implements Message {
+public final class AirbornePositionMessage extends Message {
     // TODO remaining fields
     private enum Field {LONGITUDE, LATITUDE, FORMAT, TIME, ALT}
 
@@ -31,8 +22,8 @@ public record AirbornePositionMessage(
     private static final int ALTITUDE_Q_BIT_UPPER_MASK = ~0 << (ALTITUDE_Q_BIT_INDEX + 1);
     private static final int ALTITUDE_Q_BIT_LOWER_MASK = (1 << ALTITUDE_Q_BIT_INDEX) - 1;
 
-    private static double altitude(long payload) {
-        var encAltitude = UNPACKER.unpack(Field.ALT, payload);
+    public double altitude() {
+        var encAltitude = UNPACKER.unpack(Field.ALT, rawMessage.payload());
         if (Bits.testBit(encAltitude, ALTITUDE_Q_BIT_INDEX)) {
             var ft25 = (encAltitude & ALTITUDE_Q_BIT_UPPER_MASK) >> 1
                     | (encAltitude & ALTITUDE_Q_BIT_LOWER_MASK);
@@ -74,14 +65,19 @@ public record AirbornePositionMessage(
         return binary;
     }
 
-    public static AirbornePositionMessage of(long timeStamp, ByteString bytes) {
-        var payload = Message.payload(bytes);
-        return new AirbornePositionMessage(
-                timeStamp,
-                Message.icaoAddress(bytes),
-                UNPACKER.unpack(Field.FORMAT, payload) == 0,
-                UNPACKER.unpack(Field.LONGITUDE, payload),
-                UNPACKER.unpack(Field.LATITUDE, payload),
-                altitude(payload));
+    public boolean isEven() {
+        return UNPACKER.unpack(Field.FORMAT, rawMessage.payload()) == 0;
+    }
+
+    public int cprLon() {
+        return UNPACKER.unpack(Field.LONGITUDE, rawMessage.payload());
+    }
+
+    public int cprLat() {
+        return UNPACKER.unpack(Field.LATITUDE, rawMessage.payload());
+    }
+
+    public AirbornePositionMessage(RawAdsbMessage rawMessage) {
+        super(rawMessage);
     }
 }

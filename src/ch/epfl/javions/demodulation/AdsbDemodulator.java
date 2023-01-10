@@ -1,20 +1,23 @@
 package ch.epfl.javions.demodulation;
 
+import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
 import ch.epfl.javions.Crc24;
-import ch.epfl.javions.adsb.Message;
+import ch.epfl.javions.adsb.RawAdsbMessage;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 public final class AdsbDemodulator {
+    private static final int MESSAGE_BYTES = 14;
+
     // Number of samples per pulse (half bit, i.e. half a microsecond).
     // (The AirSpy samples at 20MHz, we compute the signal power at 10MHz).
     private static final int PULSE_WIDTH = 5;
     private static final int BIT_WIDTH = 2 * PULSE_WIDTH;
     private static final int PREAMBLE_WIDTH = 8 * BIT_WIDTH;
     private static final int BYTE_WIDTH = 8 * BIT_WIDTH;
-    private static final int LONG_MESSAGE_WIDTH = PREAMBLE_WIDTH + 14 * BYTE_WIDTH;
+    private static final int LONG_MESSAGE_WIDTH = PREAMBLE_WIDTH + MESSAGE_BYTES * BYTE_WIDTH;
 
     private static final long NANOSECONDS_PER_SAMPLE = 100;
 
@@ -23,7 +26,7 @@ public final class AdsbDemodulator {
 
     private static final int FIRST_BIT_OFFSET = 1 + PREAMBLE_WIDTH;
 
-    private static final Crc24 CRC_24 = new Crc24(Crc24.GENERATOR, Message.BYTES_LONG);
+    private static final Crc24 CRC_24 = new Crc24(Crc24.GENERATOR, MESSAGE_BYTES);
 
     private final PowerWindow window;
 
@@ -31,7 +34,7 @@ public final class AdsbDemodulator {
         this.window = new PowerWindow(samplesStream, LONG_MESSAGE_WIDTH);
     }
 
-    public Message nextMessage() throws IOException {
+    public RawAdsbMessage nextMessage() throws IOException {
         while (window.available() >= LONG_MESSAGE_WIDTH) {
             var message = currentMessage();
             if (message != null) {
@@ -46,7 +49,7 @@ public final class AdsbDemodulator {
     /**
      * Returns the message at the current position of the window, or null if there is no message.
      */
-    private Message currentMessage() {
+    private RawAdsbMessage currentMessage() {
         var p0 = totalPower(0, PREAMBLE_PEAKS);
         var p1 = totalPower(1, PREAMBLE_PEAKS);
         var p2 = totalPower(2, PREAMBLE_PEAKS);
@@ -59,17 +62,16 @@ public final class AdsbDemodulator {
 
         // Extract first byte, to obtain length
         var firstByte = getByte(0);
-        var length = Message.byteLength(firstByte);
-        if (length == 0) return null;
+        if (!isValid(firstByte)) return null;
 
         // Check CRC
-        var frameBytes = new byte[length];
+        var frameBytes = new byte[MESSAGE_BYTES];
         frameBytes[0] = (byte) firstByte;
-        for (var i = 1; i < length; i += 1)
+        for (var i = 1; i < MESSAGE_BYTES; i += 1)
             frameBytes[i] = (byte) getByte(i);
 
         var crc = CRC_24.crc(frameBytes);
-        if (crc == 0) return Message.of(timeStamp(), ByteString.ofBytes(frameBytes));
+        if (crc == 0) return new RawAdsbMessage(timeStamp(), ByteString.ofBytes(frameBytes));
 
         // If the CRC can be fixed by flipping one bit, do it
         var maybeIncorrectBit = CRC_24.findOneBitError(crc);
@@ -80,9 +82,13 @@ public final class AdsbDemodulator {
         assert CRC_24.crc(frameBytes) == 0;
 
         // If we fixed the first byte, we have to re-check that the message is valid
-        return incorrectByteIndex != 0 || Message.byteLength(frameBytes[0]) == length
-                ? Message.of(timeStamp(), ByteString.ofBytes(frameBytes))
+        return incorrectByteIndex != 0 || isValid(frameBytes[0])
+                ? new RawAdsbMessage(timeStamp(), ByteString.ofBytes(frameBytes))
                 : null;
+    }
+
+    private boolean isValid(int firstByte) {
+        return Bits.extractUInt(firstByte, 3, 5) == 17;
     }
 
     private long timeStamp() {
