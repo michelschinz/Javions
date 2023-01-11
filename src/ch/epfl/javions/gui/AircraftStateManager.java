@@ -1,11 +1,9 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.aircraft.IcaoAddress;
 import ch.epfl.javions.adsb.AircraftStateAccumulator;
 import ch.epfl.javions.adsb.Message;
 import ch.epfl.javions.aircraft.AircraftDatabase;
-import javafx.beans.property.LongProperty;
-import javafx.beans.property.SimpleLongProperty;
+import ch.epfl.javions.aircraft.IcaoAddress;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 
@@ -21,7 +19,7 @@ public final class AircraftStateManager {
     private final AircraftDatabase aircraftDatabase;
     private final ObservableSet<ObservableAircraftState> states;
     private final ObservableSet<ObservableAircraftState> unmodifiableStates;
-    private final Map<IcaoAddress, AircraftStateAccumulator> accumulators;
+    private final Map<IcaoAddress, AircraftStateAccumulator<ObservableAircraftState>> accumulators;
     private long lastMessageTimeStampNs;
 
     public AircraftStateManager(AircraftDatabase aircraftDatabase) {
@@ -40,25 +38,28 @@ public final class AircraftStateManager {
     public void updateWithMessage(Message message) {
         var address = message.icaoAddress();
 
-        if (!accumulators.containsKey(address)) {
+        var accumulator = accumulators.get(address);
+        if (accumulator == null) {
             var state = new ObservableAircraftState(address, aircraftDatabase.get(address));
-            states.add(state);
-            accumulators.put(address, new AircraftStateAccumulator(state));
+            accumulator = new AircraftStateAccumulator<>(state);
+            accumulators.put(address, accumulator);
         }
 
-        accumulators.get(address).update(message);
+        accumulator.update(message);
+        var updatedState = accumulator.stateSetter();
+        if (updatedState.getPosition() != null) states.add(updatedState);
         lastMessageTimeStampNs = message.timeStamp();
     }
 
     // Remove aircraft for which we didn't get a message recently
     public void purge() {
-        var aircraftIt = states.iterator();
-        while (aircraftIt.hasNext()) {
-            var state = aircraftIt.next();
-            var dT = lastMessageTimeStampNs - state.getLastMessageTimeStampNs();
-            if (dT > MAX_INTER_MESSAGE_DELAY) {
-                aircraftIt.remove();
-                accumulators.remove(state.address());
+        var accumulatorsIt = accumulators.values().iterator();
+        while (accumulatorsIt.hasNext()) {
+            var accumulator = accumulatorsIt.next();
+            var state = accumulator.stateSetter();
+            if (lastMessageTimeStampNs - state.getLastMessageTimeStampNs() > MAX_INTER_MESSAGE_DELAY) {
+                states.remove(state);
+                accumulatorsIt.remove();
             }
         }
     }
