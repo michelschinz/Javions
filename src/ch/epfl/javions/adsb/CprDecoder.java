@@ -3,14 +3,9 @@ package ch.epfl.javions.adsb;
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
 
-import java.util.Optional;
-
 import static ch.epfl.javions.Math2.TAU;
 import static ch.epfl.javions.Math2.floorMod;
-import static java.lang.Math.acos;
-import static java.lang.Math.cos;
-import static java.lang.Math.floor;
-import static java.lang.Math.scalb;
+import static java.lang.Math.*;
 
 public final class CprDecoder {
     private static final int CPR_BITS = 17;
@@ -30,17 +25,17 @@ public final class CprDecoder {
         return Double.isNaN(nl) ? 1 : (int) nl;
     }
 
-    public static Optional<GeoPos> decodePosition(int lonCprE,
-                                                  int latCprE,
-                                                  int lonCprO,
-                                                  int latCprO,
-                                                  boolean mostRecentIsE) {
+    public static GeoPos decodePosition(int lonCprE,
+                                        int latCprE,
+                                        int lonCprO,
+                                        int latCprO,
+                                        boolean mostRecentIsE) {
         var latZIn = floor(scalb(LAT_ZONES_O * latCprE - LAT_ZONES_E * latCprO + CPR_ONE_HALF, -CPR_BITS));
         var latE = D_LAT_E * (floorMod(latZIn, LAT_ZONES_E) + scalb(latCprE, -CPR_BITS));
         var latO = D_LAT_O * (floorMod(latZIn, LAT_ZONES_O) + scalb(latCprO, -CPR_BITS));
 
         var lonZonesE = lonZones(latE);
-        if (lonZonesE != lonZones(latO)) return Optional.empty();
+        if (lonZonesE != lonZones(latO)) return null;
 
         if (lonZonesE == 1) {
             return mostRecentIsE
@@ -55,9 +50,9 @@ public final class CprDecoder {
         }
     }
 
-    private static Optional<GeoPos> geoPos(double lon, double lat) {
+    private static GeoPos geoPos(double lon, double lat) {
         var normalizedLon = (int) scalb(lon < 0.5 ? lon : lon - 1, Integer.SIZE);
         var normalizedLat = (int) scalb(lat < 0.75 ? lat : lat - 1, Integer.SIZE);
-        return Optional.of(new GeoPos(normalizedLon, normalizedLat));
+        return new GeoPos(normalizedLon, normalizedLat);
     }
 }

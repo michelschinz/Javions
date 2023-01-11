@@ -29,11 +29,11 @@ public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 if (isValidMessagePair(lastPositionMessage, m)) {
                     var messageE = m.isEven() ? m : lastPositionMessage;
                     var messageO = m.isEven() ? lastPositionMessage : m;
-                    CprDecoder.decodePosition(
-                                    messageE.cprLon(), messageE.cprLat(),
-                                    messageO.cprLon(), messageO.cprLat(),
-                                    m.isEven())
-                            .ifPresent(stateSetter::setPosition);
+                    var maybePos = CprDecoder.decodePosition(
+                            messageE.cprLon(), messageE.cprLat(),
+                            messageO.cprLon(), messageO.cprLat(),
+                            m.isEven());
+                    if (maybePos != null) stateSetter.setPosition(maybePos);
                 }
                 lastPositionMessage = m;
             }

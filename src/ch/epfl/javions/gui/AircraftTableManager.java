@@ -20,7 +20,6 @@ import java.text.NumberFormat;
 import java.text.ParseException;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
@@ -101,10 +100,9 @@ public final class AircraftTableManager {
 
     private static <T> Function<ObservableAircraftState, StringExpression> fixedDataExtractor(Function<AircraftData, T> f) {
         return state -> {
-            var string = state.getFixedData()
-                    .map(f)
-                    .map(Object::toString)
-                    .orElse("");
+            var string = state.getFixedData() != null
+                    ? f.apply(state.getFixedData()).toString()
+                    : "";
             return Bindings.createStringBinding(() -> string);
         };
     }

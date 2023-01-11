@@ -1,14 +1,12 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.javions.GeoPos;
+import ch.epfl.javions.adsb.AircraftStateSetter;
 import ch.epfl.javions.aircraft.AircraftData;
 import ch.epfl.javions.aircraft.IcaoAddress;
-import ch.epfl.javions.adsb.AircraftStateSetter;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-
-import java.util.Optional;
 
 public final class ObservableAircraftState implements AircraftStateSetter {
     public record GeoPosWithAltitude(GeoPos position, double altitude) {}
@@ -23,9 +21,9 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final DoubleProperty altitudeProperty;
     private final DoubleProperty velocityProperty;
     private final DoubleProperty trackOrHeadingProperty;
-    private final Optional<AircraftData> maybeAircraftData;
+    private final AircraftData maybeAircraftData;
 
-    public ObservableAircraftState(IcaoAddress address, Optional<AircraftData> maybeAircraftData) {
+    public ObservableAircraftState(IcaoAddress address, AircraftData maybeAircraftData) {
         var trajectory = FXCollections.<GeoPosWithAltitude>observableArrayList();
 
         this.address = address;
@@ -58,7 +56,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         lastMessageTimeStampNsProperty.set(timeStampNs);
     }
 
-    public Optional<AircraftData> getFixedData() {
+    public AircraftData getFixedData() {
         return maybeAircraftData;
     }
 

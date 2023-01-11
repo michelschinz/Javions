@@ -95,13 +95,14 @@ public final class AircraftManager {
 
         // TODO the category can change, we should observe it!
         // TODO should the designator be valid (i.e. non-empty)?
-        var aircraftIcon = aircraftState.getFixedData()
-                .map(fixedData -> AircraftIcon.iconFor(
-                        fixedData.typeDesignator(),
-                        fixedData.description(),
-                        aircraftState.getCategory(),
-                        fixedData.wakeTurbulenceCategory()))
-                .orElse(AircraftIcon.UNKNOWN);
+        var fixedData = aircraftState.getFixedData();
+        var aircraftIcon = fixedData != null
+                ? AircraftIcon.iconFor(
+                fixedData.typeDesignator(),
+                fixedData.description(),
+                aircraftState.getCategory(),
+                fixedData.wakeTurbulenceCategory())
+                : AircraftIcon.UNKNOWN;
         aircraftPath.setContent(aircraftIcon.svgPath());
 
         aircraftPath.fillProperty().bind(Bindings.createObjectBinding(
@@ -130,13 +131,15 @@ public final class AircraftManager {
     private Node label(ObservableAircraftState aircraftState,
                        DoubleBinding layoutX,
                        DoubleBinding layoutY) {
-        var name = aircraftState.getFixedData()
-                .<Object>map(AircraftData::registration)
-                .orElseGet(() -> {
-                    var callSign = Bindings.convert(aircraftState.callSignProperty());
-                    var icao24 = Bindings.createStringBinding(aircraftState.address()::toString);
-                    return Bindings.when(callSign.isNotEmpty()).then(callSign).otherwise(icao24);
-                });
+        var fixedData = aircraftState.getFixedData();
+        var name = (Object) null;
+        if (fixedData != null) {
+            name = fixedData.registration();
+        } else {
+            var callSign = Bindings.convert(aircraftState.callSignProperty());
+            var icao24 = Bindings.createStringBinding(aircraftState.address()::toString);
+            name = Bindings.when(callSign.isNotEmpty()).then(callSign).otherwise(icao24);
+        }
 
         var velocity = optionalNumericString(aircraftState.velocityProperty(),
                 1d / Units.Speed.KILOMETERS_PER_HOUR,
