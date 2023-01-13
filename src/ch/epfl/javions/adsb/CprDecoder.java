@@ -53,6 +53,8 @@ public final class CprDecoder {
     private static GeoPos geoPos(double lon, double lat) {
         var normalizedLon = (int) scalb(lon < 0.5 ? lon : lon - 1, Integer.SIZE);
         var normalizedLat = (int) scalb(lat < 0.75 ? lat : lat - 1, Integer.SIZE);
-        return new GeoPos(normalizedLon, normalizedLat);
+        return GeoPos.isValid(normalizedLon, normalizedLat)
+                ? new GeoPos(normalizedLon, normalizedLat)
+                : null;
     }
 }

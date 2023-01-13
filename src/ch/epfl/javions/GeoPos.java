@@ -9,8 +9,12 @@ public record GeoPos(int intLon, int intLat) {
         return Math.scalb((double) angle, -Integer.SIZE) * Units.Angle.TURN;
     }
 
+    public static boolean isValid(int intLon, int intLat) {
+        return -INT_90_DEGREES <= intLat && intLat <= INT_90_DEGREES;
+    }
+
     public GeoPos {
-        Preconditions.checkArgument(-INT_90_DEGREES <= intLat && intLat <= INT_90_DEGREES);
+        Preconditions.checkArgument(isValid(intLon, intLat));
     }
 
     public double longitude() {
