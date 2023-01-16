@@ -1,8 +1,5 @@
 package ch.epfl.javions;
 
-import java.util.Arrays;
-import java.util.Comparator;
-
 public final class Crc24 {
     public static final int GENERATOR = 0xff_f4_09;
 
@@ -11,7 +8,7 @@ public final class Crc24 {
 
     private final int[] table;
 
-    public Crc24(int generator, int messageBytes) {
+    public Crc24(int generator) {
         this.table = buildTable(generator);
     }
 
@@ -28,13 +25,9 @@ public final class Crc24 {
         return table;
     }
 
-    private static int crc(int[] table, byte[] message) {
+    public int crc(byte[] bytes) {
         var crc = 0;
-        for (var b : message) crc = (crc << 8) ^ table[((crc >> 16) ^ b) & 0xFF];
+        for (var b : bytes) crc = (crc << 8) ^ table[((crc >> 16) ^ b) & 0xFF];
         return crc & MASK_LSBS_24;
-    }
-
-    public int crc(byte[] message) {
-        return crc(table, message);
     }
 }
