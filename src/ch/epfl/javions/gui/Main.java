@@ -41,7 +41,7 @@ public final class Main extends Application {
         var aircraftDatabase = new AircraftDatabase(new File(dbResource.toURI()));
 
         var tileManager = new TileManager(cacheBasePath, OSM_TILE_SERVER);
-        var mapParameters = new MapParameters(543_200, 370_650, 12);
+        var mapParameters = new MapParameters(12, 543_200, 370_650);
 
         var baseMapManager = new BaseMapManager(tileManager, mapParameters);
 

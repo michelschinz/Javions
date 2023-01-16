@@ -7,14 +7,22 @@ import static java.lang.Math.scalb;
 
 // TODO also have min/max zoom values
 public final class MapParameters {
+    private final IntegerProperty zoomProperty;
     private final DoubleProperty minXProperty;
     private final DoubleProperty minYProperty;
-    private final IntegerProperty zoomProperty;
 
-    public MapParameters(double initialMinX, double initialMinY, int initialZoom) {
+    public MapParameters(int initialZoom, double initialMinX, double initialMinY) {
+        zoomProperty = new SimpleIntegerProperty(initialZoom);
         minXProperty = new SimpleDoubleProperty(initialMinX);
         minYProperty = new SimpleDoubleProperty(initialMinY);
-        zoomProperty = new SimpleIntegerProperty(initialZoom);
+    }
+
+    public ReadOnlyIntegerProperty zoomProperty() {
+        return zoomProperty;
+    }
+
+    public int getZoom() {
+        return zoomProperty.get();
     }
 
     public ReadOnlyDoubleProperty minXProperty() {
@@ -31,14 +39,6 @@ public final class MapParameters {
 
     public double getMinY() {
         return minYProperty.get();
-    }
-
-    public ReadOnlyIntegerProperty zoomProperty() {
-        return zoomProperty;
-    }
-
-    public int getZoom() {
-        return zoomProperty.get();
     }
 
     public void scroll(double dX, double dY) {
