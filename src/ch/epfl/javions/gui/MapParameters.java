@@ -50,16 +50,16 @@ public final class MapParameters {
     }
 
     public void changeZoomLevel(int zoomDelta, double centerViewX, double centerViewY) {
-        var newZoomLevel = clamp(MIN_ZOOM_LEVEL, getZoom() + zoomDelta, MAX_ZOOM_LEVEL);
-        if (newZoomLevel == getZoom()) return;
+        var newZoom = clamp(MIN_ZOOM_LEVEL, getZoom() + zoomDelta, MAX_ZOOM_LEVEL);
+        if (newZoom == getZoom()) return;
 
-        var newTopLeft = new Point2D(getMinX(), getMinY())
+        var newMinXY = new Point2D(getMinX(), getMinY())
                 .add(centerViewX, centerViewY)
                 .multiply(scalb(1d, zoomDelta))
                 .subtract(centerViewX, centerViewY);
 
-        minXProperty.set(newTopLeft.getX());
-        minYProperty.set(newTopLeft.getY());
-        zoomProperty.set(newZoomLevel);
+        minXProperty.set(newMinXY.getX());
+        minYProperty.set(newMinXY.getY());
+        zoomProperty.set(newZoom);
     }
 }
