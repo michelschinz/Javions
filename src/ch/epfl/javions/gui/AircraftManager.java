@@ -4,7 +4,6 @@ import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.Units.Angle;
 import ch.epfl.javions.WebMercator;
-import ch.epfl.javions.aircraft.AircraftData;
 import ch.epfl.javions.gui.ObservableAircraftState.GeoPosWithAltitude;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
@@ -64,16 +63,26 @@ public final class AircraftManager {
 
     private Node groupForAircraft(ObservableAircraftState aircraftState) {
         var layoutX = Bindings.createDoubleBinding(() ->
-                        aircraftState.getPosition() != null
-                                ? mapParameters.viewX(aircraftState.getPosition())
-                                : Double.NaN,
+                {
+                    if (aircraftState.getPosition() != null) {
+                        var lon = aircraftState.getPosition().longitude();
+                        return WebMercator.x(mapParameters.getZoom(), lon) - mapParameters.getMinX();
+                    } else {
+                        return Double.NaN;
+                    }
+                },
                 aircraftState.positionProperty(),
                 mapParameters.zoomProperty(),
                 mapParameters.minXProperty());
         var layoutY = Bindings.createDoubleBinding(() ->
-                        aircraftState.getPosition() != null
-                                ? mapParameters.viewY(aircraftState.getPosition())
-                                : Double.NaN,
+                {
+                    if (aircraftState.getPosition() != null) {
+                        var lat = aircraftState.getPosition().latitude();
+                        return WebMercator.y(mapParameters.getZoom(), lat) - mapParameters.getMinY();
+                    } else {
+                        return Double.NaN;
+                    }
+                },
                 aircraftState.positionProperty(),
                 mapParameters.zoomProperty(),
                 mapParameters.minYProperty());
