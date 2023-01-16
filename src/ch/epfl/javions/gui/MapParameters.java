@@ -3,10 +3,13 @@ package ch.epfl.javions.gui;
 import javafx.beans.property.*;
 import javafx.geometry.Point2D;
 
+import static ch.epfl.javions.Math2.clamp;
 import static java.lang.Math.scalb;
 
-// TODO also have min/max zoom values
 public final class MapParameters {
+    private static final int MIN_ZOOM_LEVEL = 1;
+    private static final int MAX_ZOOM_LEVEL = 19;
+
     private final IntegerProperty zoomProperty;
     private final DoubleProperty minXProperty;
     private final DoubleProperty minYProperty;
@@ -42,15 +45,14 @@ public final class MapParameters {
     }
 
     public void scroll(double dX, double dY) {
-        // TODO clamp? if yes, with a margin?
         minXProperty.set(getMinX() + dX);
         minYProperty.set(getMinY() + dY);
     }
 
     public void changeZoomLevel(int zoomDelta, double centerViewX, double centerViewY) {
-        // TODO clamp zoomDelta
+        var newZoomLevel = clamp(MIN_ZOOM_LEVEL, getZoom() + zoomDelta, MAX_ZOOM_LEVEL);
+        if (newZoomLevel == getZoom()) return;
 
-        var newZoomLevel = getZoom() + zoomDelta;
         var newTopLeft = new Point2D(getMinX(), getMinY())
                 .add(centerViewX, centerViewY)
                 .multiply(scalb(1d, zoomDelta))

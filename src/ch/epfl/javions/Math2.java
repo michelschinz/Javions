@@ -12,11 +12,6 @@ public final class Math2 {
         return max(min, min(v, max));
     }
 
-    public static double clamp(double min, double v, double max) {
-        Preconditions.checkArgument(min <= max);
-        return max(min, min(v, max));
-    }
-
     public static double asinh(double x) {
         return log(x + hypot(1, x));
     }
