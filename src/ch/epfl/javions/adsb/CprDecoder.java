@@ -4,7 +4,6 @@ import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
 
 import static ch.epfl.javions.Math2.TAU;
-import static ch.epfl.javions.Math2.floorMod;
 import static java.lang.Math.*;
 
 public final class CprDecoder {
@@ -31,8 +30,8 @@ public final class CprDecoder {
                                         int latCprO,
                                         boolean mostRecentIsE) {
         var latZIn = floor(scalb(LAT_ZONES_O * latCprE - LAT_ZONES_E * latCprO + CPR_ONE_HALF, -CPR_BITS));
-        var latE = D_LAT_E * (floorMod(latZIn, LAT_ZONES_E) + scalb(latCprE, -CPR_BITS));
-        var latO = D_LAT_O * (floorMod(latZIn, LAT_ZONES_O) + scalb(latCprO, -CPR_BITS));
+        var latE = D_LAT_E * (normalizeZoneIndex(latZIn, LAT_ZONES_E) + scalb(latCprE, -CPR_BITS));
+        var latO = D_LAT_O * (normalizeZoneIndex(latZIn, LAT_ZONES_O) + scalb(latCprO, -CPR_BITS));
 
         var lonZonesE = lonZones(latE);
         if (lonZonesE != lonZones(latO)) return null;
@@ -45,9 +44,13 @@ public final class CprDecoder {
             var lonZonesO = lonZonesE - 1;
             var lonZIn = floor(scalb(lonZonesO * lonCprE - lonZonesE * lonCprO + CPR_ONE_HALF, -CPR_BITS));
             return mostRecentIsE
-                    ? geoPos(floorMod(lonZIn, lonZonesE) + scalb(lonCprE, -CPR_BITS) / lonZonesE, latE)
-                    : geoPos(floorMod(lonZIn, lonZonesO) + scalb(lonCprO, -CPR_BITS) / lonZonesO, latO);
+                    ? geoPos(normalizeZoneIndex(lonZIn, lonZonesE) + scalb(lonCprE, -CPR_BITS) / lonZonesE, latE)
+                    : geoPos(normalizeZoneIndex(lonZIn, lonZonesO) + scalb(lonCprO, -CPR_BITS) / lonZonesO, latO);
         }
+    }
+
+    private static double normalizeZoneIndex(double zIn, double zonesCount) {
+        return zIn < 0 ? zIn + zonesCount : zIn;
     }
 
     private static GeoPos geoPos(double lon, double lat) {

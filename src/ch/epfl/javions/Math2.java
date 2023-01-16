@@ -15,8 +15,4 @@ public final class Math2 {
     public static double asinh(double x) {
         return log(x + hypot(1, x));
     }
-
-    public static double floorMod(double x, double y) {
-        return x - y * floor(x / y);
-    }
 }
