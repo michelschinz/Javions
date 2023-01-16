@@ -10,14 +10,9 @@ public final class Crc24 {
     private static final int MASK_LSBS_24 = 0xFF_FF_FF;
 
     private final int[] table;
-    private final int[][] errorTable;
 
-    public Crc24(int generator, int maxMessageBytes) {
-        var crcTable = buildTable(generator);
-        var errorTable = buildErrorTable(crcTable, maxMessageBytes);
-
-        this.table = crcTable;
-        this.errorTable = errorTable;
+    public Crc24(int generator, int messageBytes) {
+        this.table = buildTable(generator);
     }
 
     private static int[] buildTable(int generator) {
@@ -33,30 +28,6 @@ public final class Crc24 {
         return table;
     }
 
-    private static int[][] buildErrorTable(int[] crcTable, int maxMessageBytes) {
-        record CrcAndIndex(int crc, int index) { }
-
-        var msg = new byte[maxMessageBytes];
-        var table = new CrcAndIndex[msg.length * Byte.SIZE];
-        var i = 0;
-        for (var byteIndex = 0; byteIndex < msg.length; byteIndex += 1) {
-            for (var mask = 1 << 7; mask != 0; mask >>= 1) {
-                msg[byteIndex] ^= mask;
-                table[i] = new CrcAndIndex(crc(crcTable, msg), i);
-                i += 1;
-                msg[byteIndex] = 0;
-            }
-        }
-        Arrays.sort(table, Comparator.comparingInt(c -> c.crc));
-
-        var tables = new int[2][table.length];
-        for (var j = 0; j < table.length; j += 1) {
-            tables[0][j] = table[j].crc;
-            tables[1][j] = table[j].index;
-        }
-        return tables;
-    }
-
     private static int crc(int[] table, byte[] message) {
         var crc = 0;
         for (var b : message) crc = (crc << 8) ^ table[((crc >> 16) ^ b) & 0xFF];
@@ -65,10 +36,5 @@ public final class Crc24 {
 
     public int crc(byte[] message) {
         return crc(table, message);
-    }
-
-    public int findOneBitError(int invalidCrc) {
-        var i = Arrays.binarySearch(errorTable[0], invalidCrc);
-        return i >= 0 ? errorTable[1][i] : -1;
     }
 }

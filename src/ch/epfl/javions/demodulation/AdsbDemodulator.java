@@ -70,19 +70,7 @@ public final class AdsbDemodulator {
         for (var i = 1; i < MESSAGE_BYTES; i += 1)
             frameBytes[i] = (byte) getByte(i);
 
-        var crc = CRC_24.crc(frameBytes);
-        if (crc == 0) return RawAdsbMessage.of(timeStamp(), ByteString.ofBytes(frameBytes));
-
-        // If the CRC can be fixed by flipping one bit, do it
-        var maybeIncorrectBit = CRC_24.findOneBitError(crc);
-        if (maybeIncorrectBit == -1) return null;
-
-        var incorrectByteIndex = maybeIncorrectBit / 8;
-        frameBytes[incorrectByteIndex] ^= (1 << 7) >> (maybeIncorrectBit % 8);
-        assert CRC_24.crc(frameBytes) == 0;
-
-        // If we fixed the first byte, we have to re-check that the message is valid
-        return incorrectByteIndex != 0 || isValid(frameBytes[0])
+        return CRC_24.crc(frameBytes) == 0
                 ? RawAdsbMessage.of(timeStamp(), ByteString.ofBytes(frameBytes))
                 : null;
     }
