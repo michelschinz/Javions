@@ -136,7 +136,7 @@ public final class Main extends Application {
             try (var s = Files.newBufferedReader(Path.of(messageFileName))) {
                 s.lines()
                         .map(AvrParser::parseAVR)
-                        .map(m -> new RawAdsbMessage(fakeTimeStamp++, m))
+                        .map(m -> RawAdsbMessage.of(fakeTimeStamp++, m))
                         .filter(m -> m.downLinkFormat() == 17)
                         .map(MessageParser::parse)
                         .filter(Objects::nonNull)
