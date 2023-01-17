@@ -43,23 +43,23 @@ public final class Main extends Application {
         var tileManager = new TileManager(cacheBasePath, OSM_TILE_SERVER);
         var mapParameters = new MapParameters(12, 543_200, 370_650);
 
-        var baseMapManager = new BaseMapManager(tileManager, mapParameters);
+        var baseMapController = new BaseMapController(tileManager, mapParameters);
 
         var aircraftStateManager = new AircraftStateManager(aircraftDatabase);
 
         var selectedAircraftProperty = new SimpleObjectProperty<ObservableAircraftState>();
-        var aircraftManager = new AircraftManager(mapParameters, aircraftStateManager.states(), selectedAircraftProperty);
-        var aircraftTableManager = new AircraftTableManager(aircraftStateManager.states(), selectedAircraftProperty);
-        aircraftTableManager.setOnDoubleClick(p -> {
-            if (p.getPosition() != null) baseMapManager.centerOn(p.getPosition());
+        var aircraftController = new AircraftController(mapParameters, aircraftStateManager.states(), selectedAircraftProperty);
+        var aircraftTableController = new AircraftTableController(aircraftStateManager.states(), selectedAircraftProperty);
+        aircraftTableController.setOnDoubleClick(p -> {
+            if (p.getPosition() != null) baseMapController.centerOn(p.getPosition());
         });
 
-        var mapPane = new StackPane(baseMapManager.pane(), aircraftManager.pane());
+        var mapPane = new StackPane(baseMapController.pane(), aircraftController.pane());
 
-        var statusManager = new StatusLineManager();
-        statusManager.aircraftCountProperty().bind(Bindings.size(aircraftStateManager.states()));
+        var statusLineController = new StatusLineController();
+        statusLineController.aircraftCountProperty().bind(Bindings.size(aircraftStateManager.states()));
 
-        var bottomPane = new BorderPane(aircraftTableManager.pane(), statusManager.pane(), null, null, null);
+        var bottomPane = new BorderPane(aircraftTableController.pane(), statusLineController.pane(), null, null, null);
 
         var mainPane = new SplitPane(mapPane, bottomPane);
         mainPane.setOrientation(Orientation.VERTICAL);
@@ -89,7 +89,7 @@ public final class Main extends Application {
                     aircraftStateManager.updateWithMessage(messageQueue.remove());
                     messagesReceived += 1;
                 }
-                statusManager.messageCountProperty().set(statusManager.messageCountProperty().get() + messagesReceived);
+                statusLineController.messageCountProperty().set(statusLineController.messageCountProperty().get() + messagesReceived);
                 aircraftStateManager.purge();
             }
         };

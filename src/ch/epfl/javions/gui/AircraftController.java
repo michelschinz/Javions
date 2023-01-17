@@ -29,14 +29,14 @@ import javafx.scene.text.Text;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class AircraftManager {
+public final class AircraftController {
     private final MapParameters mapParameters;
     private final ObjectProperty<ObservableAircraftState> selectedAircraftProperty;
     private final Pane pane;
 
-    public AircraftManager(MapParameters mapParameters,
-                           ObservableSet<ObservableAircraftState> aircraftStates,
-                           ObjectProperty<ObservableAircraftState> selectedAircraftProperty) {
+    public AircraftController(MapParameters mapParameters,
+                              ObservableSet<ObservableAircraftState> aircraftStates,
+                              ObjectProperty<ObservableAircraftState> selectedAircraftProperty) {
         assert aircraftStates.isEmpty(); // TODO should we instead create the initial nodes?
 
         var pane = new Pane();

@@ -15,7 +15,7 @@ import java.util.Objects;
 
 import static ch.epfl.javions.gui.TileManager.TILE_SIZE;
 
-public final class BaseMapManager {
+public final class BaseMapController {
     private final TileManager tileManager;
     private final MapParameters mapParameters;
 
@@ -24,7 +24,7 @@ public final class BaseMapManager {
 
     private boolean redrawNeeded;
 
-    public BaseMapManager(TileManager tileManager, MapParameters mapParameters) {
+    public BaseMapController(TileManager tileManager, MapParameters mapParameters) {
         var canvas = new Canvas();
         var pane = new Pane(canvas);
 

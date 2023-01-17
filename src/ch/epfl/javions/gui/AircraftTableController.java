@@ -25,13 +25,13 @@ import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 
-public final class AircraftTableManager {
+public final class AircraftTableController {
     private final TableView<ObservableAircraftState> tableView;
     private final Pane pane;
     private Consumer<ObservableAircraftState> doubleClickConsumer;
 
-    public AircraftTableManager(ObservableSet<ObservableAircraftState> aircraftStates,
-                                ObjectProperty<ObservableAircraftState> selectedAddressProperty) {
+    public AircraftTableController(ObservableSet<ObservableAircraftState> aircraftStates,
+                                   ObjectProperty<ObservableAircraftState> selectedAddressProperty) {
         var tableView = createTableView();
         var pane = new BorderPane(tableView);
         pane.getStylesheets().add("table.css");

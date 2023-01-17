@@ -7,12 +7,12 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 
-public final class StatusLineManager {
+public final class StatusLineController {
     private final Pane statusPane;
     private final IntegerProperty messageCountProperty;
     private final IntegerProperty aircraftCountProperty;
 
-    public StatusLineManager() {
+    public StatusLineController() {
         var messageCountProperty = new SimpleIntegerProperty();
         var aircraftCountProperty = new SimpleIntegerProperty();
 
