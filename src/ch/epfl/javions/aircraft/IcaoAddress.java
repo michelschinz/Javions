@@ -5,9 +5,10 @@ import ch.epfl.javions.ConstrainedString;
 import java.util.regex.Pattern;
 
 public final class IcaoAddress extends ConstrainedString {
-    private static final Pattern VALID = Pattern.compile("[0-9A-F]{6}");
+    private static final Pattern VALID_ADDRESS =
+            Pattern.compile("[0-9A-F]{6}");
 
     public IcaoAddress(String address) {
-        super(false, VALID, address);
+        super(false, VALID_ADDRESS, address);
     }
 }
