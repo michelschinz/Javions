@@ -24,6 +24,7 @@ public final class Units {
         public static final double RADIAN = 1;
         public static final double TURN = 2 * Math.PI * RADIAN;
         public static final double DEGREE = TURN / 360;
+        public static final double T32 = Math.scalb(TURN, -32);
     }
 
     public static final class Time {
