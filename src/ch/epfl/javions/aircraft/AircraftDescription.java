@@ -11,4 +11,9 @@ public final class AircraftDescription extends ConstrainedString {
     public AircraftDescription(String description) {
         super(true, VALID_DESCRIPTION, description);
     }
+
+    @Override
+    public boolean equals(Object thatO) {
+        return thatO instanceof AircraftDescription that && equalsConstrainedString(that);
+    }
 }

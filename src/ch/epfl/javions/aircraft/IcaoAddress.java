@@ -11,4 +11,9 @@ public final class IcaoAddress extends ConstrainedString {
     public IcaoAddress(String address) {
         super(false, VALID_ADDRESS, address);
     }
+
+    @Override
+    public boolean equals(Object thatO) {
+        return thatO instanceof IcaoAddress that && equalsConstrainedString(that);
+    }
 }

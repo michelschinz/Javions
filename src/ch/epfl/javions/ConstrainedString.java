@@ -1,6 +1,5 @@
 package ch.epfl.javions;
 
-import java.util.Objects;
 import java.util.regex.Pattern;
 
 public abstract class ConstrainedString {
@@ -16,9 +15,8 @@ public abstract class ConstrainedString {
         return string.hashCode();
     }
 
-    @Override
-    public boolean equals(Object thatO) {
-        return thatO instanceof ConstrainedString that && Objects.equals(this.string, that.string);
+    protected boolean equalsConstrainedString(ConstrainedString that) {
+        return this.string.equals(that.string);
     }
 
     @Override

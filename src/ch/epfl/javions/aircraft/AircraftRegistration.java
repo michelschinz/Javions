@@ -11,4 +11,9 @@ public final class AircraftRegistration extends ConstrainedString {
     public AircraftRegistration(String registration) {
         super(false, VALID_REGISTRATION, registration);
     }
+
+    @Override
+    public boolean equals(Object thatO) {
+        return thatO instanceof AircraftRegistration that && equalsConstrainedString(that);
+    }
 }

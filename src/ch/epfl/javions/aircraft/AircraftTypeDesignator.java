@@ -11,4 +11,9 @@ public final class AircraftTypeDesignator extends ConstrainedString {
     public AircraftTypeDesignator(String designator) {
         super(true, VALID_DESIGNATOR, designator);
     }
+
+    @Override
+    public boolean equals(Object thatO) {
+        return thatO instanceof AircraftTypeDesignator that && equalsConstrainedString(that);
+    }
 }
