@@ -42,8 +42,6 @@ public final class Units {
     }
 
     public static final class Speed {
-        public static final double METERS_PER_SECOND = Distance.METER / Time.SECOND;
-        public static final double FEET_PER_MINUTE = Distance.FOOT / Time.MINUTE;
         public static final double KNOT = Distance.NAUTICAL_MILE / Time.HOUR;
         public static final double KILOMETERS_PER_HOUR = Distance.KILOMETER / Time.HOUR;
     }
