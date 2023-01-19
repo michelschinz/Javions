@@ -7,7 +7,9 @@ public final class AircraftIdentificationMessage extends Message {
     private static final int CALLSIGN_CHAR_BITS = 6;
 
     public int category() {
-        return (0xE - rawMessage.typeCode()) << 4 | rawMessage.capability();
+        var payload = rawMessage.payload();
+        var category = Bits.extractUInt(payload, 48, 3);
+        return (0xE - rawMessage.typeCode()) << 4 | category;
     }
 
     public String callSign() {

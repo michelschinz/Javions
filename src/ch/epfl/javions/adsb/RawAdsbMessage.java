@@ -22,10 +22,6 @@ public record RawAdsbMessage(long timeStamp,
         return Bits.extractUInt(dfAndCa, 3, 5);
     }
 
-    public int capability() {
-        return Bits.extractUInt(dfAndCa, 0, 3);
-    }
-
     public int typeCode() {
         return Bits.extractUInt(payload, 51, 5);
     }
