@@ -5,8 +5,6 @@ import static java.lang.Math.*;
 public final class Math2 {
     private Math2() {}
 
-    public static final double TAU = Math.scalb(Math.PI, 1);
-
     public static int clamp(int min, int v, int max) {
         Preconditions.checkArgument(min <= max);
         return max(min, min(v, max));

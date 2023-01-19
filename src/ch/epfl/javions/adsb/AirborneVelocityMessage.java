@@ -104,7 +104,7 @@ public final class AirborneVelocityMessage extends Message {
     private static double track(long payload) {
         assert velocityType(payload) == VelocityType.GROUND;
         var signedTrack = Math.atan2(velocityEW(payload), velocityNS(payload));
-        return signedTrack < 0 ? signedTrack + Math2.TAU : signedTrack;
+        return signedTrack < 0 ? signedTrack + Units.Angle.TURN : signedTrack;
     }
 
     private static double heading(long payload) {

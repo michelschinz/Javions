@@ -3,7 +3,6 @@ package ch.epfl.javions.adsb;
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
 
-import static ch.epfl.javions.Math2.TAU;
 import static java.lang.Math.*;
 
 public final class CprDecoder {
@@ -20,7 +19,7 @@ public final class CprDecoder {
 
     private static int lonZones(double latitude) {
         var cosLat = cos(latitude * Units.Angle.TURN);
-        var nl = floor(TAU / acos(1 - LON_ZONES_NUMERATOR / (cosLat * cosLat)));
+        var nl = floor(Units.Angle.TURN / acos(1 - LON_ZONES_NUMERATOR / (cosLat * cosLat)));
         return Double.isNaN(nl) ? 1 : (int) nl;
     }
 
