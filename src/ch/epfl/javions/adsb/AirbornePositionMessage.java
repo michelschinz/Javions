@@ -22,6 +22,10 @@ public final class AirbornePositionMessage extends Message {
     private static final int ALTITUDE_Q_BIT_UPPER_MASK = ~0 << (ALTITUDE_Q_BIT_INDEX + 1);
     private static final int ALTITUDE_Q_BIT_LOWER_MASK = (1 << ALTITUDE_Q_BIT_INDEX) - 1;
 
+    public AirbornePositionMessage(RawAdsbMessage rawMessage) {
+        super(rawMessage);
+    }
+
     public double altitude() {
         var encAltitude = UNPACKER.unpack(Field.ALT, rawMessage.payload());
         if (Bits.testBit(encAltitude, ALTITUDE_Q_BIT_INDEX)) {
@@ -75,9 +79,5 @@ public final class AirbornePositionMessage extends Message {
 
     public int cprLat() {
         return UNPACKER.unpack(Field.LATITUDE, rawMessage.payload());
-    }
-
-    public AirbornePositionMessage(RawAdsbMessage rawMessage) {
-        super(rawMessage);
     }
 }

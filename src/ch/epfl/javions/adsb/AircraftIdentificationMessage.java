@@ -6,6 +6,10 @@ public final class AircraftIdentificationMessage extends Message {
     private static final int CALLSIGN_LENGTH = 8;
     private static final int CALLSIGN_CHAR_BITS = 6;
 
+    public AircraftIdentificationMessage(RawAdsbMessage rawMessage) {
+        super(rawMessage);
+    }
+
     public int category() {
         var payload = rawMessage.payload();
         var category = Bits.extractUInt(payload, 48, 3);
@@ -21,9 +25,5 @@ public final class AircraftIdentificationMessage extends Message {
             callSignChars[i] = (char) ((n < 32 ? 0b0100_0000 : 0) | n);
         }
         return new String(callSignChars).trim();
-    }
-
-    public AircraftIdentificationMessage(RawAdsbMessage rawMessage) {
-        super(rawMessage);
     }
 }

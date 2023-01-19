@@ -54,6 +54,10 @@ public final class AirborneVelocityMessage extends Message {
             field(Field.INTENT_CHANGE, 1),
             field(Field.SUB_TYPE, 3));
 
+    public AirborneVelocityMessage(RawAdsbMessage rawMessage) {
+        super(rawMessage);
+    }
+
     private static int subType(long payload) {
         return UNPACKER.unpack(Field.SUB_TYPE, payload);
     }
@@ -122,9 +126,5 @@ public final class AirborneVelocityMessage extends Message {
             case GROUND -> track(payload);
             case AIR -> heading(payload);
         };
-    }
-
-    public AirborneVelocityMessage(RawAdsbMessage rawMessage) {
-        super(rawMessage);
     }
 }
