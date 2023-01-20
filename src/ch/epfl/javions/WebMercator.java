@@ -8,14 +8,16 @@ public final class WebMercator {
     private WebMercator() {}
 
     public static double x(int zoomLevel, double lon) {
-        return scalb(lon * (1d / Units.Angle.TURN) + 0.5, shiftFor(zoomLevel));
+        var x = 0.5 + lon * (1d / Units.Angle.TURN);
+        return atZoomLevel(zoomLevel, x);
     }
 
     public static double y(int zoomLevel, double lat) {
-        return scalb(0.5 - asinh(tan(lat)) * (1d / Units.Angle.TURN), shiftFor(zoomLevel));
+        var y = 0.5 - asinh(tan(lat)) * (1d / Units.Angle.TURN);
+        return atZoomLevel(zoomLevel, y);
     }
 
-    private static int shiftFor(int zoomLevel) {
-        return 8 + zoomLevel;
+    private static double atZoomLevel(int z, double v) {
+        return scalb(v, 8 + z);
     }
 }
