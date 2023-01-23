@@ -29,6 +29,7 @@ public final class AdsbDemodulator {
     private static final Crc24 CRC_24 = new Crc24(Crc24.GENERATOR);
 
     private final PowerWindow window;
+    private final byte[] messageBuffer = new byte[MESSAGE_BYTES];
 
     public AdsbDemodulator(InputStream samplesStream) throws IOException {
         this.window = new PowerWindow(samplesStream, LONG_MESSAGE_WIDTH);
@@ -65,13 +66,12 @@ public final class AdsbDemodulator {
         if (!isValid(firstByte)) return null;
 
         // Check CRC
-        var frameBytes = new byte[MESSAGE_BYTES];
-        frameBytes[0] = (byte) firstByte;
+        messageBuffer[0] = (byte) firstByte;
         for (var i = 1; i < MESSAGE_BYTES; i += 1)
-            frameBytes[i] = (byte) getByte(i);
+            messageBuffer[i] = (byte) getByte(i);
 
-        return CRC_24.crc(frameBytes) == 0
-                ? RawAdsbMessage.of(timeStamp(), ByteString.ofBytes(frameBytes))
+        return CRC_24.crc(messageBuffer) == 0
+                ? RawAdsbMessage.of(timeStamp(), ByteString.ofBytes(messageBuffer))
                 : null;
     }
 
