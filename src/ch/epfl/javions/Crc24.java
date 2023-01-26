@@ -14,7 +14,7 @@ public final class Crc24 {
 
     private static int[] buildTable(int generator) {
         var table = new int[0x100];
-        for (var b = 0; b < 0x100; b += 1) {
+        for (var b = 0; b < table.length; b += 1) {
             var crc = b << 16;
             for (var i = 0; i < 8; i += 1) {
                 crc <<= 1;
