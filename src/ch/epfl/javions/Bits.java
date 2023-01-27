@@ -13,6 +13,6 @@ public final class Bits {
 
     public static boolean testBit(long value, int bit) {
         Objects.checkIndex(bit, Long.SIZE);
-        return ((value >> bit) & 1) != 0;
+        return (value & (1L << bit)) != 0;
     }
 }
