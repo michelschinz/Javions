@@ -5,6 +5,7 @@ import ch.epfl.javions.Preconditions;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.Objects;
 
 public final class SamplesDecoder {
     private final int chunkSize;
@@ -14,10 +15,9 @@ public final class SamplesDecoder {
     public SamplesDecoder(InputStream stream, int chunkSize) {
         Preconditions.checkArgument(chunkSize > 0);
 
-        var byteChunkSize = chunkSize * Short.BYTES;
         this.chunkSize = chunkSize;
-        this.byteChunk = new byte[byteChunkSize];
-        this.stream = stream;
+        this.byteChunk = new byte[chunkSize * Short.BYTES];
+        this.stream = Objects.requireNonNull(stream);
     }
 
     public int readChunk(short[] chunk) throws IOException {
