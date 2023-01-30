@@ -3,6 +3,8 @@ package ch.epfl.javions;
 import java.util.Objects;
 
 public final class Bits {
+    private Bits() {}
+
     public static int extractUInt(long value, int startBit, int length) {
         Preconditions.checkArgument(0 < length && length < Integer.SIZE);
         Objects.checkFromIndexSize(startBit, length, Long.SIZE);
