@@ -3,12 +3,12 @@ package ch.epfl.javions;
 public record GeoPos(int longitudeT32, int latitudeT32) {
     private static final int MAX_ABSOLUTE_LATITUDE_T32 = 1 << (Integer.SIZE - 2);
 
-    public static boolean isValid(int longitudeT32, int latitudeT32) {
+    public static boolean isValidLatitudeT32(int latitudeT32) {
         return -MAX_ABSOLUTE_LATITUDE_T32 <= latitudeT32 && latitudeT32 <= MAX_ABSOLUTE_LATITUDE_T32;
     }
 
     public GeoPos {
-        Preconditions.checkArgument(isValid(longitudeT32, latitudeT32));
+        Preconditions.checkArgument(isValidLatitudeT32(latitudeT32));
     }
 
     public double longitude() {
