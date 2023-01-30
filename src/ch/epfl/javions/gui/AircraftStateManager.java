@@ -7,6 +7,7 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableSet;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.HashMap;
 import java.util.Map;
@@ -35,7 +36,7 @@ public final class AircraftStateManager {
         return unmodifiableStates;
     }
 
-    public void updateWithMessage(Message message) {
+    public void updateWithMessage(Message message) throws IOException {
         var address = message.icaoAddress();
 
         var accumulator = accumulators.get(address);

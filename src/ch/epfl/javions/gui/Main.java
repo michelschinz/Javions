@@ -86,7 +86,11 @@ public final class Main extends Application {
             public void handle(long now) {
                 var messagesReceived = 0;
                 while (!messageQueue.isEmpty()) {
-                    aircraftStateManager.updateWithMessage(messageQueue.remove());
+                    try {
+                        aircraftStateManager.updateWithMessage(messageQueue.remove());
+                    } catch (IOException e) {
+                        e.printStackTrace(System.err);
+                    }
                     messagesReceived += 1;
                 }
                 statusLineController.messageCountProperty().set(statusLineController.messageCountProperty().get() + messagesReceived);
