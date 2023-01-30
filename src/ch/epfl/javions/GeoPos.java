@@ -1,5 +1,7 @@
 package ch.epfl.javions;
 
+import java.util.Locale;
+
 public record GeoPos(int longitudeT32, int latitudeT32) {
     private static final int MAX_ABSOLUTE_LATITUDE_T32 = 1 << (Integer.SIZE - 2);
 
@@ -23,6 +25,6 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
     public String toString() {
         var longitudeDeg = longitudeT32 * (Units.Angle.T32 / Units.Angle.DEGREE);
         var latitudeDeg = latitudeT32 * (Units.Angle.T32 / Units.Angle.DEGREE);
-        return "(%.5f°, %.5f°)".formatted(longitudeDeg, latitudeDeg);
+        return String.format(Locale.ROOT, "(%.5f°, %.5f°)", longitudeDeg, latitudeDeg);
     }
 }
