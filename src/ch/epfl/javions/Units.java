@@ -1,7 +1,5 @@
 package ch.epfl.javions;
 
-import java.util.function.DoubleUnaryOperator;
-
 public final class Units {
     /*
      Rules:
@@ -11,10 +9,6 @@ public final class Units {
         but using a multiplication, e.g.:
           var lengthInFeet = length * (Distance.METER / Distance.FOOT);
     */
-
-    public static DoubleUnaryOperator converter(double toUnit) {
-        return v -> v * (1d / toUnit);
-    }
 
     // SI prefixes
     public static final double CENTI = 1e-2;

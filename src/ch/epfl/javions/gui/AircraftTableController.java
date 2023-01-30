@@ -64,12 +64,12 @@ public final class AircraftTableController {
                 newDoubleColumn(
                         "Longitude (°)",
                         lonLatExtractor(GeoPos::longitude),
-                        Units.converter(Units.Angle.DEGREE),
+                        l -> l * (Units.Angle.RADIAN / Units.Angle.DEGREE),
                         4),
                 newDoubleColumn(
                         "Latitude (°)",
                         lonLatExtractor(GeoPos::latitude),
-                        Units.converter(Units.Angle.DEGREE),
+                        l -> l * (Units.Angle.RADIAN / Units.Angle.DEGREE),
                         4),
                 newDoubleColumn(
                         "Altitude (m)",
@@ -79,7 +79,7 @@ public final class AircraftTableController {
                 newDoubleColumn(
                         "Vitesse (km/h)",
                         ObservableAircraftState::velocityProperty,
-                        Units.converter(Units.Speed.KILOMETERS_PER_HOUR),
+                        s -> s * (1d / Units.Speed.KILOMETERS_PER_HOUR),
                         0));
 
         var tableView = new TableView<ObservableAircraftState>();
