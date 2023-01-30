@@ -5,14 +5,14 @@ import ch.epfl.javions.ByteString;
 import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
-public record RawAdsbMessage(long timeStamp,
+public record RawAdsbMessage(long timeStampNs,
                              int dfAndCa,
                              IcaoAddress icaoAddress,
                              long payload) {
-    public static RawAdsbMessage of(long timeStamp, ByteString bytes) {
+    public static RawAdsbMessage of(long timeStampNs, ByteString bytes) {
         Preconditions.checkArgument(bytes.size() == 14);
         return new RawAdsbMessage(
-                timeStamp,
+                timeStampNs,
                 bytes.byteAt(0),
                 new IcaoAddress("%06X".formatted((int) bytes.bytesBetween(1, 4))),
                 bytes.bytesBetween(4, 11));

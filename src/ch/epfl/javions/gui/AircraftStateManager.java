@@ -49,7 +49,7 @@ public final class AircraftStateManager {
         accumulator.update(message);
         var updatedState = accumulator.stateSetter();
         if (updatedState.getPosition() != null) states.add(updatedState);
-        lastMessageTimeStampNs = message.timeStamp();
+        lastMessageTimeStampNs = message.timeStampNs();
     }
 
     // Remove aircraft for which we didn't get a message recently

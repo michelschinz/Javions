@@ -9,8 +9,8 @@ public abstract class Message {
         this.rawMessage = rawMessage;
     }
 
-    public long timeStamp() {
-        return rawMessage.timeStamp();
+    public long timeStampNs() {
+        return rawMessage.timeStampNs();
     }
 
     public IcaoAddress icaoAddress() {

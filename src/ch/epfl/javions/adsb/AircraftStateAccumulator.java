@@ -45,13 +45,13 @@ public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
 
             default -> throw new Error();
         }
-        stateSetter.setLastMessageTimeStampNs(message.timeStamp());
+        stateSetter.setLastMessageTimeStampNs(message.timeStampNs());
     }
 
     private static boolean isValidMessagePair(AirbornePositionMessage m1, AirbornePositionMessage m2) {
         return m1 != null
                && m2 != null
                && m1.isEven() != m2.isEven()
-               && Math.abs(m1.timeStamp() - m2.timeStamp()) <= MAX_INTER_MESSAGE_NS;
+               && Math.abs(m1.timeStampNs() - m2.timeStampNs()) <= MAX_INTER_MESSAGE_NS;
     }
 }
