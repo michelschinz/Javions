@@ -16,12 +16,8 @@ public final class ByteString {
         return new ByteString(HEX_FORMAT.parseHex(charSequence));
     }
 
-    public static ByteString ofBytes(byte[] bytes) {
-        return new ByteString(bytes.clone());
-    }
-
-    private ByteString(byte[] bytes) {
-        this.bytes = bytes;
+    public ByteString(byte[] bytes) {
+        this.bytes = bytes.clone();
     }
 
     public int size() {

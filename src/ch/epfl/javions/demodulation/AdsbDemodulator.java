@@ -71,7 +71,7 @@ public final class AdsbDemodulator {
             messageBuffer[i] = (byte) getByte(i);
 
         return CRC_24.crc(messageBuffer) == 0
-                ? RawAdsbMessage.of(timeStampNs(), ByteString.ofBytes(messageBuffer))
+                ? RawAdsbMessage.of(timeStampNs(), new ByteString(messageBuffer))
                 : null;
     }
 
