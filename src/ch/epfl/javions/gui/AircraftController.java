@@ -151,7 +151,7 @@ public final class AircraftController {
         }
 
         var velocity = optionalNumericString(aircraftState.velocityProperty(),
-                Units.Speed.KILOMETERS_PER_HOUR,
+                Units.Speed.KILOMETER_PER_HOUR,
                 "km/h");
         var altitude = optionalNumericString(aircraftState.altitudeProperty(),
                 Units.Length.METER,

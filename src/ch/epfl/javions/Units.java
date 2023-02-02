@@ -42,7 +42,7 @@ public final class Units {
         private Speed() {}
 
         public static final double KNOT = Length.NAUTICAL_MILE / Time.HOUR;
-        public static final double KILOMETERS_PER_HOUR = Length.KILOMETER / Time.HOUR;
+        public static final double KILOMETER_PER_HOUR = Length.KILOMETER / Time.HOUR;
     }
 
     public static double convert(double value, double fromUnit, double toUnit) {
