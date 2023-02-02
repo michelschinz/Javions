@@ -71,7 +71,7 @@ public final class AdsbDemodulator {
             messageBuffer[i] = (byte) getByte(i);
 
         return CRC_24.crc(messageBuffer) == 0
-                ? RawAdsbMessage.of(timeStamp(), ByteString.ofBytes(messageBuffer))
+                ? RawAdsbMessage.of(timeStampNs(), ByteString.ofBytes(messageBuffer))
                 : null;
     }
 
@@ -79,7 +79,7 @@ public final class AdsbDemodulator {
         return Bits.extractUInt(firstByte, 3, 5) == 17;
     }
 
-    private long timeStamp() {
+    private long timeStampNs() {
         return window.position() * NANOSECONDS_PER_SAMPLE;
     }
 
