@@ -14,7 +14,7 @@ import ch.epfl.javions.ByteString;
 public final class AvrParser {
     public static ByteString parseAVR(String s) {
         return switch (s.length()) {
-            case 30 -> ByteString.ofHexadecimalString(s, 1, 29);
+            case 30 -> ByteString.ofHexadecimalString(s.substring(1, 29));
             default -> throw new Error("invalid AVR frame: %s".formatted(s));
         };
     }
