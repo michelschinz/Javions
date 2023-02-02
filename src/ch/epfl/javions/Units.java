@@ -12,12 +12,6 @@ public final class Units {
         public static final double T32 = Math.scalb(TURN, -32);
     }
 
-    public static final class Time {
-        public static final double SECOND = 1;
-        public static final double MINUTE = 60 * SECOND;
-        public static final double HOUR = 60 * MINUTE;
-    }
-
     public static class Length {
         public static final double METER = 1;
         public static final double CENTIMETER = CENTI * METER;
@@ -25,6 +19,12 @@ public final class Units {
         public static final double INCH = 2.54 * CENTIMETER;
         public static final double FOOT = 12 * INCH;
         public static final double NAUTICAL_MILE = 1852 * METER;
+    }
+
+    public static final class Time {
+        public static final double SECOND = 1;
+        public static final double MINUTE = 60 * SECOND;
+        public static final double HOUR = 60 * MINUTE;
     }
 
     public static final class Speed {
