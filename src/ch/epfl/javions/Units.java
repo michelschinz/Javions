@@ -1,15 +1,6 @@
 package ch.epfl.javions;
 
 public final class Units {
-    /*
-     Rules:
-     1. to convert a value to the base unit, multiply it by its unit, e.g.:
-          var length = 6 * Distance.FOOT;  // length = 1.8288 (6 ft in m)
-     2. to convert a value from the base unit to another unit, divide by its unit,
-        but using a multiplication, e.g.:
-          var lengthInFeet = length * (Distance.METER / Distance.FOOT);
-    */
-
     // SI prefixes
     public static final double CENTI = 1e-2;
     public static final double KILO = 1e3;
@@ -39,5 +30,17 @@ public final class Units {
     public static final class Speed {
         public static final double KNOT = Distance.NAUTICAL_MILE / Time.HOUR;
         public static final double KILOMETERS_PER_HOUR = Distance.KILOMETER / Time.HOUR;
+    }
+
+    public static double convert(double value, double fromUnit, double toUnit) {
+        return value * (fromUnit / toUnit);
+    }
+
+    public static double convertFrom(double value, double fromUnit) {
+        return value * fromUnit;
+    }
+
+    public static double convertTo(double value, double toUnit) {
+        return value * (1d / toUnit);
     }
 }

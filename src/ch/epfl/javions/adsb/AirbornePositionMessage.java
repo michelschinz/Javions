@@ -31,7 +31,7 @@ public final class AirbornePositionMessage extends Message {
         if (Bits.testBit(encAltitude, ALTITUDE_Q_BIT_INDEX)) {
             var ft25 = (encAltitude & ALTITUDE_Q_BIT_UPPER_MASK) >> 1
                     | (encAltitude & ALTITUDE_Q_BIT_LOWER_MASK);
-            return (-1000 + ft25 * 25) * Units.Distance.FOOT;
+            return Units.convertFrom(-1000 + ft25 * 25, Units.Distance.FOOT);
         } else {
             return decodeGillhamAltitude(permuteGillham(encAltitude));
         }
@@ -59,7 +59,7 @@ public final class AirbornePositionMessage extends Message {
 
         var ft500 = gray16ToBinary(Bits.extractUInt(encAltitude, 3, 9));
         if ((ft500 & 1) == 1) ft100 = 6 - ft100;
-        return (-1300 + ft100 * 100 + ft500 * 500) * Units.Distance.FOOT;
+        return Units.convertFrom(-1300 + ft100 * 100 + ft500 * 500, Units.Distance.FOOT);
     }
 
     private static int gray16ToBinary(int gray) {

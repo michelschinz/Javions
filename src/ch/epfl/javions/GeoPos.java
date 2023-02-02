@@ -14,17 +14,17 @@ public record GeoPos(int longitudeT32, int latitudeT32) {
     }
 
     public double longitude() {
-        return longitudeT32 * Units.Angle.T32;
+        return Units.convertFrom(longitudeT32, Units.Angle.T32);
     }
 
     public double latitude() {
-        return latitudeT32 * Units.Angle.T32;
+        return Units.convertFrom(latitudeT32, Units.Angle.T32);
     }
 
     @Override
     public String toString() {
-        var longitudeDeg = longitudeT32 * (Units.Angle.T32 / Units.Angle.DEGREE);
-        var latitudeDeg = latitudeT32 * (Units.Angle.T32 / Units.Angle.DEGREE);
+        var longitudeDeg = Units.convert(longitudeT32, Units.Angle.T32, Units.Angle.DEGREE);
+        var latitudeDeg = Units.convert(latitudeT32, Units.Angle.T32, Units.Angle.DEGREE);
         return String.format(Locale.ROOT, "(%.5f°, %.5f°)", longitudeDeg, latitudeDeg);
     }
 }

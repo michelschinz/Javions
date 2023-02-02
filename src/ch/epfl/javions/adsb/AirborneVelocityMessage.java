@@ -109,15 +109,16 @@ public final class AirborneVelocityMessage extends Message {
 
     private static double heading(long payload) {
         assert velocityType(payload) == VelocityType.AIR;
-        return Math.scalb(UNPACKER.unpack(FIELD_HEADING, payload), -10) * Units.Angle.TURN;
+        return Units.convertFrom(Math.scalb(UNPACKER.unpack(FIELD_HEADING, payload), -10), Units.Angle.TURN);
     }
 
     public double velocity() {
         var payload = rawMessage.payload();
-        return switch (velocityType(payload)) {
+        var value = switch (velocityType(payload)) {
             case GROUND -> Math.hypot(velocityNS(payload), velocityEW(payload));
             case AIR -> UNPACKER.unpack(FIELD_AIRSPEED, payload) - 1;
-        } * unit(payload);
+        };
+        return Units.convertFrom(value, unit(payload));
     }
 
     public double trackOrHeading() {

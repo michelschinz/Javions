@@ -64,22 +64,22 @@ public final class AircraftTableController {
                 newDoubleColumn(
                         "Longitude (°)",
                         lonLatExtractor(GeoPos::longitude),
-                        l -> l * (Units.Angle.RADIAN / Units.Angle.DEGREE),
+                        Units.Angle.DEGREE,
                         4),
                 newDoubleColumn(
                         "Latitude (°)",
                         lonLatExtractor(GeoPos::latitude),
-                        l -> l * (Units.Angle.RADIAN / Units.Angle.DEGREE),
+                        Units.Angle.DEGREE,
                         4),
                 newDoubleColumn(
                         "Altitude (m)",
                         ObservableAircraftState::altitudeProperty,
-                        DoubleUnaryOperator.identity(),
+                        Units.Distance.METER,
                         0),
                 newDoubleColumn(
                         "Vitesse (km/h)",
                         ObservableAircraftState::velocityProperty,
-                        s -> s * (1d / Units.Speed.KILOMETERS_PER_HOUR),
+                        Units.Speed.KILOMETERS_PER_HOUR,
                         0));
 
         var tableView = new TableView<ObservableAircraftState>();
@@ -118,7 +118,7 @@ public final class AircraftTableController {
     private static TableColumn<ObservableAircraftState, String> newDoubleColumn(
             String title,
             Function<ObservableAircraftState, DoubleExpression> propertyExtractor,
-            DoubleUnaryOperator valueTransformer,
+            double unit,
             int fractionDigits) {
         var column = new TableColumn<ObservableAircraftState, String>(title);
 
@@ -138,7 +138,7 @@ public final class AircraftTableController {
         column.setCellValueFactory(f -> {
             var p = propertyExtractor.apply(f.getValue());
             return Bindings.when(p.greaterThan(Double.NEGATIVE_INFINITY))
-                    .then(formatter.format(valueTransformer.applyAsDouble(p.get())))
+                    .then(formatter.format(Units.convertTo(p.get(), unit)))
                     .otherwise("");
         });
 

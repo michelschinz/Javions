@@ -128,12 +128,12 @@ public final class AircraftController {
         return aircraftPath;
     }
 
-    private StringBinding optionalNumericString(DoubleExpression expression, double factor, String suffix) {
+    private StringBinding optionalNumericString(DoubleExpression expression, double unit, String suffix) {
         return Bindings.createStringBinding(() -> {
             var value = expression.get();
             return Double.isNaN(value)
                     ? "? " + suffix
-                    : String.format("%.0f %s", value * factor, suffix);
+                    : String.format("%.0f %s", Units.convertTo(value, unit), suffix);
         }, expression);
     }
 
@@ -151,10 +151,10 @@ public final class AircraftController {
         }
 
         var velocity = optionalNumericString(aircraftState.velocityProperty(),
-                1d / Units.Speed.KILOMETERS_PER_HOUR,
+                Units.Speed.KILOMETERS_PER_HOUR,
                 "km/h");
         var altitude = optionalNumericString(aircraftState.altitudeProperty(),
-                1d / Units.Distance.METER,
+                Units.Distance.METER,
                 "m");
 
         var label = new Text();
@@ -174,7 +174,7 @@ public final class AircraftController {
 
     private static Color colorForAltitude(double altitude) {
         // FIXME improve (and avoid the arbitrary constant)
-        var scaledAltitude = altitude / (11_000d * Units.Distance.METER);
+        var scaledAltitude = altitude / 11_000d;
         return ColorRamp.PLASMA.at(Math.pow(scaledAltitude, 1d / 3d));
     }
 
