@@ -1,5 +1,8 @@
 package ch.epfl.javions;
 
+import static java.lang.Math.PI;
+import static java.lang.Math.scalb;
+
 public final class Units {
     private Units() {}
 
@@ -11,9 +14,9 @@ public final class Units {
         private Angle() {}
 
         public static final double RADIAN = 1;
-        public static final double TURN = Math.scalb(Math.PI, 1) * RADIAN;
+        public static final double TURN = scalb(PI, 1) * RADIAN;
         public static final double DEGREE = TURN / 360;
-        public static final double T32 = Math.scalb(TURN, -32);
+        public static final double T32 = scalb(TURN, -32);
     }
 
     public static class Length {
