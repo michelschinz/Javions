@@ -154,7 +154,7 @@ public final class AircraftController {
                 Units.Speed.KILOMETERS_PER_HOUR,
                 "km/h");
         var altitude = optionalNumericString(aircraftState.altitudeProperty(),
-                Units.Distance.METER,
+                Units.Length.METER,
                 "m");
 
         var label = new Text();

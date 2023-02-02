@@ -21,7 +21,6 @@ import java.text.ParseException;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
-import java.util.function.DoubleUnaryOperator;
 import java.util.function.Function;
 import java.util.function.ToDoubleFunction;
 
@@ -74,7 +73,7 @@ public final class AircraftTableController {
                 newDoubleColumn(
                         "Altitude (m)",
                         ObservableAircraftState::altitudeProperty,
-                        Units.Distance.METER,
+                        Units.Length.METER,
                         0),
                 newDoubleColumn(
                         "Vitesse (km/h)",

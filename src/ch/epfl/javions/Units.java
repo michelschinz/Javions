@@ -18,7 +18,7 @@ public final class Units {
         public static final double HOUR = 60 * MINUTE;
     }
 
-    public static class Distance {
+    public static class Length {
         public static final double METER = 1;
         public static final double CENTIMETER = CENTI * METER;
         public static final double KILOMETER = KILO * METER;
@@ -28,8 +28,8 @@ public final class Units {
     }
 
     public static final class Speed {
-        public static final double KNOT = Distance.NAUTICAL_MILE / Time.HOUR;
-        public static final double KILOMETERS_PER_HOUR = Distance.KILOMETER / Time.HOUR;
+        public static final double KNOT = Length.NAUTICAL_MILE / Time.HOUR;
+        public static final double KILOMETERS_PER_HOUR = Length.KILOMETER / Time.HOUR;
     }
 
     public static double convert(double value, double fromUnit, double toUnit) {
