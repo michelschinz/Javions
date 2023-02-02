@@ -14,7 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 
 public final class AircraftStateManager {
-    private static final long MAX_INTER_MESSAGE_DELAY =
+    private static final long MAX_NO_MESSAGE_NS =
             Duration.ofMinutes(1).toNanos();
 
     private final AircraftDatabase aircraftDatabase;
@@ -58,7 +58,7 @@ public final class AircraftStateManager {
         while (accumulatorsIt.hasNext()) {
             var accumulator = accumulatorsIt.next();
             var state = accumulator.stateSetter();
-            if (lastMessageTimeStampNs - state.getLastMessageTimeStampNs() > MAX_INTER_MESSAGE_DELAY) {
+            if (lastMessageTimeStampNs - state.getLastMessageTimeStampNs() > MAX_NO_MESSAGE_NS) {
                 states.remove(state);
                 accumulatorsIt.remove();
             }
