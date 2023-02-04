@@ -169,6 +169,10 @@ public final class AircraftController {
         group.layoutXProperty().bind(layoutX);
         group.layoutYProperty().bind(layoutY);
 
+        group.visibleProperty().bind(
+                mapParameters.zoomProperty().greaterThan(10)
+                        .or(selectedAircraftProperty.isEqualTo(aircraftState)));
+
         return group;
     }
 
