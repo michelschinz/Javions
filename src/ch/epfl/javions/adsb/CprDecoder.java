@@ -52,11 +52,16 @@ public final class CprDecoder {
         return zIn < 0 ? zIn + zonesCount : zIn;
     }
 
-    private static GeoPos geoPos(double lon, double lat) {
-        var normalizedLon = (int) scalb(lon < 0.5 ? lon : lon - 1, Integer.SIZE);
-        var normalizedLat = (int) scalb(lat < 0.75 ? lat : lat - 1, Integer.SIZE);
-        return GeoPos.isValidLatitudeT32(normalizedLat)
-                ? new GeoPos(normalizedLon, normalizedLat)
+    private static int turnToT32(double angleTurn) {
+        var centeredAngleTurn = angleTurn < 0.5 ? angleTurn : angleTurn - 1;
+        return (int) rint(Units.convert(centeredAngleTurn, Units.Angle.TURN, Units.Angle.T32));
+    }
+
+    private static GeoPos geoPos(double lonTurn, double latTurn) {
+        var lonT32 = turnToT32(lonTurn);
+        var latT32 = turnToT32(latTurn);
+        return GeoPos.isValidLatitudeT32(latT32)
+                ? new GeoPos(lonT32, latT32)
                 : null;
     }
 }
