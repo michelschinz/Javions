@@ -53,7 +53,7 @@ public final class AircraftController {
     private void installHandlers(ObservableSet<ObservableAircraftState> aircraftStates) {
         aircraftStates.addListener((SetChangeListener<ObservableAircraftState>) change -> {
             if (change.wasRemoved()) {
-                var idToRemove = change.getElementRemoved().address().toString();
+                var idToRemove = change.getElementRemoved().address().string();
                 pane.getChildren().removeIf(n -> idToRemove.equals(n.getId()));
             }
             if (change.wasAdded())
@@ -91,7 +91,7 @@ public final class AircraftController {
                 trajectory(aircraftState),
                 label(aircraftState, layoutX, layoutY),
                 icon(aircraftState, layoutX, layoutY));
-        group.setId(aircraftState.address().toString());
+        group.setId(aircraftState.address().string());
         group.viewOrderProperty().bind(aircraftState.altitudeProperty().negate());
         return group;
     }
@@ -141,12 +141,12 @@ public final class AircraftController {
                        DoubleBinding layoutX,
                        DoubleBinding layoutY) {
         var fixedData = aircraftState.getFixedData();
-        var name = (Object) null;
+        Object name;
         if (fixedData != null) {
-            name = fixedData.registration();
+            name = fixedData.registration().string();
         } else {
             var callSign = Bindings.convert(aircraftState.callSignProperty());
-            var icao24 = Bindings.createStringBinding(aircraftState.address()::toString);
+            var icao24 = Bindings.createStringBinding(aircraftState.address()::string);
             name = Bindings.when(callSign.isNotEmpty()).then(callSign).otherwise(icao24);
         }
 

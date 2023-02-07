@@ -1,19 +1,13 @@
 package ch.epfl.javions.aircraft;
 
-import ch.epfl.javions.ConstrainedString;
+import ch.epfl.javions.Preconditions;
 
 import java.util.regex.Pattern;
 
-public final class IcaoAddress extends ConstrainedString {
-    private static final Pattern VALID_ADDRESS =
-            Pattern.compile("[0-9A-F]{6}");
+public record IcaoAddress(String string) {
+    private static final Pattern PATTERN = Pattern.compile("[0-9A-F]{6}");
 
-    public IcaoAddress(String address) {
-        super(false, VALID_ADDRESS, address);
-    }
-
-    @Override
-    public boolean equals(Object thatO) {
-        return thatO instanceof IcaoAddress that && equalsConstrainedString(that);
+    public IcaoAddress {
+        Preconditions.checkArgument(PATTERN.matcher(string).matches());
     }
 }

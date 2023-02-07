@@ -1,19 +1,13 @@
 package ch.epfl.javions.aircraft;
 
-import ch.epfl.javions.ConstrainedString;
+import ch.epfl.javions.Preconditions;
 
 import java.util.regex.Pattern;
 
-public final class AircraftRegistration extends ConstrainedString {
-    private static final Pattern VALID_REGISTRATION =
-            Pattern.compile("[A-Z0-9 .?/_+-]+");
+public record AircraftRegistration(String string) {
+    private static final Pattern PATTERN = Pattern.compile("[A-Z0-9 .?/_+-]+");
 
-    public AircraftRegistration(String registration) {
-        super(false, VALID_REGISTRATION, registration);
-    }
-
-    @Override
-    public boolean equals(Object thatO) {
-        return thatO instanceof AircraftRegistration that && equalsConstrainedString(that);
+    public AircraftRegistration {
+        Preconditions.checkArgument(PATTERN.matcher(string).matches());
     }
 }

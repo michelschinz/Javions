@@ -19,7 +19,7 @@ public final class AircraftDatabase {
              var entryStream = zipFile.getInputStream(zipFile.getEntry(entryName(address)));
              var reader = new BufferedReader(new InputStreamReader(entryStream, StandardCharsets.UTF_8))) {
 
-            var addressString = address.toString();
+            var addressString = address.string();
             while (true) {
                 var line = reader.readLine();
                 if (line == null) return null;
@@ -40,6 +40,6 @@ public final class AircraftDatabase {
     }
 
     private static String entryName(IcaoAddress address) {
-        return address.toString().substring(4, 6) + ".csv";
+        return address.string().substring(4, 6) + ".csv";
     }
 }

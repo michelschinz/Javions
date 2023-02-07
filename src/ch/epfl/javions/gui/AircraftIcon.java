@@ -295,7 +295,7 @@ public enum AircraftIcon {
         var maybeDesignatorIcon = TYPE_DESIGNATOR_TABLE.get(typeDesignator);
         if (maybeDesignatorIcon != null) return maybeDesignatorIcon;
 
-        var description = typeDescription.toString();
+        var description = typeDescription.string();
         if (description.startsWith("H")) return HELICOPTER;
 
         var maybeDescriptionIcon = switch (description) {
