@@ -56,8 +56,8 @@ public final class AircraftTableController {
 
     private static TableView<ObservableAircraftState> createTableView() {
         var columns = List.of(
-                newStringColumn("Hex", s -> Bindings.createStringBinding(() -> s.address().toString())),
-                newStringColumn("Vol", ObservableAircraftState::callSignProperty),
+                newStringColumn("OACI", s -> Bindings.createStringBinding(() -> s.address().toString())),
+                newStringColumn("Indicatif", ObservableAircraftState::callSignProperty),
                 newStringColumn("Immatriculation", fixedDataExtractor(AircraftData::registration)),
                 newStringColumn("Modèle", fixedDataExtractor(AircraftData::model)),
                 newDoubleColumn(
