@@ -4,10 +4,10 @@ import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.adsb.CallSign;
 import ch.epfl.javions.aircraft.AircraftData;
+import ch.epfl.javions.aircraft.IcaoAddress;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.DoubleExpression;
-import javafx.beans.binding.StringExpression;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ObservableDoubleValue;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.function.Consumer;
 import java.util.function.Function;
-import java.util.function.ToDoubleFunction;
 
 public final class AircraftTableController {
     private final TableView<ObservableAircraftState> tableView;
@@ -58,27 +57,27 @@ public final class AircraftTableController {
 
     private static TableView<ObservableAircraftState> createTableView() {
         var columns = List.of(
-                newStringColumn("OACI", s -> Bindings.createStringBinding(() -> s.address().string())),
-                newStringColumn("Indicatif", s -> s.callSignProperty().map(CallSign::string)),
-                newStringColumn("Immatriculation", fixedDataExtractor(d -> d.registration().string())),
-                newStringColumn("Modèle", fixedDataExtractor(AircraftData::model)),
-                newDoubleColumn(
-                        "Longitude (°)",
-                        lonLatExtractor(GeoPos::longitude),
+                newStringColumn("OACI",
+                        s -> makeObservable(s.address()).map(IcaoAddress::string)),
+                newStringColumn("Indicatif",
+                        s -> s.callSignProperty().map(CallSign::string)),
+                newStringColumn("Immatriculation",
+                        s -> makeObservable(s.getFixedData()).map(d -> d.registration().string())),
+                newStringColumn("Modèle",
+                        s -> makeObservable(s.getFixedData()).map(AircraftData::model)),
+                newDoubleColumn("Longitude (°)",
+                        s -> convert(s.positionProperty().map(GeoPos::longitude)),
                         Units.Angle.DEGREE,
                         4),
-                newDoubleColumn(
-                        "Latitude (°)",
-                        lonLatExtractor(GeoPos::latitude),
+                newDoubleColumn("Latitude (°)",
+                        s -> convert(s.positionProperty().map(GeoPos::latitude)),
                         Units.Angle.DEGREE,
                         4),
-                newDoubleColumn(
-                        "Altitude (m)",
+                newDoubleColumn("Altitude (m)",
                         ObservableAircraftState::altitudeProperty,
                         Units.Length.METER,
                         0),
-                newDoubleColumn(
-                        "Vitesse (km/h)",
+                newDoubleColumn("Vitesse (km/h)",
                         ObservableAircraftState::velocityProperty,
                         Units.Speed.KILOMETER_PER_HOUR,
                         0));
@@ -88,24 +87,6 @@ public final class AircraftTableController {
         tableView.setTableMenuButtonVisible(true);
         tableView.getColumns().setAll(columns);
         return tableView;
-    }
-
-    private static Function<ObservableAircraftState, DoubleExpression> lonLatExtractor(ToDoubleFunction<GeoPos> function) {
-        return state ->
-                Bindings.createDoubleBinding(() -> {
-                            var maybePosition = state.getPosition();
-                            return maybePosition == null ? Double.NaN : function.applyAsDouble(maybePosition);
-                        },
-                        state.positionProperty());
-    }
-
-    private static <T> Function<ObservableAircraftState, ObservableValue<String>> fixedDataExtractor(Function<AircraftData, T> f) {
-        return state -> {
-            var string = state.getFixedData() != null
-                    ? f.apply(state.getFixedData()).toString()
-                    : "";
-            return Bindings.createStringBinding(() -> string);
-        };
     }
 
     private static TableColumn<ObservableAircraftState, String> newStringColumn(
@@ -118,7 +99,7 @@ public final class AircraftTableController {
 
     private static TableColumn<ObservableAircraftState, String> newDoubleColumn(
             String title,
-            Function<ObservableAircraftState, DoubleExpression> propertyExtractor,
+            Function<ObservableAircraftState, ObservableDoubleValue> propertyExtractor,
             double unit,
             int fractionDigits) {
         var column = new TableColumn<ObservableAircraftState, String>(title);
@@ -138,7 +119,7 @@ public final class AircraftTableController {
 
         column.setCellValueFactory(f -> {
             var p = propertyExtractor.apply(f.getValue());
-            return Bindings.when(p.greaterThan(Double.NEGATIVE_INFINITY))
+            return Bindings.when(Bindings.greaterThan(p, Double.NEGATIVE_INFINITY))
                     .then(formatter.format(Units.convertTo(p.get(), unit)))
                     .otherwise("");
         });
@@ -149,6 +130,14 @@ public final class AircraftTableController {
                 : Double.compare(parseSafeDouble(formatter, s1), parseSafeDouble(formatter, s2)));
 
         return column;
+    }
+
+    private static <T> ObservableValue<T> makeObservable(T value) {
+        return Bindings.createObjectBinding(() -> value);
+    }
+
+    private static ObservableDoubleValue convert(ObservableValue<Double> observableValue) {
+        return Bindings.createDoubleBinding(observableValue::getValue, observableValue);
     }
 
     private static double parseSafeDouble(NumberFormat format, String string) {
