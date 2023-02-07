@@ -2,6 +2,7 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.adsb.AircraftStateSetter;
+import ch.epfl.javions.adsb.CallSign;
 import ch.epfl.javions.aircraft.AircraftData;
 import ch.epfl.javions.aircraft.IcaoAddress;
 import javafx.beans.property.*;
@@ -14,7 +15,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final IcaoAddress address;
     private final LongProperty lastMessageTimeStampNsProperty;
     private final IntegerProperty categoryProperty;
-    private final StringProperty callSignProperty;
+    private final ObjectProperty<CallSign> callSignProperty;
     private final ObjectProperty<GeoPos> positionProperty;
     private final ObservableList<GeoPosWithAltitude> trajectory;
     private final ObservableList<GeoPosWithAltitude> unmodifiableTrajectory;
@@ -29,7 +30,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.address = address;
         this.lastMessageTimeStampNsProperty = new SimpleLongProperty();
         this.categoryProperty = new SimpleIntegerProperty();
-        this.callSignProperty = new SimpleStringProperty("");
+        this.callSignProperty = new SimpleObjectProperty<>();
         this.positionProperty = new SimpleObjectProperty<>();
         this.trajectory = trajectory;
         this.unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory);
@@ -73,16 +74,16 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         categoryProperty.set(category);
     }
 
-    public StringProperty callSignProperty() {
+    public ObjectProperty<CallSign> callSignProperty() {
         return callSignProperty;
     }
 
-    public String getCallSign() {
+    public CallSign getCallSign() {
         return callSignProperty.get();
     }
 
     @Override
-    public void setCallSign(String callSign) {
+    public void setCallSign(CallSign callSign) {
         callSignProperty.set(callSign);
     }
 

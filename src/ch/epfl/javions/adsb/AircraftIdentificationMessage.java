@@ -16,7 +16,7 @@ public final class AircraftIdentificationMessage extends Message {
         return (0xE - rawMessage.typeCode()) << 4 | category;
     }
 
-    public String callSign() {
+    public CallSign callSign() {
         var payload = rawMessage.payload();
         var callSignChars = new char[CALLSIGN_LENGTH];
         for (var i = 0; i < CALLSIGN_LENGTH; i += 1) {
@@ -24,6 +24,6 @@ public final class AircraftIdentificationMessage extends Message {
             var n = Bits.extractUInt(payload, startBitI, CALLSIGN_CHAR_BITS);
             callSignChars[i] = (char) ((n < 32 ? 0b0100_0000 : 0) | n);
         }
-        return new String(callSignChars).trim();
+        return new CallSign(new String(callSignChars).trim());
     }
 }

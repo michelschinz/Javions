@@ -2,11 +2,13 @@ package ch.epfl.javions.gui;
 
 import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
+import ch.epfl.javions.adsb.CallSign;
 import ch.epfl.javions.aircraft.AircraftData;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.binding.StringExpression;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.scene.Node;
@@ -57,7 +59,7 @@ public final class AircraftTableController {
     private static TableView<ObservableAircraftState> createTableView() {
         var columns = List.of(
                 newStringColumn("OACI", s -> Bindings.createStringBinding(() -> s.address().string())),
-                newStringColumn("Indicatif", ObservableAircraftState::callSignProperty),
+                newStringColumn("Indicatif", s -> s.callSignProperty().map(CallSign::string)),
                 newStringColumn("Immatriculation", fixedDataExtractor(d -> d.registration().string())),
                 newStringColumn("Modèle", fixedDataExtractor(AircraftData::model)),
                 newDoubleColumn(
@@ -97,7 +99,7 @@ public final class AircraftTableController {
                         state.positionProperty());
     }
 
-    private static <T> Function<ObservableAircraftState, StringExpression> fixedDataExtractor(Function<AircraftData, T> f) {
+    private static <T> Function<ObservableAircraftState, ObservableValue<String>> fixedDataExtractor(Function<AircraftData, T> f) {
         return state -> {
             var string = state.getFixedData() != null
                     ? f.apply(state.getFixedData()).toString()
@@ -108,7 +110,7 @@ public final class AircraftTableController {
 
     private static TableColumn<ObservableAircraftState, String> newStringColumn(
             String title,
-            Function<ObservableAircraftState, StringExpression> propertyExtractor) {
+            Function<ObservableAircraftState, ObservableValue<String>> propertyExtractor) {
         var column = new TableColumn<ObservableAircraftState, String>(title);
         column.setCellValueFactory(f -> propertyExtractor.apply(f.getValue()));
         return column;
