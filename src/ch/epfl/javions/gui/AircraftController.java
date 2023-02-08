@@ -4,6 +4,7 @@ import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.Units.Angle;
 import ch.epfl.javions.WebMercator;
+import ch.epfl.javions.adsb.CallSign;
 import ch.epfl.javions.gui.ObservableAircraftState.GeoPosWithAltitude;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
@@ -145,7 +146,7 @@ public final class AircraftController {
         if (fixedData != null) {
             name = fixedData.registration().string();
         } else {
-            var callSign = Bindings.convert(aircraftState.callSignProperty());
+            var callSign = Bindings.convert(aircraftState.callSignProperty().map(CallSign::string));
             var icao24 = Bindings.createStringBinding(aircraftState.address()::string);
             name = Bindings.when(callSign.isNotEmpty()).then(callSign).otherwise(icao24);
         }
