@@ -5,16 +5,16 @@ import java.util.Objects;
 public final class Bits {
     private Bits() {}
 
-    public static int extractUInt(long value, int startBit, int length) {
-        Preconditions.checkArgument(0 < length && length < Integer.SIZE);
-        Objects.checkFromIndexSize(startBit, length, Long.SIZE);
+    public static int extractUInt(long value, int start, int size) {
+        Preconditions.checkArgument(0 < size && size < Integer.SIZE);
+        Objects.checkFromIndexSize(start, size, Long.SIZE);
 
-        var unusedBits = Long.SIZE - length;
-        return (int) ((value << (unusedBits - startBit)) >>> unusedBits);
+        var unusedBits = Long.SIZE - size;
+        return (int) ((value << (unusedBits - start)) >>> unusedBits);
     }
 
-    public static boolean testBit(long value, int bit) {
-        Objects.checkIndex(bit, Long.SIZE);
-        return (value & (1L << bit)) != 0;
+    public static boolean testBit(long value, int index) {
+        Objects.checkIndex(index, Long.SIZE);
+        return (value & (1L << index)) != 0;
     }
 }
