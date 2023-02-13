@@ -19,7 +19,7 @@ public final class PowerComputer {
     // chunkSize must be a multiple of FILTER_SIZE (4)
     public PowerComputer(InputStream stream, int chunkSize) {
         Preconditions.checkArgument(chunkSize > 0 && chunkSize % FILTER_SIZE == 0);
-        var samplesChunkSize = 2 * chunkSize;
+        var samplesChunkSize = chunkSize * 2;
 
         this.chunkSize = chunkSize;
         this.samplesChunk = new short[samplesChunkSize];
