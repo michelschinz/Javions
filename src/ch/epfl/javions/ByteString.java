@@ -12,8 +12,8 @@ public final class ByteString {
 
     private final byte[] bytes;
 
-    public static ByteString ofHexadecimalString(CharSequence charSequence) {
-        return new ByteString(HEX_FORMAT.parseHex(charSequence));
+    public static ByteString ofHexadecimalString(String hexString) {
+        return new ByteString(HEX_FORMAT.parseHex(hexString));
     }
 
     public ByteString(byte[] bytes) {
