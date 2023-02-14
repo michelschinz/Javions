@@ -38,7 +38,7 @@ public final class Main extends Application {
         var dbResource = getClass().getResource("/aircraft.zip");
         assert dbResource != null;
 
-        var aircraftDatabase = new AircraftDatabase(new File(dbResource.toURI()));
+        var aircraftDatabase = new AircraftDatabase(dbResource.getFile());
 
         var tileManager = new TileManager(cacheBasePath, OSM_TILE_SERVER);
         var mapParameters = new MapParameters(12, 543_200, 370_650);
