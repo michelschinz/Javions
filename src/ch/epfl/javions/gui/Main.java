@@ -17,7 +17,6 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Files;
@@ -26,26 +25,26 @@ import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public final class Main extends Application {
+    private static final String AIRCRAFT_DB_RESOURCE_NAME = "/aircraft.zip";
     private static final String OSM_TILE_SERVER = "tile.openstreetmap.org";
+    private static final String OSM_TILE_CACHE_PATH = "/Users/michelschinz/local/ppo/23/javions/osm-cache";
 
     public static void main(String[] args) {
         launch(args);
     }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        var cacheBasePath = Path.of("/Users/michelschinz/local/ppo/23/javions/osm-cache");
-        var dbResource = getClass().getResource("/aircraft.zip");
-        assert dbResource != null;
+    public void start(Stage primaryStage) {
+        var aircraftDbUrl = getClass().getResource(AIRCRAFT_DB_RESOURCE_NAME);
+        assert aircraftDbUrl != null;
+        var aircraftDb = new AircraftDatabase(aircraftDbUrl.getFile());
 
-        var aircraftDatabase = new AircraftDatabase(dbResource.getFile());
-
-        var tileManager = new TileManager(cacheBasePath, OSM_TILE_SERVER);
+        var tileManager = new TileManager(Path.of(OSM_TILE_CACHE_PATH), OSM_TILE_SERVER);
         var mapParameters = new MapParameters(12, 543_200, 370_650);
 
         var baseMapController = new BaseMapController(tileManager, mapParameters);
 
-        var aircraftStateManager = new AircraftStateManager(aircraftDatabase);
+        var aircraftStateManager = new AircraftStateManager(aircraftDb);
 
         var selectedAircraftProperty = new SimpleObjectProperty<ObservableAircraftState>();
         var aircraftController = new AircraftController(mapParameters, aircraftStateManager.states(), selectedAircraftProperty);
