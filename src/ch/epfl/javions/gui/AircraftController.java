@@ -134,7 +134,7 @@ public final class AircraftController {
             var value = expression.get();
             return Double.isNaN(value)
                     ? "? " + suffix
-                    : String.format("%.0f %s", Units.convertTo(value, unit), suffix);
+                    : (int) Math.rint(Units.convertTo(value, unit)) + " " + suffix;
         }, expression);
     }
 

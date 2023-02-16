@@ -30,13 +30,13 @@ public final class TileManager {
 
         private Path path(Path basePath) {
             return basePath
-                    .resolve("%d".formatted(zoom))
-                    .resolve("%d".formatted(x))
-                    .resolve("%d.png".formatted(y));
+                    .resolve(Integer.toString(zoom))
+                    .resolve(Integer.toString(x))
+                    .resolve(y + ".png");
         }
 
         private URL url(String hostName) throws IOException {
-            return new URL("https", hostName, "/%d/%d/%d.png".formatted(zoom, x, y));
+            return new URL("https", hostName, "/" + zoom + "/" + x + "/" + y + ".png");
         }
     }
 

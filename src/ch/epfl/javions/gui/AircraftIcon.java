@@ -284,7 +284,7 @@ public enum AircraftIcon {
     private final String svgPath;
 
     AircraftIcon() {
-        var resourceName = "/icons/%s.svgpath".formatted(name().toLowerCase());
+        var resourceName = "/icons/" + name().toLowerCase() + ".svgpath";
         svgPath = loadSvgPath(resourceName);
     }
 
