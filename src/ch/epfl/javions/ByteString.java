@@ -30,7 +30,7 @@ public final class ByteString {
 
     public long bytesInRange(int fromIndex, int toIndex) {
         Objects.checkFromToIndex(fromIndex, toIndex, bytes.length);
-        Preconditions.checkArgument(toIndex - fromIndex <= Long.BYTES);
+        Preconditions.checkArgument(toIndex - fromIndex < Long.BYTES);
         var result = 0L;
         for (var i = fromIndex; i < toIndex; i += 1) result = (result << Byte.SIZE) | byteAt(i);
         return result;
