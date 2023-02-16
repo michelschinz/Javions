@@ -15,12 +15,12 @@ public record RawAdsbMessage(long timeStampNs,
 
     public static RawAdsbMessage of(long timeStampNs, ByteString bytes) {
         Preconditions.checkArgument(bytes.size() == 14);
-        var icaoString = HEX_FORMAT.toHexDigits(bytes.bytesBetween(1, 4), 6);
+        var icaoString = HEX_FORMAT.toHexDigits(bytes.bytesInRange(1, 4), 6);
         return new RawAdsbMessage(
                 timeStampNs,
                 bytes.byteAt(0),
                 new IcaoAddress(icaoString),
-                bytes.bytesBetween(4, 11));
+                bytes.bytesInRange(4, 11));
     }
 
     public int downLinkFormat() {

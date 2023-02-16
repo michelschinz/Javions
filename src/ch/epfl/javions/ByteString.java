@@ -28,7 +28,7 @@ public final class ByteString {
         return Byte.toUnsignedInt(bytes[index]);
     }
 
-    public long bytesBetween(int fromIndex, int toIndex) {
+    public long bytesInRange(int fromIndex, int toIndex) {
         Objects.checkFromToIndex(fromIndex, toIndex, bytes.length);
         Preconditions.checkArgument(toIndex - fromIndex <= Long.BYTES);
         var result = 0L;
