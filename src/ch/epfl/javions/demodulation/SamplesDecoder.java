@@ -8,6 +8,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public final class SamplesDecoder {
+    private static final int BIAS = 1 << 11;
+
     private final int chunkSize;
     private final byte[] byteChunk;
     private final InputStream stream;
@@ -29,7 +31,7 @@ public final class SamplesDecoder {
         for (var i = 0; i < samplesRead; i += 1) {
             var lsb = Byte.toUnsignedInt(byteChunk[i * Short.BYTES]);
             var msb = Byte.toUnsignedInt(byteChunk[i * Short.BYTES + 1]);
-            chunk[i] = (short) ((msb << Byte.SIZE | lsb) - (1 << 11));
+            chunk[i] = (short) ((msb << Byte.SIZE | lsb) - BIAS);
         }
 
         return samplesRead;
