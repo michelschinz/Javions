@@ -31,17 +31,20 @@ public final class PowerComputer {
         Preconditions.checkArgument(batch.length == batchSize);
 
         var samplesRead = samplesDecoder.readBatch(samples);
-        var i = 0;
-        while (i < batchSize) {
-            iSum += sampleDelta(iWindow, i % FILTER_SIZE, samples[2 * i]);
-            qSum += sampleDelta(qWindow, i % FILTER_SIZE, samples[2 * i + 1]);
-            batch[i++] = power(iSum, qSum);
 
-            iSum -= sampleDelta(iWindow, i % FILTER_SIZE, samples[2 * i]);
-            qSum -= sampleDelta(qWindow, i % FILTER_SIZE, samples[2 * i + 1]);
-            batch[i++] = power(iSum, qSum);
+        var powerI = 0;
+        var sampleI = 0;
+        while (sampleI < samplesRead) {
+            iSum += sampleDelta(iWindow, powerI % FILTER_SIZE, samples[sampleI++]);
+            qSum += sampleDelta(qWindow, powerI % FILTER_SIZE, samples[sampleI++]);
+            batch[powerI++] = power(iSum, qSum);
+
+            iSum -= sampleDelta(iWindow, powerI % FILTER_SIZE, samples[sampleI++]);
+            qSum -= sampleDelta(qWindow, powerI % FILTER_SIZE, samples[sampleI++]);
+            batch[powerI++] = power(iSum, qSum);
         }
-        return samplesRead / 2;
+
+        return powerI;
     }
 
     private static int power(int iSum, int qSum) {

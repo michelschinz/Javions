@@ -25,14 +25,15 @@ public final class SamplesDecoder {
         Preconditions.checkArgument(batch.length == batchSize);
 
         var bytesRead = stream.readNBytes(bytes, 0, bytes.length);
-        var samplesRead = bytesRead / Short.BYTES;
 
-        for (var i = 0; i < samplesRead; i += 1) {
-            var lsb = Byte.toUnsignedInt(bytes[i * Short.BYTES]);
-            var msb = Byte.toUnsignedInt(bytes[i * Short.BYTES + 1]);
-            batch[i] = (short) ((msb << Byte.SIZE | lsb) - BIAS);
+        var sampleI = 0;
+        var byteI = 0;
+        while (byteI < bytesRead) {
+            var lsb = Byte.toUnsignedInt(bytes[byteI++]);
+            var msb = Byte.toUnsignedInt(bytes[byteI++]);
+            batch[sampleI++] = (short) ((msb << Byte.SIZE | lsb) - BIAS);
         }
 
-        return samplesRead;
+        return sampleI;
     }
 }
