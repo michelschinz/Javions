@@ -36,11 +36,11 @@ public final class PowerComputer {
         var sampleI = 0;
         while (sampleI < samplesRead) {
             iSum += sampleDelta(iWindow, powerI % FILTER_SIZE, samples[sampleI++]);
-            qSum += sampleDelta(qWindow, powerI % FILTER_SIZE, samples[sampleI++]);
+            qSum -= sampleDelta(qWindow, powerI % FILTER_SIZE, samples[sampleI++]);
             batch[powerI++] = power(iSum, qSum);
 
             iSum -= sampleDelta(iWindow, powerI % FILTER_SIZE, samples[sampleI++]);
-            qSum -= sampleDelta(qWindow, powerI % FILTER_SIZE, samples[sampleI++]);
+            qSum += sampleDelta(qWindow, powerI % FILTER_SIZE, samples[sampleI++]);
             batch[powerI++] = power(iSum, qSum);
         }
 
