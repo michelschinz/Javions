@@ -65,7 +65,6 @@ public final class PowerWindow {
 
     public void advanceBy(int offset) throws IOException {
         Preconditions.checkArgument(offset >= 0);
-        // TODO optimize?
         for (var i = 0; i < offset; i += 1) advance();
     }
 }
