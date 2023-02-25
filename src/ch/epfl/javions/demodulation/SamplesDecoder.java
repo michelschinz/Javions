@@ -4,34 +4,33 @@ import ch.epfl.javions.Preconditions;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
 import java.util.Objects;
 
 public final class SamplesDecoder {
     private static final int BIAS = 1 << 11;
 
-    private final int chunkSize;
-    private final byte[] byteChunk;
+    private final int batchSize;
+    private final byte[] bytes;
     private final InputStream stream;
 
-    public SamplesDecoder(InputStream stream, int chunkSize) {
-        Preconditions.checkArgument(chunkSize > 0);
+    public SamplesDecoder(InputStream stream, int batchSize) {
+        Preconditions.checkArgument(batchSize > 0);
 
-        this.chunkSize = chunkSize;
-        this.byteChunk = new byte[chunkSize * Short.BYTES];
+        this.batchSize = batchSize;
+        this.bytes = new byte[batchSize * Short.BYTES];
         this.stream = Objects.requireNonNull(stream);
     }
 
-    public int readChunk(short[] chunk) throws IOException {
-        Preconditions.checkArgument(chunk.length == chunkSize);
+    public int readBatch(short[] batch) throws IOException {
+        Preconditions.checkArgument(batch.length == batchSize);
 
-        var bytesRead = stream.readNBytes(byteChunk, 0, byteChunk.length);
+        var bytesRead = stream.readNBytes(bytes, 0, bytes.length);
         var samplesRead = bytesRead / Short.BYTES;
 
         for (var i = 0; i < samplesRead; i += 1) {
-            var lsb = Byte.toUnsignedInt(byteChunk[i * Short.BYTES]);
-            var msb = Byte.toUnsignedInt(byteChunk[i * Short.BYTES + 1]);
-            chunk[i] = (short) ((msb << Byte.SIZE | lsb) - BIAS);
+            var lsb = Byte.toUnsignedInt(bytes[i * Short.BYTES]);
+            var msb = Byte.toUnsignedInt(bytes[i * Short.BYTES + 1]);
+            batch[i] = (short) ((msb << Byte.SIZE | lsb) - BIAS);
         }
 
         return samplesRead;

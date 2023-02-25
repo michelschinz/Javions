@@ -8,38 +8,38 @@ import java.io.InputStream;
 public final class PowerComputer {
     private static final int FILTER_SIZE = 4;
 
-    private final int chunkSize;
-    private final short[] samplesChunk;
+    private final int batchSize;
+    private final short[] samples;
     private final SamplesDecoder samplesDecoder;
 
     private final int[] iWindow;
     private final int[] qWindow;
     private int iSum, qSum;
 
-    // chunkSize must be a multiple of FILTER_SIZE (4)
-    public PowerComputer(InputStream stream, int chunkSize) {
-        Preconditions.checkArgument(chunkSize > 0 && chunkSize % FILTER_SIZE == 0);
+    // batchSize must be a multiple of FILTER_SIZE (4)
+    public PowerComputer(InputStream stream, int batchSize) {
+        Preconditions.checkArgument(batchSize > 0 && batchSize % FILTER_SIZE == 0);
 
-        this.chunkSize = chunkSize;
-        this.samplesChunk = new short[chunkSize * 2];
-        this.samplesDecoder = new SamplesDecoder(stream, samplesChunk.length);
+        this.batchSize = batchSize;
+        this.samples = new short[batchSize * 2];
+        this.samplesDecoder = new SamplesDecoder(stream, samples.length);
         this.iWindow = new int[FILTER_SIZE];
         this.qWindow = new int[FILTER_SIZE];
     }
 
-    public int readChunk(int[] chunk) throws IOException {
-        Preconditions.checkArgument(chunk.length == chunkSize);
+    public int readBatch(int[] batch) throws IOException {
+        Preconditions.checkArgument(batch.length == batchSize);
 
-        var samplesRead = samplesDecoder.readChunk(samplesChunk);
+        var samplesRead = samplesDecoder.readBatch(samples);
         var i = 0;
-        while (i < chunkSize) {
-            iSum += sampleDelta(iWindow, i % FILTER_SIZE, samplesChunk[2 * i]);
-            qSum += sampleDelta(qWindow, i % FILTER_SIZE, samplesChunk[2 * i + 1]);
-            chunk[i++] = power(iSum, qSum);
+        while (i < batchSize) {
+            iSum += sampleDelta(iWindow, i % FILTER_SIZE, samples[2 * i]);
+            qSum += sampleDelta(qWindow, i % FILTER_SIZE, samples[2 * i + 1]);
+            batch[i++] = power(iSum, qSum);
 
-            iSum -= sampleDelta(iWindow, i % FILTER_SIZE, samplesChunk[2 * i]);
-            qSum -= sampleDelta(qWindow, i % FILTER_SIZE, samplesChunk[2 * i + 1]);
-            chunk[i++] = power(iSum, qSum);
+            iSum -= sampleDelta(iWindow, i % FILTER_SIZE, samples[2 * i]);
+            qSum -= sampleDelta(qWindow, i % FILTER_SIZE, samples[2 * i + 1]);
+            batch[i++] = power(iSum, qSum);
         }
         return samplesRead / 2;
     }
