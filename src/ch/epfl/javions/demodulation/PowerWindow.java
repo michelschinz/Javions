@@ -20,14 +20,14 @@ public final class PowerWindow {
         Preconditions.checkArgument(0 < windowSize && windowSize <= BATCH_SIZE);
 
         var powerComputer = new PowerComputer(stream, BATCH_SIZE);
-        var batch0 = new int[BATCH_SIZE];
-        var initiallyAvailable = powerComputer.readBatch(batch0);
-        var batch1 = new int[BATCH_SIZE];
+        var batchEven = new int[BATCH_SIZE];
+        var initiallyAvailable = powerComputer.readBatch(batchEven);
+        var batchOdd = new int[BATCH_SIZE];
 
         this.windowSize = windowSize;
         this.powerComputer = powerComputer;
-        this.batch0 = batch0;
-        this.batch1 = batch1;
+        this.batch0 = batchEven;
+        this.batch1 = batchOdd;
         this.position = 0;
         this.headIndex = 0;
         this.available = initiallyAvailable;
