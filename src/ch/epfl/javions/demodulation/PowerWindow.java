@@ -31,6 +31,10 @@ public final class PowerWindow {
         this.available = initiallyAvailable;
     }
 
+    public int size() {
+        return windowSize;
+    }
+
     public long position() {
         return position;
     }
