@@ -11,7 +11,7 @@ public final class PowerWindow {
 
     private final int windowSize;
     private final PowerComputer powerComputer;
-    private final int[][] batches;
+    private int[] batch0, batch1;
     private long position;
     private int headIndex; // Invariant: 0 <= headIndex < BATCH_SIZE
     private int available;
@@ -20,12 +20,14 @@ public final class PowerWindow {
         Preconditions.checkArgument(0 < windowSize && windowSize <= BATCH_SIZE);
 
         var powerComputer = new PowerComputer(stream, BATCH_SIZE);
-        var batches = new int[2][BATCH_SIZE];
-        var initiallyAvailable = powerComputer.readBatch(batches[0]);
+        var batch0 = new int[BATCH_SIZE];
+        var initiallyAvailable = powerComputer.readBatch(batch0);
+        var batch1 = new int[BATCH_SIZE];
 
         this.windowSize = windowSize;
         this.powerComputer = powerComputer;
-        this.batches = batches;
+        this.batch0 = batch0;
+        this.batch1 = batch1;
         this.position = 0;
         this.headIndex = 0;
         this.available = initiallyAvailable;
@@ -44,8 +46,8 @@ public final class PowerWindow {
     }
 
     public int get(int i) {
-        var j = headIndex + Objects.checkIndex(i, available);
-        return batches[j / BATCH_SIZE][j % BATCH_SIZE];
+        var j = headIndex + Objects.checkIndex(i, windowSize);
+        return j < BATCH_SIZE ? batch0[j] : batch1[j - BATCH_SIZE];
     }
 
     public void advance() throws IOException {
@@ -55,13 +57,13 @@ public final class PowerWindow {
 
         if (headIndex + windowSize - 1 == BATCH_SIZE) {
             // Window overlaps with second batch, load it.
-            var newlyAvailable = powerComputer.readBatch(batches[1]);
+            var newlyAvailable = powerComputer.readBatch(batch1);
             available += newlyAvailable;
         } else if (headIndex == BATCH_SIZE) {
             // Window doesn't overlap with first batch anymore, swap batches
-            var b0 = batches[0];
-            batches[0] = batches[1];
-            batches[1] = b0;
+            var b0 = batch0;
+            batch0 = batch1;
+            batch1 = b0;
 
             headIndex = 0;
         }
