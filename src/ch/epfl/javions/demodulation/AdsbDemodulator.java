@@ -36,7 +36,7 @@ public final class AdsbDemodulator {
     }
 
     public RawAdsbMessage nextMessage() throws IOException {
-        while (window.available() >= LONG_MESSAGE_WIDTH) {
+        while (window.isFull()) {
             var message = currentMessage();
             if (message != null) {
                 window.advanceBy(LONG_MESSAGE_WIDTH);

@@ -39,8 +39,8 @@ public final class PowerWindow {
         return position;
     }
 
-    public int available() {
-        return available;
+    public boolean isFull() {
+        return available >= windowSize;
     }
 
     public int get(int i) {
