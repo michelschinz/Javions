@@ -33,7 +33,7 @@ public final class AircraftDatabase {
                 if (!line.startsWith(addressString)) return null;
 
                 // Format: ICAO,Registration,Designator,Model,Description,WTC
-                var columns = line.split(SEPARATOR);
+                var columns = line.split(SEPARATOR, -1);
                 assert columns[0].equals(addressString);
                 return new AircraftData(
                         new AircraftRegistration(columns[1]),
