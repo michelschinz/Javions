@@ -3,7 +3,7 @@ package ch.epfl.javions.demodulation;
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
 import ch.epfl.javions.Crc24;
-import ch.epfl.javions.adsb.RawAdsbMessage;
+import ch.epfl.javions.adsb.RawMessage;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,7 +35,7 @@ public final class AdsbDemodulator {
         this.window = new PowerWindow(samplesStream, LONG_MESSAGE_WIDTH);
     }
 
-    public RawAdsbMessage nextMessage() throws IOException {
+    public RawMessage nextMessage() throws IOException {
         while (window.isFull()) {
             var message = currentMessage();
             if (message != null) {
@@ -50,7 +50,7 @@ public final class AdsbDemodulator {
     /**
      * Returns the message at the current position of the window, or null if there is no message.
      */
-    private RawAdsbMessage currentMessage() {
+    private RawMessage currentMessage() {
         var p0 = totalPower(0, PREAMBLE_PEAKS);
         var p1 = totalPower(1, PREAMBLE_PEAKS);
         var p2 = totalPower(2, PREAMBLE_PEAKS);
@@ -71,7 +71,7 @@ public final class AdsbDemodulator {
             messageBuffer[i] = (byte) getByte(i);
 
         return CRC_24.crc(messageBuffer) == 0
-                ? RawAdsbMessage.of(timeStampNs(), new ByteString(messageBuffer))
+                ? RawMessage.of(timeStampNs(), new ByteString(messageBuffer))
                 : null;
     }
 

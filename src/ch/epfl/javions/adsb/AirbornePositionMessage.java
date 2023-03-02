@@ -22,7 +22,7 @@ public final class AirbornePositionMessage extends Message {
     private static final int ALTITUDE_Q_BIT_UPPER_MASK = ~0 << (ALTITUDE_Q_BIT_INDEX + 1);
     private static final int ALTITUDE_Q_BIT_LOWER_MASK = (1 << ALTITUDE_Q_BIT_INDEX) - 1;
 
-    public AirbornePositionMessage(RawAdsbMessage rawMessage) {
+    public AirbornePositionMessage(RawMessage rawMessage) {
         super(rawMessage);
     }
 

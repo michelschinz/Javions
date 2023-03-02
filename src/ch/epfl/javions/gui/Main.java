@@ -3,7 +3,7 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.adsb.AvrParser;
 import ch.epfl.javions.adsb.Message;
 import ch.epfl.javions.adsb.MessageParser;
-import ch.epfl.javions.adsb.RawAdsbMessage;
+import ch.epfl.javions.adsb.RawMessage;
 import ch.epfl.javions.aircraft.AircraftDatabase;
 import ch.epfl.javions.demodulation.AdsbDemodulator;
 import javafx.animation.AnimationTimer;
@@ -139,7 +139,7 @@ public final class Main extends Application {
             try (var s = Files.newBufferedReader(Path.of(messageFileName))) {
                 s.lines()
                         .map(AvrParser::parseAVR)
-                        .map(m -> RawAdsbMessage.of(fakeTimeStamp++, m))
+                        .map(m -> RawMessage.of(fakeTimeStamp++, m))
                         .filter(m -> m.downLinkFormat() == 17)
                         .map(MessageParser::parse)
                         .filter(Objects::nonNull)

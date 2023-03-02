@@ -7,16 +7,16 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 
 import java.util.HexFormat;
 
-public record RawAdsbMessage(long timeStampNs,
-                             int dfAndCa,
-                             IcaoAddress icaoAddress,
-                             long payload) {
+public record RawMessage(long timeStampNs,
+                         int dfAndCa,
+                         IcaoAddress icaoAddress,
+                         long payload) {
     private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
 
-    public static RawAdsbMessage of(long timeStampNs, ByteString bytes) {
+    public static RawMessage of(long timeStampNs, ByteString bytes) {
         Preconditions.checkArgument(bytes.size() == 14);
         var icaoString = HEX_FORMAT.toHexDigits(bytes.bytesInRange(1, 4), 6);
-        return new RawAdsbMessage(
+        return new RawMessage(
                 timeStampNs,
                 bytes.byteAt(0),
                 new IcaoAddress(icaoString),

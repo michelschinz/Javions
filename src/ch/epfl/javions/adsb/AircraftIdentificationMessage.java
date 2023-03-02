@@ -6,7 +6,7 @@ public final class AircraftIdentificationMessage extends Message {
     private static final int CALLSIGN_LENGTH = 8;
     private static final int CALLSIGN_CHAR_BITS = 6;
 
-    public AircraftIdentificationMessage(RawAdsbMessage rawMessage) {
+    public AircraftIdentificationMessage(RawMessage rawMessage) {
         super(rawMessage);
     }
 

@@ -1,7 +1,6 @@
 package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.BitUnpacker;
-import ch.epfl.javions.Math2;
 import ch.epfl.javions.Units;
 
 import static ch.epfl.javions.BitUnpacker.field;
@@ -54,7 +53,7 @@ public final class AirborneVelocityMessage extends Message {
             field(Field.INTENT_CHANGE, 1),
             field(Field.SUB_TYPE, 3));
 
-    public AirborneVelocityMessage(RawAdsbMessage rawMessage) {
+    public AirborneVelocityMessage(RawMessage rawMessage) {
         super(rawMessage);
     }
 

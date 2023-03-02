@@ -3,9 +3,9 @@ package ch.epfl.javions.adsb;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
 public abstract class Message {
-    protected RawAdsbMessage rawMessage;
+    protected RawMessage rawMessage;
 
-    public Message(RawAdsbMessage rawMessage) {
+    public Message(RawMessage rawMessage) {
         this.rawMessage = rawMessage;
     }
 
