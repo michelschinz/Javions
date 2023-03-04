@@ -19,9 +19,6 @@ public final class AdsbDemodulator {
 
     private static final long NANOSECONDS_PER_SAMPLE = 100;
 
-    private static final int[] PREAMBLE_PEAKS = {0, 2, 7, 9};
-    private static final int[] PREAMBLE_VALLEYS = {1, 3, 4, 5, 6, 8};
-
     private final PowerWindow window;
     private final byte[] messageBuffer = new byte[MESSAGE_BYTES];
 
@@ -33,10 +30,10 @@ public final class AdsbDemodulator {
         for (int pPrev = 0, pCurr = 0, pNext;
              window.isFull();
              window.advance(), pPrev = pCurr, pCurr = pNext) {
-            pNext = totalPower(1, PREAMBLE_PEAKS);
+            pNext = nextPeakPower();
             if (!(pPrev < pCurr && pCurr > pNext)) continue;
 
-            var vCurr = totalPower(0, PREAMBLE_VALLEYS);
+            var vCurr = currentValleyPower();
             if (pCurr < 2 * vCurr) continue;
 
             var firstByte = getByte(0);
@@ -53,6 +50,22 @@ public final class AdsbDemodulator {
             }
         }
         return null;
+    }
+
+    private int nextPeakPower() {
+        return window.get(1 + 0 * PULSE_WIDTH)
+                + window.get(1 + 2 * PULSE_WIDTH)
+                + window.get(1 + 7 * PULSE_WIDTH)
+                + window.get(1 + 9 * PULSE_WIDTH);
+    }
+
+    private int currentValleyPower() {
+        return window.get(PULSE_WIDTH)
+                + window.get(3 * PULSE_WIDTH)
+                + window.get(4 * PULSE_WIDTH)
+                + window.get(5 * PULSE_WIDTH)
+                + window.get(6 * PULSE_WIDTH)
+                + window.get(8 * PULSE_WIDTH);
     }
 
     private long timeStampNs() {
@@ -73,9 +86,4 @@ public final class AdsbDemodulator {
         return p1 < p2 ? 0 : 1;
     }
 
-    private int totalPower(int base, int[] offsets) {
-        var power = 0;
-        for (var o : offsets) power += window.get(base + o * PULSE_WIDTH);
-        return power;
-    }
 }
