@@ -3,17 +3,12 @@ package ch.epfl.javions.adsb;
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
 import ch.epfl.javions.Crc24;
-import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
 import java.util.HexFormat;
 
-public record RawMessage(long timeStampNs,
-                         int dfAndCa,
-                         IcaoAddress icaoAddress,
-                         long payload) {
-    public static final int DF_EXTENDED_SQUITTER = 17;
-
+public record RawMessage(long timeStampNs, ByteString bytes) {
+    private static final int DF_EXTENDED_SQUITTER = 17;
     private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
     private static final Crc24 CRC_24 = new Crc24(Crc24.GENERATOR);
 
@@ -32,20 +27,22 @@ public record RawMessage(long timeStampNs,
     }
 
     public static RawMessage of(long timeStampNs, ByteString bytes) {
-        Preconditions.checkArgument(bytes.size() == 14);
-        var icaoString = HEX_FORMAT.toHexDigits(bytes.bytesInRange(1, 4), 6);
-        return new RawMessage(
-                timeStampNs,
-                bytes.byteAt(0),
-                new IcaoAddress(icaoString),
-                bytes.bytesInRange(4, 11));
+        return new RawMessage(timeStampNs, bytes);
     }
 
     public int downLinkFormat() {
-        return downLinkFormat(dfAndCa);
+        return downLinkFormat(bytes().byteAt(0));
+    }
+
+    public IcaoAddress icaoAddress() {
+        return new IcaoAddress(HEX_FORMAT.toHexDigits(bytes.bytesInRange(1, 4), 6));
+    }
+
+    public long payload() {
+        return bytes.bytesInRange(4, 11);
     }
 
     public int typeCode() {
-        return Bits.extractUInt(payload, 51, 5);
+        return Bits.extractUInt(payload(), 51, 5);
     }
 }
