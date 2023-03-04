@@ -3,10 +3,16 @@ package ch.epfl.javions.adsb;
 import ch.epfl.javions.BitUnpacker;
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.Units;
+import ch.epfl.javions.aircraft.IcaoAddress;
 
 import static ch.epfl.javions.BitUnpacker.field;
 
-public final class AirbornePositionMessage extends Message {
+public record AirbornePositionMessage(long timeStampNs,
+                                      IcaoAddress icaoAddress,
+                                      double altitude,
+                                      boolean isEven,
+                                      int cprLon,
+                                      int cprLat) implements Message {
     // TODO remaining fields
     private enum Field {LONGITUDE, LATITUDE, FORMAT, TIME, ALT}
 
@@ -22,12 +28,18 @@ public final class AirbornePositionMessage extends Message {
     private static final int ALTITUDE_Q_BIT_UPPER_MASK = ~0 << (ALTITUDE_Q_BIT_INDEX + 1);
     private static final int ALTITUDE_Q_BIT_LOWER_MASK = (1 << ALTITUDE_Q_BIT_INDEX) - 1;
 
-    public AirbornePositionMessage(RawMessage rawMessage) {
-        super(rawMessage);
+    public static AirbornePositionMessage of(RawMessage rawMessage) {
+        var payload = rawMessage.payload();
+        return new AirbornePositionMessage(rawMessage.timeStampNs(),
+                rawMessage.icaoAddress(),
+                altitude(payload),
+                UNPACKER.unpack(Field.FORMAT, payload) == 0,
+                UNPACKER.unpack(Field.LONGITUDE, payload),
+                UNPACKER.unpack(Field.LATITUDE, payload));
     }
 
-    public double altitude() {
-        var encAltitude = UNPACKER.unpack(Field.ALT, rawMessage.payload());
+    private static double altitude(long payload) {
+        var encAltitude = UNPACKER.unpack(Field.ALT, payload);
         if (Bits.testBit(encAltitude, ALTITUDE_Q_BIT_INDEX)) {
             var ft25 = (encAltitude & ALTITUDE_Q_BIT_UPPER_MASK) >> 1
                     | (encAltitude & ALTITUDE_Q_BIT_LOWER_MASK);
@@ -40,7 +52,7 @@ public final class AirbornePositionMessage extends Message {
     //         11 10  9  8  7  6  5  4  3  2  1  0
     //  Input: C1 A1 C2 A2 C4 A4 B1 D1 B2 D2 B4 D4
     // Output: D1 D2 D4 A1 A2 A4 B1 B2 B4 C1 C2 C4
-    static int permuteGillham(int shuffled) {
+    private static int permuteGillham(int shuffled) {
         var unshuffled = 0;
         for (var i : new int[] {4, 10, 5, 11}) {
             for (var j = 0; j < 5; j += 2) {
@@ -51,7 +63,7 @@ public final class AirbornePositionMessage extends Message {
         return unshuffled;
     }
 
-    static double decodeGillhamAltitude(int encAltitude) {
+    private static double decodeGillhamAltitude(int encAltitude) {
         // Algorithm taken from http://www.ccsinfo.com/forum/viewtopic.php?p=140960#140960
         var ft100 = gray16ToBinary(Bits.extractUInt(encAltitude, 0, 3));
         if (ft100 == 0 || ft100 == 5 || ft100 == 6) return Double.NaN;
@@ -67,17 +79,5 @@ public final class AirbornePositionMessage extends Message {
         var binary = gray;
         for (var i = 8; i > 0; i >>= 1) binary ^= binary >> i;
         return binary;
-    }
-
-    public boolean isEven() {
-        return UNPACKER.unpack(Field.FORMAT, rawMessage.payload()) == 0;
-    }
-
-    public int cprLon() {
-        return UNPACKER.unpack(Field.LONGITUDE, rawMessage.payload());
-    }
-
-    public int cprLat() {
-        return UNPACKER.unpack(Field.LATITUDE, rawMessage.payload());
     }
 }

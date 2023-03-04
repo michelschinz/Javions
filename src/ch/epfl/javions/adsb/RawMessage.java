@@ -26,6 +26,10 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
                && CRC_24.crc(bytes) == 0;
     }
 
+    public static int typeCode(long payload) {
+        return Bits.extractUInt(payload, 51, 5);
+    }
+
     public static RawMessage of(long timeStampNs, ByteString bytes) {
         return new RawMessage(timeStampNs, bytes);
     }
@@ -43,6 +47,6 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
     }
 
     public int typeCode() {
-        return Bits.extractUInt(payload(), 51, 5);
+        return typeCode(payload());
     }
 }

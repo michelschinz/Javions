@@ -2,18 +2,8 @@ package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.aircraft.IcaoAddress;
 
-public abstract class Message {
-    protected RawMessage rawMessage;
+public interface Message {
+    long timeStampNs();
 
-    public Message(RawMessage rawMessage) {
-        this.rawMessage = rawMessage;
-    }
-
-    public long timeStampNs() {
-        return rawMessage.timeStampNs();
-    }
-
-    public IcaoAddress icaoAddress() {
-        return rawMessage.icaoAddress();
-    }
+    IcaoAddress icaoAddress();
 }

@@ -2,10 +2,15 @@ package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.BitUnpacker;
 import ch.epfl.javions.Units;
+import ch.epfl.javions.aircraft.IcaoAddress;
 
 import static ch.epfl.javions.BitUnpacker.field;
 
-public final class AirborneVelocityMessage extends Message {
+public record AirborneVelocityMessage(long timeStampNs,
+                                      IcaoAddress icaoAddress,
+                                      VelocityType velocityType,
+                                      double velocity,
+                                      double trackOrHeading) implements Message {
     public enum VelocityType {GROUND, AIR}
 
     private enum Field {
@@ -53,8 +58,14 @@ public final class AirborneVelocityMessage extends Message {
             field(Field.INTENT_CHANGE, 1),
             field(Field.SUB_TYPE, 3));
 
-    public AirborneVelocityMessage(RawMessage rawMessage) {
-        super(rawMessage);
+    public static AirborneVelocityMessage of(RawMessage rawMessage) {
+        var payload = rawMessage.payload();
+        return new AirborneVelocityMessage(
+                rawMessage.timeStampNs(),
+                rawMessage.icaoAddress(),
+                velocityType(payload),
+                velocity(payload),
+                trackOrHeading(payload));
     }
 
     private static int subType(long payload) {
@@ -82,10 +93,6 @@ public final class AirborneVelocityMessage extends Message {
         };
     }
 
-    public VelocityType velocityType() {
-        return velocityType(rawMessage.payload());
-    }
-
     private static int velocityEW(long payload) {
         assert velocityType(payload) == VelocityType.GROUND;
         var ew = UNPACKER.unpack(FIELD_EW_VELOCITY, payload) - 1;
@@ -111,8 +118,7 @@ public final class AirborneVelocityMessage extends Message {
         return Units.convertFrom(Math.scalb(UNPACKER.unpack(FIELD_HEADING, payload), -10), Units.Angle.TURN);
     }
 
-    public double velocity() {
-        var payload = rawMessage.payload();
+    private static double velocity(long payload) {
         var value = switch (velocityType(payload)) {
             case GROUND -> Math.hypot(velocityNS(payload), velocityEW(payload));
             case AIR -> UNPACKER.unpack(FIELD_AIRSPEED, payload) - 1;
@@ -120,8 +126,7 @@ public final class AirborneVelocityMessage extends Message {
         return Units.convertFrom(value, unit(payload));
     }
 
-    public double trackOrHeading() {
-        var payload = rawMessage.payload();
+    private static double trackOrHeading(long payload) {
         return switch (velocityType(payload)) {
             case GROUND -> track(payload);
             case AIR -> heading(payload);
