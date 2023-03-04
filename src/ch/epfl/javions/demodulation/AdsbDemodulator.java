@@ -1,8 +1,6 @@
 package ch.epfl.javions.demodulation;
 
-import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
-import ch.epfl.javions.Crc24;
 import ch.epfl.javions.adsb.RawMessage;
 
 import java.io.IOException;
@@ -25,8 +23,6 @@ public final class AdsbDemodulator {
     private static final int[] PREAMBLE_VALLEYS = {1, 3, 4, 5, 6, 8};
 
     private static final int FIRST_BIT_OFFSET = 1 + PREAMBLE_WIDTH;
-
-    private static final Crc24 CRC_24 = new Crc24(Crc24.GENERATOR);
 
     private final PowerWindow window;
     private final byte[] messageBuffer = new byte[MESSAGE_BYTES];
@@ -63,20 +59,15 @@ public final class AdsbDemodulator {
 
         // Extract first byte, to obtain length
         var firstByte = getByte(0);
-        if (!isValid(firstByte)) return null;
+        if (RawMessage.size(firstByte) != messageBuffer.length) return null;
 
-        // Check CRC
         messageBuffer[0] = (byte) firstByte;
         for (var i = 1; i < MESSAGE_BYTES; i += 1)
             messageBuffer[i] = (byte) getByte(i);
 
-        return CRC_24.crc(messageBuffer) == 0
+        return RawMessage.isValid(messageBuffer)
                 ? RawMessage.of(timeStampNs(), new ByteString(messageBuffer))
                 : null;
-    }
-
-    private boolean isValid(int firstByte) {
-        return Bits.extractUInt(firstByte, 3, 5) == 17;
     }
 
     private long timeStampNs() {
