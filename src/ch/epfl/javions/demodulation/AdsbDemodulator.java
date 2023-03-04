@@ -14,15 +14,13 @@ public final class AdsbDemodulator {
     private static final int PULSE_WIDTH = 5;
     private static final int BIT_WIDTH = 2 * PULSE_WIDTH;
     private static final int PREAMBLE_WIDTH = 8 * BIT_WIDTH;
-    private static final int BYTE_WIDTH = 8 * BIT_WIDTH;
+    private static final int BYTE_WIDTH = Byte.SIZE * BIT_WIDTH;
     private static final int LONG_MESSAGE_WIDTH = PREAMBLE_WIDTH + MESSAGE_BYTES * BYTE_WIDTH;
 
     private static final long NANOSECONDS_PER_SAMPLE = 100;
 
     private static final int[] PREAMBLE_PEAKS = {0, 2, 7, 9};
     private static final int[] PREAMBLE_VALLEYS = {1, 3, 4, 5, 6, 8};
-
-    private static final int FIRST_BIT_OFFSET = 1 + PREAMBLE_WIDTH;
 
     private final PowerWindow window;
     private final byte[] messageBuffer = new byte[MESSAGE_BYTES];
@@ -32,42 +30,29 @@ public final class AdsbDemodulator {
     }
 
     public RawMessage nextMessage() throws IOException {
-        while (window.isFull()) {
-            var message = currentMessage();
-            if (message != null) {
+        for (int pPrev = 0, pCurr = 0, pNext;
+             window.isFull();
+             window.advance(), pPrev = pCurr, pCurr = pNext) {
+            pNext = totalPower(1, PREAMBLE_PEAKS);
+            if (!(pPrev < pCurr && pCurr > pNext)) continue;
+
+            var vCurr = totalPower(0, PREAMBLE_VALLEYS);
+            if (pCurr < 2 * vCurr) continue;
+
+            var firstByte = getByte(0);
+            if (RawMessage.size(firstByte) != MESSAGE_BYTES) continue;
+
+            messageBuffer[0] = (byte) firstByte;
+            for (var i = 1; i < MESSAGE_BYTES; i += 1)
+                messageBuffer[i] = (byte) getByte(i);
+
+            if (RawMessage.isValid(messageBuffer)) {
+                var message = RawMessage.of(timeStampNs(), new ByteString(messageBuffer));
                 window.advanceBy(LONG_MESSAGE_WIDTH);
                 return message;
             }
-            window.advance();
         }
         return null;
-    }
-
-    /**
-     * Returns the message at the current position of the window, or null if there is no message.
-     */
-    private RawMessage currentMessage() {
-        var p0 = totalPower(0, PREAMBLE_PEAKS);
-        var p1 = totalPower(1, PREAMBLE_PEAKS);
-        var p2 = totalPower(2, PREAMBLE_PEAKS);
-
-        if (!(p0 < p1 && p1 > p2)) return null;
-
-        // Check signal/noise ratio
-        var v1 = totalPower(0, PREAMBLE_VALLEYS);
-        if (p1 < 2 * v1) return null;
-
-        // Extract first byte, to obtain length
-        var firstByte = getByte(0);
-        if (RawMessage.size(firstByte) != messageBuffer.length) return null;
-
-        messageBuffer[0] = (byte) firstByte;
-        for (var i = 1; i < MESSAGE_BYTES; i += 1)
-            messageBuffer[i] = (byte) getByte(i);
-
-        return RawMessage.isValid(messageBuffer)
-                ? RawMessage.of(timeStampNs(), new ByteString(messageBuffer))
-                : null;
     }
 
     private long timeStampNs() {
@@ -82,8 +67,9 @@ public final class AdsbDemodulator {
     }
 
     private int getBit(int i) {
-        var p1 = window.get(FIRST_BIT_OFFSET + i * BIT_WIDTH);
-        var p2 = window.get(FIRST_BIT_OFFSET + i * BIT_WIDTH + PULSE_WIDTH);
+        var base = PREAMBLE_WIDTH + i * BIT_WIDTH;
+        var p1 = window.get(base);
+        var p2 = window.get(base + PULSE_WIDTH);
         return p1 < p2 ? 0 : 1;
     }
 
