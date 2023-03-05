@@ -7,20 +7,18 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public final class AdsbDemodulator {
-    private static final int MESSAGE_BYTES = 14;
-
     // Number of samples per pulse (half bit, i.e. half a microsecond).
     // (The AirSpy samples at 20MHz, we compute the signal power at 10MHz).
     private static final int PULSE_WIDTH = 5;
     private static final int BIT_WIDTH = 2 * PULSE_WIDTH;
     private static final int PREAMBLE_WIDTH = 8 * BIT_WIDTH;
     private static final int BYTE_WIDTH = Byte.SIZE * BIT_WIDTH;
-    private static final int LONG_MESSAGE_WIDTH = PREAMBLE_WIDTH + MESSAGE_BYTES * BYTE_WIDTH;
+    private static final int LONG_MESSAGE_WIDTH = PREAMBLE_WIDTH + RawMessage.LENGTH * BYTE_WIDTH;
 
     private static final long NANOSECONDS_PER_SAMPLE = 100;
 
     private final PowerWindow window;
-    private final byte[] messageBuffer = new byte[MESSAGE_BYTES];
+    private final byte[] messageBuffer = new byte[RawMessage.LENGTH];
 
     public AdsbDemodulator(InputStream samplesStream) throws IOException {
         this.window = new PowerWindow(samplesStream, LONG_MESSAGE_WIDTH);
@@ -37,10 +35,10 @@ public final class AdsbDemodulator {
             if (pCurr < 2 * vCurr) continue;
 
             var firstByte = getByte(0);
-            if (RawMessage.size(firstByte) != MESSAGE_BYTES) continue;
+            if (RawMessage.size(firstByte) != RawMessage.LENGTH) continue;
 
             messageBuffer[0] = (byte) firstByte;
-            for (var i = 1; i < MESSAGE_BYTES; i += 1)
+            for (var i = 1; i < RawMessage.LENGTH; i += 1)
                 messageBuffer[i] = (byte) getByte(i);
 
             if (RawMessage.isValid(messageBuffer)) {
