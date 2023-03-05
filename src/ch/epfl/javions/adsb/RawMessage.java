@@ -39,7 +39,7 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
         return Bits.extractUInt(byte0, DF_START, DF_SIZE);
     }
 
-    public static int size(int byte0) {
+    public static int size(byte byte0) {
         return downLinkFormat(byte0) == DF_EXTENDED_SQUITTER ? LENGTH : 0;
     }
 

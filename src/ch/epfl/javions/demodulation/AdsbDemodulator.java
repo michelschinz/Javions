@@ -34,12 +34,11 @@ public final class AdsbDemodulator {
             var vCurr = currentValleyPower();
             if (pCurr < 2 * vCurr) continue;
 
-            var byte0 = getByte(0);
-            if (RawMessage.size(byte0) != RawMessage.LENGTH) continue;
+            messageBuffer[0] = getByte(0);
+            if (RawMessage.size(messageBuffer[0]) != RawMessage.LENGTH) continue;
 
-            messageBuffer[0] = (byte) byte0;
             for (var i = 1; i < RawMessage.LENGTH; i += 1)
-                messageBuffer[i] = (byte) getByte(i);
+                messageBuffer[i] = getByte(i);
 
             var maybeMessage = RawMessage.of(timeStampNs(), messageBuffer);
             if (maybeMessage != null) {
@@ -70,11 +69,11 @@ public final class AdsbDemodulator {
         return window.position() * NANOSECONDS_PER_SAMPLE;
     }
 
-    private int getByte(int i) {
+    private byte getByte(int i) {
         var b = 0;
         for (var j = 0; j < Byte.SIZE; j += 1)
             b = (b << 1) | getBit(i * Byte.SIZE + j);
-        return b;
+        return (byte) b;
     }
 
     private int getBit(int i) {
