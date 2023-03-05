@@ -35,6 +35,10 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
     private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
     private static final Crc24 CRC_24 = new Crc24(Crc24.GENERATOR);
 
+    private static int downLinkFormat(int byte0) {
+        return Bits.extractUInt(byte0, DF_START, DF_SIZE);
+    }
+
     public static int size(int byte0) {
         return downLinkFormat(byte0) == DF_EXTENDED_SQUITTER ? LENGTH : 0;
     }
@@ -46,10 +50,6 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
 
     public static RawMessage of(long timeStampNs, byte[] bytes) {
         return CRC_24.crc(bytes) == 0 ? new RawMessage(timeStampNs, new ByteString(bytes)) : null;
-    }
-
-    public static int downLinkFormat(int dfAndCa) {
-        return Bits.extractUInt(dfAndCa, DF_START, DF_SIZE);
     }
 
     public static int typeCode(long payload) {
