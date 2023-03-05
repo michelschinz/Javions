@@ -53,7 +53,7 @@ public final class AdsbDemodulator {
     }
 
     private int nextPeakPower() {
-        return window.get(1 + 0 * PULSE_WIDTH)
+        return window.get(1)
                 + window.get(1 + 2 * PULSE_WIDTH)
                 + window.get(1 + 7 * PULSE_WIDTH)
                 + window.get(1 + 9 * PULSE_WIDTH);
