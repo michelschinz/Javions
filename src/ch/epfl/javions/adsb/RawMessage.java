@@ -39,9 +39,12 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
         return downLinkFormat(byte0) == DF_EXTENDED_SQUITTER ? LENGTH : 0;
     }
 
-    public static RawMessage of(long timeStampNs, byte[] bytes) {
+    public RawMessage {
         Preconditions.checkArgument(timeStampNs >= 0);
-        Preconditions.checkArgument(bytes.length == LENGTH);
+        Preconditions.checkArgument(bytes.size() == LENGTH);
+    }
+
+    public static RawMessage of(long timeStampNs, byte[] bytes) {
         return CRC_24.crc(bytes) == 0 ? new RawMessage(timeStampNs, new ByteString(bytes)) : null;
     }
 
