@@ -2,6 +2,8 @@ package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.ByteString;
 
+import java.util.HexFormat;
+
 /**
  * Parser for (long) ADSB frames in AVR format.
  *
@@ -12,10 +14,11 @@ import ch.epfl.javions.ByteString;
  *
  */
 public final class AvrParser {
-    public static ByteString parseAVR(String s) {
-        return switch (s.length()) {
-            case 30 -> ByteString.ofHexadecimalString(s.substring(1, 29));
-            default -> throw new Error("invalid AVR frame: %s".formatted(s));
-        };
+    private static final HexFormat HEX_FORMAT = HexFormat.of();
+
+    public static byte[] parseAVR(String s) {
+        if (s.length() != 30)
+            throw new Error("invalid AVR frame: %s".formatted(s));
+        return HEX_FORMAT.parseHex(s, 1, 29);
     }
 }

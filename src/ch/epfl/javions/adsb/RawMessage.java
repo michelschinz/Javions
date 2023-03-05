@@ -3,6 +3,7 @@ package ch.epfl.javions.adsb;
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.ByteString;
 import ch.epfl.javions.Crc24;
+import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.aircraft.IcaoAddress;
 
 import java.util.HexFormat;
@@ -34,26 +35,22 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
     private static final HexFormat HEX_FORMAT = HexFormat.of().withUpperCase();
     private static final Crc24 CRC_24 = new Crc24(Crc24.GENERATOR);
 
+    public static int size(int byte0) {
+        return downLinkFormat(byte0) == DF_EXTENDED_SQUITTER ? LENGTH : 0;
+    }
+
+    public static RawMessage of(long timeStampNs, byte[] bytes) {
+        Preconditions.checkArgument(timeStampNs >= 0);
+        Preconditions.checkArgument(bytes.length == LENGTH);
+        return CRC_24.crc(bytes) == 0 ? new RawMessage(timeStampNs, new ByteString(bytes)) : null;
+    }
+
     public static int downLinkFormat(int dfAndCa) {
         return Bits.extractUInt(dfAndCa, DF_START, DF_SIZE);
     }
 
-    public static int size(int firstByte) {
-        return downLinkFormat(firstByte) == DF_EXTENDED_SQUITTER ? LENGTH : 0;
-    }
-
-    public static boolean isValid(byte[] bytes) {
-        return bytes.length == LENGTH
-               && downLinkFormat(bytes[0]) == DF_EXTENDED_SQUITTER
-               && CRC_24.crc(bytes) == 0;
-    }
-
     public static int typeCode(long payload) {
         return Bits.extractUInt(payload, TC_START, TC_SIZE);
-    }
-
-    public static RawMessage of(long timeStampNs, ByteString bytes) {
-        return new RawMessage(timeStampNs, bytes);
     }
 
     public int downLinkFormat() {
@@ -61,8 +58,8 @@ public record RawMessage(long timeStampNs, ByteString bytes) {
     }
 
     public IcaoAddress icaoAddress() {
-        var icaoAddres = bytes.bytesInRange(ICAO_ADDRESS_START, ICAO_ADDRESS_END);
-        return new IcaoAddress(HEX_FORMAT.toHexDigits(icaoAddres, 2 * ICAO_ADDRESS_LENGTH));
+        var address = bytes.bytesInRange(ICAO_ADDRESS_START, ICAO_ADDRESS_END);
+        return new IcaoAddress(HEX_FORMAT.toHexDigits(address, 2 * ICAO_ADDRESS_LENGTH));
     }
 
     public long payload() {

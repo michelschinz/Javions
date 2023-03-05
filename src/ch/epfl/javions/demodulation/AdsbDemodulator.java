@@ -34,17 +34,17 @@ public final class AdsbDemodulator {
             var vCurr = currentValleyPower();
             if (pCurr < 2 * vCurr) continue;
 
-            var firstByte = getByte(0);
-            if (RawMessage.size(firstByte) != RawMessage.LENGTH) continue;
+            var byte0 = getByte(0);
+            if (RawMessage.size(byte0) != RawMessage.LENGTH) continue;
 
-            messageBuffer[0] = (byte) firstByte;
+            messageBuffer[0] = (byte) byte0;
             for (var i = 1; i < RawMessage.LENGTH; i += 1)
                 messageBuffer[i] = (byte) getByte(i);
 
-            if (RawMessage.isValid(messageBuffer)) {
-                var message = RawMessage.of(timeStampNs(), new ByteString(messageBuffer));
+            var maybeMessage = RawMessage.of(timeStampNs(), messageBuffer);
+            if (maybeMessage != null) {
                 window.advanceBy(LONG_MESSAGE_WIDTH);
-                return message;
+                return maybeMessage;
             }
         }
         return null;
@@ -83,5 +83,4 @@ public final class AdsbDemodulator {
         var p2 = window.get(base + PULSE_WIDTH);
         return p1 < p2 ? 0 : 1;
     }
-
 }

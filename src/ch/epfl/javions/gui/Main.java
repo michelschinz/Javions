@@ -140,6 +140,7 @@ public final class Main extends Application {
                 s.lines()
                         .map(AvrParser::parseAVR)
                         .map(m -> RawMessage.of(fakeTimeStamp++, m))
+                        .filter(Objects::nonNull)
                         .filter(m -> m.downLinkFormat() == 17)
                         .map(MessageParser::parse)
                         .filter(Objects::nonNull)
