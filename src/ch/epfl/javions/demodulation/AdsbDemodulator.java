@@ -1,6 +1,5 @@
 package ch.epfl.javions.demodulation;
 
-import ch.epfl.javions.ByteString;
 import ch.epfl.javions.adsb.RawMessage;
 
 import java.io.IOException;
