@@ -7,7 +7,6 @@ import static java.lang.Math.*;
 
 public final class CprDecoder {
     private static final int CPR_BITS = 17;
-    private static final double CPR_ONE_HALF = scalb(0.5d, CPR_BITS);
 
     private static final int LAT_ZONES_E = 60;
     private static final int LAT_ZONES_O = LAT_ZONES_E - 1;
@@ -28,24 +27,28 @@ public final class CprDecoder {
                                         int lonCprO,
                                         int latCprO,
                                         boolean mostRecentIsE) {
-        var latZIn = (int) floor(scalb(LAT_ZONES_O * latCprE - LAT_ZONES_E * latCprO + CPR_ONE_HALF, -CPR_BITS));
-        var latE = D_LAT_E * (normalizeZoneIndex(latZIn, LAT_ZONES_E) + scalb(latCprE, -CPR_BITS));
-        var latO = D_LAT_O * (normalizeZoneIndex(latZIn, LAT_ZONES_O) + scalb(latCprO, -CPR_BITS));
+        var latZIn = (int) rint(cprToDouble(LAT_ZONES_O * latCprE - LAT_ZONES_E * latCprO));
+        var latE = D_LAT_E * (normalizeZoneIndex(latZIn, LAT_ZONES_E) + cprToDouble(latCprE));
+        var latO = D_LAT_O * (normalizeZoneIndex(latZIn, LAT_ZONES_O) + cprToDouble(latCprO));
 
         var lonZonesE = lonZones(latE);
         if (lonZonesE != lonZones(latO)) return null;
 
         if (lonZonesE == 1) {
             return mostRecentIsE
-                    ? geoPos(scalb(lonCprE, -CPR_BITS), latE)
-                    : geoPos(scalb(lonCprO, -CPR_BITS), latO);
+                    ? geoPos(cprToDouble(lonCprE), latE)
+                    : geoPos(cprToDouble(lonCprO), latO);
         } else {
             var lonZonesO = lonZonesE - 1;
-            var lonZIn = (int) floor(scalb(lonZonesO * lonCprE - lonZonesE * lonCprO + CPR_ONE_HALF, -CPR_BITS));
+            var lonZIn = (int) rint(cprToDouble(lonZonesO * lonCprE - lonZonesE * lonCprO));
             return mostRecentIsE
-                    ? geoPos(normalizeZoneIndex(lonZIn, lonZonesE) + scalb(lonCprE, -CPR_BITS) / lonZonesE, latE)
-                    : geoPos(normalizeZoneIndex(lonZIn, lonZonesO) + scalb(lonCprO, -CPR_BITS) / lonZonesO, latO);
+                    ? geoPos(normalizeZoneIndex(lonZIn, lonZonesE) + cprToDouble(lonCprE) / lonZonesE, latE)
+                    : geoPos(normalizeZoneIndex(lonZIn, lonZonesO) + cprToDouble(lonCprO) / lonZonesO, latO);
         }
+    }
+
+    private static double cprToDouble(int x) {
+        return scalb((double) x, -CPR_BITS);
     }
 
     private static int normalizeZoneIndex(int zIn, int zonesCount) {
