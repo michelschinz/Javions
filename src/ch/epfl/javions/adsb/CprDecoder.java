@@ -22,7 +22,7 @@ public final class CprDecoder {
         return Double.isNaN(nl) ? 1 : (int) nl;
     }
 
-    public static GeoPos decodePosition(int x0, int y0, int x1, int y1, boolean mostRecentIs0) {
+    public static GeoPos decodePosition(int x0, int y0, int x1, int y1, int mostRecent) {
         var latZIn = (int) rint(cprToDouble(LAT_ZONES_1 * y0 - LAT_ZONES_0 * y1));
         var lat0Turn = D_LAT_0_TURN * (normalizeZoneIndex(latZIn, LAT_ZONES_0) + cprToDouble(y0));
         var lat1Turn = D_LAT_1_TURN * (normalizeZoneIndex(latZIn, LAT_ZONES_1) + cprToDouble(y1));
@@ -31,13 +31,13 @@ public final class CprDecoder {
         if (lonZones0 != lonZones(lat1Turn)) return null;
 
         if (lonZones0 == 1) {
-            return mostRecentIs0
+            return mostRecent == 0
                     ? geoPos(cprToDouble(x0), lat0Turn)
                     : geoPos(cprToDouble(x1), lat1Turn);
         } else {
             var lonZones1 = lonZones0 - 1;
             var lonZIn = (int) rint(cprToDouble(lonZones1 * x0 - lonZones0 * x1));
-            return mostRecentIs0
+            return mostRecent == 0
                     ? geoPos(normalizeZoneIndex(lonZIn, lonZones0) + cprToDouble(x0) / lonZones0, lat0Turn)
                     : geoPos(normalizeZoneIndex(lonZIn, lonZones1) + cprToDouble(x1) / lonZones1, lat1Turn);
         }

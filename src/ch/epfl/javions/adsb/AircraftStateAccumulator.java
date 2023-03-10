@@ -32,7 +32,7 @@ public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
                     var maybePos = CprDecoder.decodePosition(
                             messageE.cprLon(), messageE.cprLat(),
                             messageO.cprLon(), messageO.cprLat(),
-                            m.isEven());
+                            m.isEven() ? 0 : 1);
                     if (maybePos != null) stateSetter.setPosition(maybePos);
                 }
                 lastPositionMessage = m;
