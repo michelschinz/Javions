@@ -2,6 +2,8 @@ package ch.epfl.javions.adsb;
 
 import java.time.Duration;
 
+import static java.lang.Math.scalb;
+
 public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
     private static final long MAX_INTER_MESSAGE_NS =
             Duration.ofSeconds(10).toNanos();
@@ -30,9 +32,7 @@ public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
                     var messageE = m.isEven() ? m : lastPositionMessage;
                     var messageO = m.isEven() ? lastPositionMessage : m;
                     var maybePos = CprDecoder.decodePosition(
-                            messageE.cprLon(), messageE.cprLat(),
-                            messageO.cprLon(), messageO.cprLat(),
-                            m.isEven() ? 0 : 1);
+                            messageE.x(), messageE.y(), messageO.x(), messageO.y(), m.isEven() ? 0 : 1);
                     if (maybePos != null) stateSetter.setPosition(maybePos);
                 }
                 lastPositionMessage = m;

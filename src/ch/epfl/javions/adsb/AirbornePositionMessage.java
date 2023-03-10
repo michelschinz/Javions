@@ -11,14 +11,15 @@ public record AirbornePositionMessage(long timeStampNs,
                                       IcaoAddress icaoAddress,
                                       double altitude,
                                       boolean isEven,
-                                      int cprLon,
-                                      int cprLat) implements Message {
+                                      double x,
+                                      double y) implements Message {
     // TODO remaining fields
     private enum Field {LONGITUDE, LATITUDE, FORMAT, TIME, ALT}
 
+    private static final int CPR_BITS = 17;
     private static final BitUnpacker<Field> UNPACKER = new BitUnpacker<>(
-            field(Field.LONGITUDE, 17),
-            field(Field.LATITUDE, 17),
+            field(Field.LONGITUDE, CPR_BITS),
+            field(Field.LATITUDE, CPR_BITS),
             field(Field.FORMAT, 1),
             field(Field.TIME, 1),
             field(Field.ALT, 12)
@@ -34,8 +35,12 @@ public record AirbornePositionMessage(long timeStampNs,
                 rawMessage.icaoAddress(),
                 altitude(payload),
                 UNPACKER.unpack(Field.FORMAT, payload) == 0,
-                UNPACKER.unpack(Field.LONGITUDE, payload),
-                UNPACKER.unpack(Field.LATITUDE, payload));
+                cprToDouble(UNPACKER.unpack(Field.LONGITUDE, payload)),
+                cprToDouble(UNPACKER.unpack(Field.LATITUDE, payload)));
+    }
+
+    private static double cprToDouble(int cpr) {
+        return Math.scalb((double) cpr, -CPR_BITS);
     }
 
     private static double altitude(long payload) {
