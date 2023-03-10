@@ -29,10 +29,10 @@ public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
             case AirbornePositionMessage m -> {
                 stateSetter.setAltitude(m.altitude());
                 if (isValidMessagePair(lastPositionMessage, m)) {
-                    var messageE = m.isEven() ? m : lastPositionMessage;
-                    var messageO = m.isEven() ? lastPositionMessage : m;
+                    var message0 = m.parity() == 0 ? m : lastPositionMessage;
+                    var message1 = m.parity() == 0 ? lastPositionMessage : m;
                     var maybePos = CprDecoder.decodePosition(
-                            messageE.x(), messageE.y(), messageO.x(), messageO.y(), m.isEven() ? 0 : 1);
+                            message0.x(), message0.y(), message1.x(), message1.y(), m.parity());
                     if (maybePos != null) stateSetter.setPosition(maybePos);
                 }
                 lastPositionMessage = m;
@@ -51,7 +51,7 @@ public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
     private static boolean isValidMessagePair(AirbornePositionMessage m1, AirbornePositionMessage m2) {
         return m1 != null
                && m2 != null
-               && m1.isEven() != m2.isEven()
+               && m1.parity() != m2.parity()
                && Math.abs(m1.timeStampNs() - m2.timeStampNs()) <= MAX_INTER_MESSAGE_NS;
     }
 }

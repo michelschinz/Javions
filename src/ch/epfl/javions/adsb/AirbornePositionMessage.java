@@ -10,7 +10,7 @@ import static ch.epfl.javions.BitUnpacker.field;
 public record AirbornePositionMessage(long timeStampNs,
                                       IcaoAddress icaoAddress,
                                       double altitude,
-                                      boolean isEven,
+                                      int parity,
                                       double x,
                                       double y) implements Message {
     // TODO remaining fields
@@ -34,7 +34,7 @@ public record AirbornePositionMessage(long timeStampNs,
         return new AirbornePositionMessage(rawMessage.timeStampNs(),
                 rawMessage.icaoAddress(),
                 altitude(payload),
-                UNPACKER.unpack(Field.FORMAT, payload) == 0,
+                UNPACKER.unpack(Field.FORMAT, payload),
                 cprToDouble(UNPACKER.unpack(Field.LONGITUDE, payload)),
                 cprToDouble(UNPACKER.unpack(Field.LATITUDE, payload)));
     }
