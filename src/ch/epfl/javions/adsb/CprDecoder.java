@@ -15,11 +15,7 @@ public final class CprDecoder {
 
     private static final double LON_ZONES_NUMERATOR = 1 - cos(Units.convertFrom(D_LAT_0_TURN, Units.Angle.TURN));
 
-    private static int lonZones(double latTurn) {
-        var cosLat = cos(Units.convertFrom(latTurn, Units.Angle.TURN));
-        var nl = floor(Units.Angle.TURN / acos(1 - LON_ZONES_NUMERATOR / (cosLat * cosLat)));
-        return Double.isNaN(nl) ? 1 : (int) nl;
-    }
+    private CprDecoder() {}
 
     public static GeoPos decodePosition(double x0, double y0, double x1, double y1, int mostRecent) {
         Preconditions.checkArgument(0 <= mostRecent && mostRecent <= 1);
@@ -40,6 +36,12 @@ public final class CprDecoder {
                     ? geoPos(normalizeZoneIndex(lonZIn, lonZones0) + x0 / lonZones0, lat0Turn)
                     : geoPos(normalizeZoneIndex(lonZIn, lonZones1) + x1 / lonZones1, lat1Turn);
         }
+    }
+
+    private static int lonZones(double latTurn) {
+        var cosLat = cos(Units.convertFrom(latTurn, Units.Angle.TURN));
+        var nl = floor(Units.Angle.TURN / acos(1 - LON_ZONES_NUMERATOR / (cosLat * cosLat)));
+        return Double.isNaN(nl) ? 1 : (int) nl;
     }
 
     private static int normalizeZoneIndex(int zIn, int zonesCount) {
