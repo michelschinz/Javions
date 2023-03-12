@@ -25,6 +25,12 @@ public record AirbornePositionMessage(long timeStampNs,
 
     private static final int ALT_Q_BIT_INDEX = 4;
 
+    // For when Q = 0
+    private static final int ALT_FT100_START = 0;
+    private static final int ALT_FT100_SIZE = 3;
+    private static final int ALT_FT500_START = ALT_FT100_START + ALT_FT100_SIZE;
+    private static final int ALT_FT500_SIZE = 9;
+
     public static AirbornePositionMessage of(RawMessage rawMessage) {
         var payload = rawMessage.payload();
         return new AirbornePositionMessage(rawMessage.timeStampNs(),
@@ -67,11 +73,11 @@ public record AirbornePositionMessage(long timeStampNs,
 
     private static double decodeGillhamAltitude(int encAltitude) {
         // Algorithm taken from http://www.ccsinfo.com/forum/viewtopic.php?p=140960#140960
-        var ft100 = gray16ToBinary(Bits.extractUInt(encAltitude, 0, 3));
+        var ft100 = gray16ToBinary(Bits.extractUInt(encAltitude, ALT_FT100_START, ALT_FT100_SIZE));
         if (ft100 == 0 || ft100 == 5 || ft100 == 6) return Double.NaN;
         if (ft100 == 7) ft100 = 5;
 
-        var ft500 = gray16ToBinary(Bits.extractUInt(encAltitude, 3, 9));
+        var ft500 = gray16ToBinary(Bits.extractUInt(encAltitude, ALT_FT500_START, ALT_FT500_SIZE));
         if ((ft500 & 1) == 1) ft100 = 6 - ft100;
         return Units.convertFrom(-1300 + ft100 * 100 + ft500 * 500, Units.Length.FOOT);
     }
