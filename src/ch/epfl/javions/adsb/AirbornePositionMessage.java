@@ -23,9 +23,7 @@ public record AirbornePositionMessage(long timeStampNs,
     private static final int ALT_START = TIME_START + TIME_SIZE;
     private static final int ALT_SIZE = 12;
 
-    private static final int ALTITUDE_Q_BIT_INDEX = 4;
-    private static final int ALTITUDE_Q_BIT_UPPER_MASK = ~0 << (ALTITUDE_Q_BIT_INDEX + 1);
-    private static final int ALTITUDE_Q_BIT_LOWER_MASK = (1 << ALTITUDE_Q_BIT_INDEX) - 1;
+    private static final int ALT_Q_BIT_INDEX = 4;
 
     public static AirbornePositionMessage of(RawMessage rawMessage) {
         var payload = rawMessage.payload();
@@ -43,9 +41,10 @@ public record AirbornePositionMessage(long timeStampNs,
 
     private static double altitude(long payload) {
         var encAltitude = Bits.extractUInt(payload, ALT_START, ALT_SIZE);
-        if (Bits.testBit(encAltitude, ALTITUDE_Q_BIT_INDEX)) {
-            var ft25 = (encAltitude & ALTITUDE_Q_BIT_UPPER_MASK) >> 1
-                    | (encAltitude & ALTITUDE_Q_BIT_LOWER_MASK);
+        if (Bits.testBit(encAltitude, ALT_Q_BIT_INDEX)) {
+            var l = Bits.extractUInt(encAltitude, 0, ALT_Q_BIT_INDEX);
+            var h = Bits.extractUInt(encAltitude, ALT_Q_BIT_INDEX + 1, ALT_SIZE - (ALT_Q_BIT_INDEX + 1));
+            var ft25 = (h << ALT_Q_BIT_INDEX) | l;
             return Units.convertFrom(-1000 + ft25 * 25, Units.Length.FOOT);
         } else {
             return decodeGillhamAltitude(permuteGillham(encAltitude));
