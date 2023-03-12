@@ -33,8 +33,8 @@ public final class CprDecoder {
             var lonZones1 = lonZones0 - 1;
             var lonZIn = (int) rint(x0 * lonZones1 - x1 * lonZones0);
             return mostRecent == 0
-                    ? geoPos(normalizeZoneIndex(lonZIn, lonZones0) + x0 / lonZones0, lat0Turn)
-                    : geoPos(normalizeZoneIndex(lonZIn, lonZones1) + x1 / lonZones1, lat1Turn);
+                    ? geoPos((normalizeZoneIndex(lonZIn, lonZones0) + x0) / lonZones0, lat0Turn)
+                    : geoPos((normalizeZoneIndex(lonZIn, lonZones1) + x1) / lonZones1, lat1Turn);
         }
     }
 
