@@ -33,13 +33,14 @@ public record AircraftIdentificationMessage(long timeStampNs,
     }
 
     private static CallSign callSign(long payload) {
-        var callSignChars = new char[CALL_SIGN_LENGTH];
-        for (var i = 0; i < CALL_SIGN_LENGTH; i += 1) {
-            var startBitI = (CALL_SIGN_LENGTH - 1 - i) * CALL_SIGN_CHAR_SIZE;
-            var n = Bits.extractUInt(payload, startBitI, CALL_SIGN_CHAR_SIZE);
-            callSignChars[i] = CALL_SIGN_ALPHABET.charAt(n);
+        var callSignB = new StringBuilder(CALL_SIGN_LENGTH);
+        for (var i = 0; i < CALL_SIGN_LENGTH * CALL_SIGN_CHAR_SIZE; i += CALL_SIGN_CHAR_SIZE) {
+            var n = Bits.extractUInt(payload, i, CALL_SIGN_CHAR_SIZE);
+            var c = CALL_SIGN_ALPHABET.charAt(n);
+            if (callSignB.isEmpty() && c == ' ') continue; // ignore trailing spaces
+            callSignB.append(c);
         }
-        var callSign = new String(callSignChars).trim();
+        var callSign = callSignB.reverse().toString();
         return callSign.contains("?") ? null : new CallSign(callSign);
     }
 }
