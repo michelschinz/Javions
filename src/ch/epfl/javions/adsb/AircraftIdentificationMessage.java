@@ -1,7 +1,10 @@
 package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.Bits;
+import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.aircraft.IcaoAddress;
+
+import java.util.Objects;
 
 public record AircraftIdentificationMessage(long timeStampNs,
                                             IcaoAddress icaoAddress,
@@ -14,6 +17,12 @@ public record AircraftIdentificationMessage(long timeStampNs,
 
     private static final int CATEGORY_START = CALL_SIGN_LENGTH * CALL_SIGN_CHAR_SIZE;
     private static final int CATEGORY_SIZE = 3;
+
+    public AircraftIdentificationMessage {
+        Preconditions.checkArgument(timeStampNs >= 0);
+        Objects.requireNonNull(icaoAddress);
+        Objects.requireNonNull(callSign);
+    }
 
     public static AircraftIdentificationMessage of(RawMessage rawMessage) {
         var payload = rawMessage.payload();

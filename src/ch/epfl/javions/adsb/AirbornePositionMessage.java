@@ -1,8 +1,11 @@
 package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.Bits;
+import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.aircraft.IcaoAddress;
+
+import java.util.Objects;
 
 public record AirbornePositionMessage(long timeStampNs,
                                       IcaoAddress icaoAddress,
@@ -31,11 +34,22 @@ public record AirbornePositionMessage(long timeStampNs,
     private static final int ALT_FT500_START = ALT_FT100_START + ALT_FT100_SIZE;
     private static final int ALT_FT500_SIZE = 9;
 
+    public AirbornePositionMessage {
+        Preconditions.checkArgument(timeStampNs >= 0);
+        Objects.requireNonNull(icaoAddress);
+        Preconditions.checkArgument(parity == 0 || parity == 1);
+        Preconditions.checkArgument(0d <= x && x < 1d);
+        Preconditions.checkArgument(0d <= y && y < 1d);
+    }
+
     public static AirbornePositionMessage of(RawMessage rawMessage) {
         var payload = rawMessage.payload();
-        return new AirbornePositionMessage(rawMessage.timeStampNs(),
+        var altitude = altitude(payload);
+        return Double.isNaN(altitude)
+                ? null
+                : new AirbornePositionMessage(rawMessage.timeStampNs(),
                 rawMessage.icaoAddress(),
-                altitude(payload),
+                altitude,
                 Bits.extractUInt(payload, FORMAT_START, FORMAT_SIZE),
                 normalizeCpr(Bits.extractUInt(payload, LON_CPR_START, LON_CPR_SIZE)),
                 normalizeCpr(Bits.extractUInt(payload, LAT_CPR_START, LAT_CPR_SIZE)));
@@ -62,7 +76,7 @@ public record AirbornePositionMessage(long timeStampNs,
     // Output: D1 D2 D4 A1 A2 A4 B1 B2 B4 C1 C2 C4
     private static int permuteGillham(int shuffled) {
         var unshuffled = 0;
-        for (var i : new int[] {4, 10, 5, 11}) {
+        for (var i : new int[]{4, 10, 5, 11}) {
             for (var j = 0; j < 5; j += 2) {
                 var bit = (shuffled >> (i - j)) & 1;
                 unshuffled = (unshuffled << 1) | bit;
