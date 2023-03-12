@@ -1,11 +1,8 @@
 package ch.epfl.javions.adsb;
 
-import ch.epfl.javions.BitUnpacker;
 import ch.epfl.javions.Bits;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.aircraft.IcaoAddress;
-
-import static ch.epfl.javions.BitUnpacker.field;
 
 public record AirbornePositionMessage(long timeStampNs,
                                       IcaoAddress icaoAddress,
@@ -13,17 +10,18 @@ public record AirbornePositionMessage(long timeStampNs,
                                       int parity,
                                       double x,
                                       double y) implements Message {
-    // TODO remaining fields
-    private enum Field {LONGITUDE, LATITUDE, FORMAT, TIME, ALT}
-
     private static final int CPR_BITS = 17;
-    private static final BitUnpacker<Field> UNPACKER = new BitUnpacker<>(
-            field(Field.LONGITUDE, CPR_BITS),
-            field(Field.LATITUDE, CPR_BITS),
-            field(Field.FORMAT, 1),
-            field(Field.TIME, 1),
-            field(Field.ALT, 12)
-    );
+
+    private static final int LON_CPR_START = 0;
+    private static final int LON_CPR_SIZE = CPR_BITS;
+    private static final int LAT_CPR_START = LON_CPR_START + LON_CPR_SIZE;
+    private static final int LAT_CPR_SIZE = CPR_BITS;
+    private static final int FORMAT_START = LAT_CPR_START + LAT_CPR_SIZE;
+    private static final int FORMAT_SIZE = 1;
+    private static final int TIME_START = FORMAT_START + FORMAT_SIZE;
+    private static final int TIME_SIZE = 1;
+    private static final int ALT_START = TIME_START + TIME_SIZE;
+    private static final int ALT_SIZE = 12;
 
     private static final int ALTITUDE_Q_BIT_INDEX = 4;
     private static final int ALTITUDE_Q_BIT_UPPER_MASK = ~0 << (ALTITUDE_Q_BIT_INDEX + 1);
@@ -34,17 +32,17 @@ public record AirbornePositionMessage(long timeStampNs,
         return new AirbornePositionMessage(rawMessage.timeStampNs(),
                 rawMessage.icaoAddress(),
                 altitude(payload),
-                UNPACKER.unpack(Field.FORMAT, payload),
-                cprToDouble(UNPACKER.unpack(Field.LONGITUDE, payload)),
-                cprToDouble(UNPACKER.unpack(Field.LATITUDE, payload)));
+                Bits.extractUInt(payload, FORMAT_START, FORMAT_SIZE),
+                normalizeCpr(Bits.extractUInt(payload, LON_CPR_START, LON_CPR_SIZE)),
+                normalizeCpr(Bits.extractUInt(payload, LAT_CPR_START, LAT_CPR_SIZE)));
     }
 
-    private static double cprToDouble(int cpr) {
+    private static double normalizeCpr(int cpr) {
         return Math.scalb((double) cpr, -CPR_BITS);
     }
 
     private static double altitude(long payload) {
-        var encAltitude = UNPACKER.unpack(Field.ALT, payload);
+        var encAltitude = Bits.extractUInt(payload, ALT_START, ALT_SIZE);
         if (Bits.testBit(encAltitude, ALTITUDE_Q_BIT_INDEX)) {
             var ft25 = (encAltitude & ALTITUDE_Q_BIT_UPPER_MASK) >> 1
                     | (encAltitude & ALTITUDE_Q_BIT_LOWER_MASK);
