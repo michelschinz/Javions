@@ -1,10 +1,8 @@
 package ch.epfl.javions.adsb;
 
-import ch.epfl.javions.BitUnpacker;
+import ch.epfl.javions.Bits;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.aircraft.IcaoAddress;
-
-import static ch.epfl.javions.BitUnpacker.field;
 
 public record AirborneVelocityMessage(long timeStampNs,
                                       IcaoAddress icaoAddress,
@@ -13,50 +11,42 @@ public record AirborneVelocityMessage(long timeStampNs,
                                       double trackOrHeading) implements Message {
     public enum VelocityType {GROUND, AIR}
 
-    private enum Field {
-        GNSS_BAROMETER_DIFFERENCE,
-        GNSS_BAROMETER_DIFFERENCE_SIGN,
-        RESERVED,
-        VERTICAL_RATE,
-        VERTICAL_RATE_SIGN,
-        VERTICAL_RATE_SOURCE,
-        SPECIFIC_1,
-        SPECIFIC_2,
-        SPECIFIC_3,
-        SPECIFIC_4,
-        NAVIGATION_UNCERTAINTY,
-        IFR_CAPABLE,
-        INTENT_CHANGE,
-        SUB_TYPE
-    }
+    private static final int GNSS_BAROMETER_DIFFERENCE_START = 0;
+    private static final int GNSS_BAROMETER_DIFFERENCE_SIZE = 8;
+    private static final int RESERVED_START = GNSS_BAROMETER_DIFFERENCE_START + GNSS_BAROMETER_DIFFERENCE_SIZE;
+    private static final int RESERVED_SIZE = 2;
+    private static final int VERTICAL_RATE_START = RESERVED_START + RESERVED_SIZE;
+    private static final int VERTICAL_RATE_SIZE = 11;
+    private static final int SPECIFIC_START = VERTICAL_RATE_START + VERTICAL_RATE_SIZE;
+    private static final int SPECIFIC_SIZE = 22;
+    private static final int NAVIGATION_UNCERTAINTY_START = SPECIFIC_START + SPECIFIC_SIZE;
+    private static final int NAVIGATION_UNCERTAINTY_SIZE = 3;
+    private static final int IFR_CAPABLE_START = NAVIGATION_UNCERTAINTY_START + NAVIGATION_UNCERTAINTY_SIZE;
+    private static final int IFR_CAPABLE_SIZE = 1;
+    private static final int INTENT_CHANGE_START = IFR_CAPABLE_START + IFR_CAPABLE_SIZE;
+    private static final int INTENT_CHANGE_SIZE = 1;
+    private static final int SUB_TYPE_START = INTENT_CHANGE_START + INTENT_CHANGE_SIZE;
+    private static final int SUB_TYPE_SIZE = 3;
 
     // Specific fields for subtypes 1 and 2
-    private static final Field FIELD_NS_VELOCITY = Field.SPECIFIC_1;
-    private static final Field FIELD_NS_VELOCITY_DIRECTION = Field.SPECIFIC_2;
-    private static final Field FIELD_EW_VELOCITY = Field.SPECIFIC_3;
-    private static final Field FIELD_EW_VELOCITY_DIRECTION = Field.SPECIFIC_4;
+    private static final int NS_VELOCITY_START = SPECIFIC_START;
+    private static final int NS_VELOCITY_SIZE = 10;
+    private static final int NS_VELOCITY_DIRECTION_START = NS_VELOCITY_START + NS_VELOCITY_SIZE;
+    private static final int NS_VELOCITY_DIRECTION_SIZE = 1;
+    private static final int EW_VELOCITY_START = NS_VELOCITY_DIRECTION_START + NS_VELOCITY_DIRECTION_SIZE;
+    private static final int EW_VELOCITY_SIZE = 10;
+    private static final int EW_VELOCITY_DIRECTION_START = EW_VELOCITY_START + EW_VELOCITY_SIZE;
+    private static final int EW_VELOCITY_DIRECTION_SIZE = 1;
 
     // Specific fields for subtypes 3 and 4
-    private static final Field FIELD_AIRSPEED = Field.SPECIFIC_1;
-    private static final Field FIELD_AIRSPEED_TYPE = Field.SPECIFIC_2;
-    private static final Field FIELD_HEADING = Field.SPECIFIC_3;
-    private static final Field FIELD_HEADING_STATUS = Field.SPECIFIC_4;
-
-    private static final BitUnpacker<Field> UNPACKER = new BitUnpacker<>(
-            field(Field.GNSS_BAROMETER_DIFFERENCE, 7),
-            field(Field.GNSS_BAROMETER_DIFFERENCE_SIGN, 1),
-            field(Field.RESERVED, 2),
-            field(Field.VERTICAL_RATE, 9),
-            field(Field.VERTICAL_RATE_SIGN, 1),
-            field(Field.VERTICAL_RATE_SOURCE, 1),
-            field(Field.SPECIFIC_1, 10),
-            field(Field.SPECIFIC_2, 1),
-            field(Field.SPECIFIC_3, 10),
-            field(Field.SPECIFIC_4, 1),
-            field(Field.NAVIGATION_UNCERTAINTY, 3),
-            field(Field.IFR_CAPABLE, 1),
-            field(Field.INTENT_CHANGE, 1),
-            field(Field.SUB_TYPE, 3));
+    private static final int AIRSPEED_START = SPECIFIC_START;
+    private static final int AIRSPEED_SIZE = 10;
+    private static final int AIRSPEED_TYPE_START = AIRSPEED_START + AIRSPEED_SIZE;
+    private static final int AIRSPEED_TYPE_SIZE = 1;
+    private static final int HEADING_START = AIRSPEED_TYPE_START + AIRSPEED_TYPE_SIZE;
+    private static final int HEADING_SIZE = 10;
+    private static final int HEADING_STATUS_START = HEADING_START + HEADING_SIZE;
+    private static final int HEADING_STATUS_SIZE = 1;
 
     public static AirborneVelocityMessage of(RawMessage rawMessage) {
         var payload = rawMessage.payload();
@@ -69,7 +59,7 @@ public record AirborneVelocityMessage(long timeStampNs,
     }
 
     private static int subType(long payload) {
-        return UNPACKER.unpack(Field.SUB_TYPE, payload);
+        return Bits.extractUInt(payload, SUB_TYPE_START, SUB_TYPE_SIZE);
     }
 
     private static double unit(long payload) {
@@ -95,16 +85,16 @@ public record AirborneVelocityMessage(long timeStampNs,
 
     private static int velocityEW(long payload) {
         assert velocityType(payload) == VelocityType.GROUND;
-        var ew = UNPACKER.unpack(FIELD_EW_VELOCITY, payload) - 1;
+        var ew = Bits.extractUInt(payload, EW_VELOCITY_START, EW_VELOCITY_SIZE) - 1;
         // TODO handle the case when there is no data (ew == 0)
-        return UNPACKER.unpack(FIELD_EW_VELOCITY_DIRECTION, payload) == 0 ? ew : -ew;
+        return Bits.testBit(payload, EW_VELOCITY_DIRECTION_START) ? -ew : ew;
     }
 
     private static int velocityNS(long payload) {
         assert velocityType(payload) == VelocityType.GROUND;
-        var ns = UNPACKER.unpack(FIELD_NS_VELOCITY, payload) - 1;
-        // TODO handle the case when there is no data (ns == 0)
-        return UNPACKER.unpack(FIELD_NS_VELOCITY_DIRECTION, payload) == 0 ? ns : -ns;
+        var ns = Bits.extractUInt(payload, NS_VELOCITY_START, NS_VELOCITY_SIZE) - 1;
+        // TODO handle the case when there is no data (ew == 0)
+        return Bits.testBit(payload, NS_VELOCITY_DIRECTION_START) ? -ns : ns;
     }
 
     private static double track(long payload) {
@@ -115,13 +105,14 @@ public record AirborneVelocityMessage(long timeStampNs,
 
     private static double heading(long payload) {
         assert velocityType(payload) == VelocityType.AIR;
-        return Units.convertFrom(Math.scalb(UNPACKER.unpack(FIELD_HEADING, payload), -10), Units.Angle.TURN);
+        var headingField = Bits.extractUInt(payload, HEADING_START, HEADING_SIZE);
+        return Units.convertFrom(Math.scalb(headingField, -HEADING_SIZE), Units.Angle.TURN);
     }
 
     private static double velocity(long payload) {
         var value = switch (velocityType(payload)) {
             case GROUND -> Math.hypot(velocityNS(payload), velocityEW(payload));
-            case AIR -> UNPACKER.unpack(FIELD_AIRSPEED, payload) - 1;
+            case AIR -> Bits.extractUInt(payload, AIRSPEED_START, AIRSPEED_SIZE) - 1;
         };
         return Units.convertFrom(value, unit(payload));
     }
