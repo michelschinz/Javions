@@ -1,6 +1,8 @@
 package ch.epfl.javions.adsb;
 
 public final class MessageParser {
+    private MessageParser() {}
+
     public static Message parse(RawMessage rawMessage) {
         return switch (rawMessage.typeCode()) {
             case 1, 2, 3, 4 ->
