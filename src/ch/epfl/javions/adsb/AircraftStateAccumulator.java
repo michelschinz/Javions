@@ -1,10 +1,7 @@
 package ch.epfl.javions.adsb;
 
-import java.time.Duration;
-
 public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
-    private static final long MAX_INTER_MESSAGE_NS =
-            Duration.ofSeconds(10).toNanos();
+    private static final long MAX_INTER_MESSAGE_NS = 10_000_000_000L;
 
     private final T stateSetter;
     private final AirbornePositionMessage[] lastPositionMessage = {null, null};
@@ -19,9 +16,9 @@ public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
 
     public void update(Message message) {
         switch (message) {
-            case AirborneVelocityMessage m -> {
-                stateSetter.setVelocity(m.speed());
-                stateSetter.setTrackOrHeading(m.trackOrHeading());
+            case AircraftIdentificationMessage m -> {
+                stateSetter.setCategory(m.category());
+                stateSetter.setCallSign(m.callSign());
             }
 
             case AirbornePositionMessage m -> {
@@ -37,9 +34,9 @@ public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
                 }
             }
 
-            case AircraftIdentificationMessage m -> {
-                stateSetter.setCategory(m.category());
-                stateSetter.setCallSign(m.callSign());
+            case AirborneVelocityMessage m -> {
+                stateSetter.setVelocity(m.speed());
+                stateSetter.setTrackOrHeading(m.trackOrHeading());
             }
 
             default -> throw new Error();
