@@ -1,6 +1,5 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.adsb.AvrParser;
 import ch.epfl.javions.adsb.Message;
 import ch.epfl.javions.adsb.MessageParser;
 import ch.epfl.javions.adsb.RawMessage;
@@ -17,11 +16,8 @@ import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
-import java.io.IOException;
-import java.io.UncheckedIOException;
-import java.nio.file.Files;
+import java.io.*;
 import java.nio.file.Path;
-import java.util.Objects;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public final class Main extends Application {
@@ -75,7 +71,7 @@ public final class Main extends Application {
         var messageQueue = new ConcurrentLinkedQueue<Message>();
         var programArguments = getParameters().getRaw();
         var messageThread = programArguments.size() == 1
-                ? new AvrMessageThread(programArguments.get(0), messageQueue)
+                ? new BinMessageThread(programArguments.get(0), messageQueue)
                 : new AirSpyMessageThread(messageQueue);
         messageThread.setDaemon(true);
         messageThread.start();
@@ -123,37 +119,40 @@ public final class Main extends Application {
         }
     }
 
-    private static final class AvrMessageThread extends Thread {
+    private static final class BinMessageThread extends Thread {
         private final String messageFileName;
         private final ConcurrentLinkedQueue<Message> messageQueue;
-        private long fakeTimeStamp = 0L;
 
-        public AvrMessageThread(String messageFileName, ConcurrentLinkedQueue<Message> messageQueue) {
-            super("AvrMessageThread");
+        public BinMessageThread(String messageFileName, ConcurrentLinkedQueue<Message> messageQueue) {
+            super("BinMessageThread");
             this.messageFileName = messageFileName;
             this.messageQueue = messageQueue;
         }
 
         @Override
         public void run() {
-            try (var s = Files.newBufferedReader(Path.of(messageFileName))) {
-                s.lines()
-                        .map(AvrParser::parseAVR)
-                        .map(m -> RawMessage.of(fakeTimeStamp++, m))
-                        .filter(Objects::nonNull)
-                        .filter(m -> m.downLinkFormat() == 17)
-                        .map(MessageParser::parse)
-                        .filter(Objects::nonNull)
-                        .forEach(m -> {
-                            try {
-                                messageQueue.add(m);
-                                Thread.sleep(5);
-                            } catch (InterruptedException e) {
-                                throw new Error(e);
-                            }
-                        });
+            try (var s = new DataInputStream(new FileInputStream(messageFileName))) {
+                var messageBuffer = new byte[RawMessage.LENGTH];
+                var t0 = System.nanoTime();
+                while (true) {
+                    var timeStampNs = s.readLong();
+                    var bytesRead = s.read(messageBuffer);
+                    if (bytesRead != RawMessage.LENGTH)
+                        throw new IOException("Unexpected end of file");
+
+                    var rawMessage = RawMessage.of(timeStampNs, messageBuffer);
+                    assert rawMessage != null;
+
+                    var nsToWait = timeStampNs - (System.nanoTime() - t0);
+                    if (nsToWait > 0) Thread.sleep(nsToWait / 1_000_000L);
+                    messageQueue.add(MessageParser.parse(rawMessage));
+                }
+            } catch (EOFException e) {
+                System.out.println("Messages exhausted, exiting.");
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
         }
     }
