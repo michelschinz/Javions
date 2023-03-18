@@ -6,121 +6,82 @@ import ch.epfl.javions.aircraft.IcaoAddress;
 
 public record AirborneVelocityMessage(long timeStampNs,
                                       IcaoAddress icaoAddress,
-                                      VelocityType velocityType,
-                                      double velocity,
+                                      double speed,
                                       double trackOrHeading) implements Message {
-    public enum VelocityType {GROUND, AIR}
-
-    private static final int GNSS_BAROMETER_DIFFERENCE_START = 0;
-    private static final int GNSS_BAROMETER_DIFFERENCE_SIZE = 8;
-    private static final int RESERVED_START = GNSS_BAROMETER_DIFFERENCE_START + GNSS_BAROMETER_DIFFERENCE_SIZE;
-    private static final int RESERVED_SIZE = 2;
-    private static final int VERTICAL_RATE_START = RESERVED_START + RESERVED_SIZE;
-    private static final int VERTICAL_RATE_SIZE = 11;
-    private static final int SPECIFIC_START = VERTICAL_RATE_START + VERTICAL_RATE_SIZE;
-    private static final int SPECIFIC_SIZE = 22;
-    private static final int NAVIGATION_UNCERTAINTY_START = SPECIFIC_START + SPECIFIC_SIZE;
-    private static final int NAVIGATION_UNCERTAINTY_SIZE = 3;
-    private static final int IFR_CAPABLE_START = NAVIGATION_UNCERTAINTY_START + NAVIGATION_UNCERTAINTY_SIZE;
-    private static final int IFR_CAPABLE_SIZE = 1;
-    private static final int INTENT_CHANGE_START = IFR_CAPABLE_START + IFR_CAPABLE_SIZE;
-    private static final int INTENT_CHANGE_SIZE = 1;
-    private static final int SUB_TYPE_START = INTENT_CHANGE_START + INTENT_CHANGE_SIZE;
-    private static final int SUB_TYPE_SIZE = 3;
+    // Payload contents
+    private static final int SUBTYPE_SPECIFIC_START = 21;
+    private static final int SUBTYPE_SPECIFIC_SIZE = 22;
+    private static final int SUBTYPE_START = 48;
+    private static final int SUBTYPE_SIZE = 3;
 
     // Specific fields for subtypes 1 and 2
-    private static final int NS_VELOCITY_START = SPECIFIC_START;
-    private static final int NS_VELOCITY_SIZE = 10;
-    private static final int NS_VELOCITY_DIRECTION_START = NS_VELOCITY_START + NS_VELOCITY_SIZE;
-    private static final int NS_VELOCITY_DIRECTION_SIZE = 1;
-    private static final int EW_VELOCITY_START = NS_VELOCITY_DIRECTION_START + NS_VELOCITY_DIRECTION_SIZE;
-    private static final int EW_VELOCITY_SIZE = 10;
-    private static final int EW_VELOCITY_DIRECTION_START = EW_VELOCITY_START + EW_VELOCITY_SIZE;
-    private static final int EW_VELOCITY_DIRECTION_SIZE = 1;
+    private static final int MAGNITUDE_SIZE = 10;
+    private static final int SIGN_SIZE = 1;
+    private static final int NS_SPEED_START = 0;
+    private static final int EW_SPEED_START = NS_SPEED_START + MAGNITUDE_SIZE + SIGN_SIZE;
 
     // Specific fields for subtypes 3 and 4
-    private static final int AIRSPEED_START = SPECIFIC_START;
+    private static final int AIRSPEED_START = 0;
     private static final int AIRSPEED_SIZE = 10;
     private static final int AIRSPEED_TYPE_START = AIRSPEED_START + AIRSPEED_SIZE;
     private static final int AIRSPEED_TYPE_SIZE = 1;
     private static final int HEADING_START = AIRSPEED_TYPE_START + AIRSPEED_TYPE_SIZE;
     private static final int HEADING_SIZE = 10;
-    private static final int HEADING_STATUS_START = HEADING_START + HEADING_SIZE;
-    private static final int HEADING_STATUS_SIZE = 1;
+    private static final int HEADING_STATUS = HEADING_START + HEADING_SIZE;
+
+    private static final int SCALE_SUBSONIC = 0;
+    private static final int SCALE_SUPERSONIC = 2;
 
     public static AirborneVelocityMessage of(RawMessage rawMessage) {
         var payload = rawMessage.payload();
-        return new AirborneVelocityMessage(
-                rawMessage.timeStampNs(),
-                rawMessage.icaoAddress(),
-                velocityType(payload),
-                velocity(payload),
-                trackOrHeading(payload));
-    }
-
-    private static int subType(long payload) {
-        return Bits.extractUInt(payload, SUB_TYPE_START, SUB_TYPE_SIZE);
-    }
-
-    private static double unit(long payload) {
-        return switch (subType(payload)) {
-            case 1, 3 -> Units.Speed.KNOT;
-            case 2, 4 -> Units.Speed.KNOT * 4;
-            default -> Double.NaN; // TODO do something else?
+        var subType = Bits.extractUInt(payload, SUBTYPE_START, SUBTYPE_SIZE);
+        var data = Bits.extractUInt(payload, SUBTYPE_SPECIFIC_START, SUBTYPE_SPECIFIC_SIZE);
+        return switch (subType) {
+            case 1 -> groundSpeed(rawMessage, data, SCALE_SUBSONIC);
+            case 2 -> groundSpeed(rawMessage, data, SCALE_SUPERSONIC);
+            case 3 -> airSpeed(rawMessage, data, SCALE_SUBSONIC);
+            case 4 -> airSpeed(rawMessage, data, SCALE_SUPERSONIC);
+            default -> null;
         };
     }
 
-    private static boolean hasVelocity(long payload) {
-        var subType = subType(payload);
-        return 1 <= subType && subType <= 4 && velocityEW(payload) != 0 && velocityNS(payload) != 0;
+    private static AirborneVelocityMessage of(RawMessage rawMessage, double speed, double trackOrHeading) {
+        var timeStampNs = rawMessage.timeStampNs();
+        var icaoAddress = rawMessage.icaoAddress();
+        return new AirborneVelocityMessage(timeStampNs, icaoAddress, speed, trackOrHeading);
     }
 
-    private static VelocityType velocityType(long payload) {
-        return switch (subType(payload)) {
-            case 1, 2 -> VelocityType.GROUND;
-            case 3, 4 -> VelocityType.AIR;
-            default -> null; // TODO do something else?
-        };
+    private static AirborneVelocityMessage groundSpeed(RawMessage rawMessage, int data, int speedScale) {
+        var vX = speedComponent(data, EW_SPEED_START);
+        var vY = speedComponent(data, NS_SPEED_START);
+        var speed = convertSpeed(Math.hypot(vX, vY), speedScale);
+        var track = Math.atan2(vX, vY);
+        if (track < 0) track += Units.Angle.TURN;
+        return of(rawMessage, speed, track);
     }
 
-    private static int velocityEW(long payload) {
-        assert velocityType(payload) == VelocityType.GROUND;
-        var ew = Bits.extractUInt(payload, EW_VELOCITY_START, EW_VELOCITY_SIZE) - 1;
-        // TODO handle the case when there is no data (ew == 0)
-        return Bits.testBit(payload, EW_VELOCITY_DIRECTION_START) ? -ew : ew;
+    private static double speedComponent(int data, int startBit) {
+        var magnitude = Bits.extractUInt(data, startBit, MAGNITUDE_SIZE);
+        var isNegative = Bits.testBit(data, startBit + MAGNITUDE_SIZE);
+        if (magnitude == 0) return Double.NaN;
+        else if (isNegative) return -(magnitude - 1);
+        else return magnitude - 1;
     }
 
-    private static int velocityNS(long payload) {
-        assert velocityType(payload) == VelocityType.GROUND;
-        var ns = Bits.extractUInt(payload, NS_VELOCITY_START, NS_VELOCITY_SIZE) - 1;
-        // TODO handle the case when there is no data (ew == 0)
-        return Bits.testBit(payload, NS_VELOCITY_DIRECTION_START) ? -ns : ns;
+    private static AirborneVelocityMessage airSpeed(RawMessage rawMessage, int data, int speedScale) {
+        if (!Bits.testBit(data, HEADING_STATUS)) return null;
+
+        var speedKnot = Bits.extractUInt(data, AIRSPEED_START, AIRSPEED_SIZE) - 1;
+        if (speedKnot == -1) return null;
+
+        var headingBits = Bits.extractUInt(data, HEADING_START, HEADING_SIZE);
+        var heading = Units.convertFrom(Math.scalb(headingBits, -HEADING_SIZE), Units.Angle.TURN);
+
+        var velocity = convertSpeed(speedKnot, speedScale);
+        return of(rawMessage, velocity, heading);
     }
 
-    private static double track(long payload) {
-        assert velocityType(payload) == VelocityType.GROUND;
-        var signedTrack = Math.atan2(velocityEW(payload), velocityNS(payload));
-        return signedTrack < 0 ? signedTrack + Units.Angle.TURN : signedTrack;
-    }
-
-    private static double heading(long payload) {
-        assert velocityType(payload) == VelocityType.AIR;
-        var headingField = Bits.extractUInt(payload, HEADING_START, HEADING_SIZE);
-        return Units.convertFrom(Math.scalb(headingField, -HEADING_SIZE), Units.Angle.TURN);
-    }
-
-    private static double velocity(long payload) {
-        var value = switch (velocityType(payload)) {
-            case GROUND -> Math.hypot(velocityNS(payload), velocityEW(payload));
-            case AIR -> Bits.extractUInt(payload, AIRSPEED_START, AIRSPEED_SIZE) - 1;
-        };
-        return Units.convertFrom(value, unit(payload));
-    }
-
-    private static double trackOrHeading(long payload) {
-        return switch (velocityType(payload)) {
-            case GROUND -> track(payload);
-            case AIR -> heading(payload);
-        };
+    private static double convertSpeed(double speedKnot, int speedScale) {
+        return Math.scalb(Units.convertFrom(speedKnot, Units.Speed.KNOT), speedScale);
     }
 }

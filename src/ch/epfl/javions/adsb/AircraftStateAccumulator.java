@@ -22,7 +22,7 @@ public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
     public void update(Message message) {
         switch (message) {
             case AirborneVelocityMessage m -> {
-                stateSetter.setVelocity(m.velocity());
+                stateSetter.setVelocity(m.speed());
                 stateSetter.setTrackOrHeading(m.trackOrHeading());
             }
 
