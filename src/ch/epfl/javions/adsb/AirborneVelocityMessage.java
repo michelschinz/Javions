@@ -1,8 +1,11 @@
 package ch.epfl.javions.adsb;
 
 import ch.epfl.javions.Bits;
+import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.aircraft.IcaoAddress;
+
+import java.util.Objects;
 
 public record AirborneVelocityMessage(long timeStampNs,
                                       IcaoAddress icaoAddress,
@@ -43,6 +46,13 @@ public record AirborneVelocityMessage(long timeStampNs,
             case 4 -> airSpeed(rawMessage, data, SCALE_SUPERSONIC);
             default -> null;
         };
+    }
+
+    public AirborneVelocityMessage {
+        Preconditions.checkArgument(timeStampNs >= 0);
+        Objects.requireNonNull(icaoAddress);
+        Preconditions.checkArgument(speed >= 0);
+        Preconditions.checkArgument(trackOrHeading >= 0);
     }
 
     private static AirborneVelocityMessage of(RawMessage rawMessage, double speed, double trackOrHeading) {
