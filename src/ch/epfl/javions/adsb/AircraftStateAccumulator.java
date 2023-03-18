@@ -1,5 +1,7 @@
 package ch.epfl.javions.adsb;
 
+import java.util.Objects;
+
 public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
     private static final long MAX_INTER_MESSAGE_NS = 10_000_000_000L;
 
@@ -7,7 +9,7 @@ public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
     private final AirbornePositionMessage[] lastPositionMessage = {null, null};
 
     public AircraftStateAccumulator(T stateSetter) {
-        this.stateSetter = stateSetter;
+        this.stateSetter = Objects.requireNonNull(stateSetter);
     }
 
     public T stateSetter() {
