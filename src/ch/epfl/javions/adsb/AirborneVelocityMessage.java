@@ -87,8 +87,8 @@ public record AirborneVelocityMessage(long timeStampNs,
         var headingBits = Bits.extractUInt(data, HEADING_START, HEADING_SIZE);
         var heading = Units.convertFrom(Math.scalb(headingBits, -HEADING_SIZE), Units.Angle.TURN);
 
-        var velocity = convertSpeed(speedKnot, speedScale);
-        return of(rawMessage, velocity, heading);
+        var speed = convertSpeed(speedKnot, speedScale);
+        return of(rawMessage, speed, heading);
     }
 
     private static double convertSpeed(double speedKnot, int speedScale) {
