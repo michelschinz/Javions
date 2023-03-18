@@ -2,14 +2,12 @@ package ch.epfl.javions.adsb;
 
 import java.time.Duration;
 
-import static java.lang.Math.scalb;
-
 public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
     private static final long MAX_INTER_MESSAGE_NS =
             Duration.ofSeconds(10).toNanos();
 
     private final T stateSetter;
-    private AirbornePositionMessage lastPositionMessage = null;
+    private final AirbornePositionMessage[] lastPositionMessage = {null, null};
 
     public AircraftStateAccumulator(T stateSetter) {
         this.stateSetter = stateSetter;
@@ -28,14 +26,15 @@ public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
 
             case AirbornePositionMessage m -> {
                 stateSetter.setAltitude(m.altitude());
-                if (isValidMessagePair(lastPositionMessage, m)) {
-                    var message0 = m.parity() == 0 ? m : lastPositionMessage;
-                    var message1 = m.parity() == 0 ? lastPositionMessage : m;
-                    var maybePos = CprDecoder.decodePosition(
-                            message0.x(), message0.y(), message1.x(), message1.y(), m.parity());
+                lastPositionMessage[m.parity()] = m;
+                if (isValidMessagePair(lastPositionMessage[0], lastPositionMessage[1])) {
+                    var x0 = lastPositionMessage[0].x();
+                    var y0 = lastPositionMessage[0].y();
+                    var x1 = lastPositionMessage[1].x();
+                    var y1 = lastPositionMessage[1].y();
+                    var maybePos = CprDecoder.decodePosition(x0, y0, x1, y1, m.parity());
                     if (maybePos != null) stateSetter.setPosition(maybePos);
                 }
-                lastPositionMessage = m;
             }
 
             case AircraftIdentificationMessage m -> {
@@ -50,8 +49,7 @@ public final class AircraftStateAccumulator<T extends AircraftStateSetter> {
 
     private static boolean isValidMessagePair(AirbornePositionMessage m1, AirbornePositionMessage m2) {
         return m1 != null
-               && m2 != null
-               && m1.parity() != m2.parity()
-               && Math.abs(m1.timeStampNs() - m2.timeStampNs()) <= MAX_INTER_MESSAGE_NS;
+                && m2 != null
+                && Math.abs(m2.timeStampNs() - m1.timeStampNs()) <= MAX_INTER_MESSAGE_NS;
     }
 }
