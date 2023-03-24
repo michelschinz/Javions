@@ -20,7 +20,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final ObservableList<GeoPosWithAltitude> trajectory;
     private final ObservableList<GeoPosWithAltitude> unmodifiableTrajectory;
     private final DoubleProperty altitudeProperty;
-    private final DoubleProperty velocityProperty;
+    private final DoubleProperty speedProperty;
     private final DoubleProperty trackOrHeadingProperty;
     private final AircraftData maybeAircraftData;
 
@@ -35,7 +35,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.trajectory = trajectory;
         this.unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory);
         this.altitudeProperty = new SimpleDoubleProperty(Double.NaN);
-        this.velocityProperty = new SimpleDoubleProperty(Double.NaN);
+        this.speedProperty = new SimpleDoubleProperty(Double.NaN);
         this.trackOrHeadingProperty = new SimpleDoubleProperty(Double.NaN);
         this.maybeAircraftData = maybeAircraftData;
     }
@@ -118,17 +118,17 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         altitudeProperty.set(altitude);
     }
 
-    public DoubleProperty velocityProperty() {
-        return velocityProperty;
+    public DoubleProperty speedProperty() {
+        return speedProperty;
     }
 
-    public double getVelocity() {
-        return velocityProperty.get();
+    public double getSpeed() {
+        return speedProperty.get();
     }
 
     @Override
     public void setVelocity(double velocity) {
-        velocityProperty.set(velocity);
+        speedProperty.set(velocity);
     }
 
     public DoubleProperty trackOrHeadingProperty() {
