@@ -67,7 +67,7 @@ public record AirborneVelocityMessage(long timeStampNs,
         var speed = convertSpeed(Math.hypot(vX, vY), speedScale);
         var track = Math.atan2(vX, vY);
         if (track < 0) track += Units.Angle.TURN;
-        return of(rawMessage, speed, track);
+        return Double.isNaN(speed) ? null : of(rawMessage, speed, track);
     }
 
     private static double speedComponent(int data, int startBit) {
