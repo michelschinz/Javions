@@ -105,7 +105,7 @@ public final class AircraftController {
 
         // TODO the category can change, we should observe it!
         // TODO should the designator be valid (i.e. non-empty)?
-        var fixedData = aircraftState.getFixedData();
+        var fixedData = aircraftState.aircraftData();
         var aircraftIcon = fixedData != null
                 ? AircraftIcon.iconFor(
                 fixedData.typeDesignator(),
@@ -141,7 +141,7 @@ public final class AircraftController {
     private Node label(ObservableAircraftState aircraftState,
                        DoubleBinding layoutX,
                        DoubleBinding layoutY) {
-        var fixedData = aircraftState.getFixedData();
+        var fixedData = aircraftState.aircraftData();
         Object name;
         if (fixedData != null) {
             name = fixedData.registration().string();

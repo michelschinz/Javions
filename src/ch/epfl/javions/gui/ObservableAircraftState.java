@@ -9,6 +9,8 @@ import javafx.beans.property.*;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 
+import java.util.Objects;
+
 public final class ObservableAircraftState implements AircraftStateSetter {
     public record GeoPosWithAltitude(GeoPos position, double altitude) {}
 
@@ -22,12 +24,12 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final DoubleProperty altitudeProperty;
     private final DoubleProperty speedProperty;
     private final DoubleProperty trackOrHeadingProperty;
-    private final AircraftData maybeAircraftData;
+    private final AircraftData aircraftData;
 
-    public ObservableAircraftState(IcaoAddress address, AircraftData maybeAircraftData) {
+    public ObservableAircraftState(IcaoAddress address, AircraftData aircraftData) {
         var trajectory = FXCollections.<GeoPosWithAltitude>observableArrayList();
 
-        this.address = address;
+        this.address = Objects.requireNonNull(address);
         this.lastMessageTimeStampNsProperty = new SimpleLongProperty();
         this.categoryProperty = new SimpleIntegerProperty();
         this.callSignProperty = new SimpleObjectProperty<>();
@@ -37,11 +39,15 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.altitudeProperty = new SimpleDoubleProperty(Double.NaN);
         this.speedProperty = new SimpleDoubleProperty(Double.NaN);
         this.trackOrHeadingProperty = new SimpleDoubleProperty(Double.NaN);
-        this.maybeAircraftData = maybeAircraftData;
+        this.aircraftData = aircraftData;
     }
 
     public IcaoAddress address() {
         return address;
+    }
+
+    public AircraftData aircraftData() {
+        return aircraftData;
     }
 
     public ReadOnlyLongProperty lastMessageTimeStampNsProperty() {
@@ -55,10 +61,6 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     @Override
     public void setLastMessageTimeStampNs(long timeStampNs) {
         lastMessageTimeStampNsProperty.set(timeStampNs);
-    }
-
-    public AircraftData getFixedData() {
-        return maybeAircraftData;
     }
 
     public IntegerProperty categoryProperty() {
