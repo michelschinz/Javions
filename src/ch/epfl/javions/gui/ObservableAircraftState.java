@@ -12,7 +12,7 @@ import javafx.collections.ObservableList;
 import java.util.Objects;
 
 public final class ObservableAircraftState implements AircraftStateSetter {
-    public record GeoPosWithAltitude(GeoPos position, double altitude) {}
+    public record AirbornePos(GeoPos position, double altitude) {}
 
     private final IcaoAddress address;
     private final AircraftData aircraftData;
@@ -20,14 +20,14 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final IntegerProperty categoryProperty;
     private final ObjectProperty<CallSign> callSignProperty;
     private final ObjectProperty<GeoPos> positionProperty;
-    private final ObservableList<GeoPosWithAltitude> trajectory;
-    private final ObservableList<GeoPosWithAltitude> unmodifiableTrajectory;
+    private final ObservableList<AirbornePos> trajectory;
+    private final ObservableList<AirbornePos> unmodifiableTrajectory;
     private final DoubleProperty altitudeProperty;
     private final DoubleProperty velocityProperty;
     private final DoubleProperty trackOrHeadingProperty;
 
     public ObservableAircraftState(IcaoAddress address, AircraftData aircraftData) {
-        var trajectory = FXCollections.<GeoPosWithAltitude>observableArrayList();
+        var trajectory = FXCollections.<AirbornePos>observableArrayList();
 
         this.address = Objects.requireNonNull(address);
         this.aircraftData = aircraftData;
@@ -100,10 +100,10 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     @Override
     public void setPosition(GeoPos position) {
         positionProperty.set(position);
-        trajectory.add(new GeoPosWithAltitude(position, getAltitude()));
+        trajectory.add(new AirbornePos(position, getAltitude()));
     }
 
-    public ObservableList<GeoPosWithAltitude> trajectory() {
+    public ObservableList<AirbornePos> trajectory() {
         return unmodifiableTrajectory;
     }
 

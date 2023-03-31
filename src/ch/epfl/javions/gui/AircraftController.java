@@ -5,7 +5,7 @@ import ch.epfl.javions.Units;
 import ch.epfl.javions.Units.Angle;
 import ch.epfl.javions.WebMercator;
 import ch.epfl.javions.adsb.CallSign;
-import ch.epfl.javions.gui.ObservableAircraftState.GeoPosWithAltitude;
+import ch.epfl.javions.gui.ObservableAircraftState.AirbornePos;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
@@ -201,7 +201,7 @@ public final class AircraftController {
         return lineGroup;
     }
 
-    private static void rebuildTrajectory(Group group, int zoomLevel, List<GeoPosWithAltitude> trajectory) {
+    private static void rebuildTrajectory(Group group, int zoomLevel, List<AirbornePos> trajectory) {
         if (trajectory.size() < 2) {
             group.getChildren().clear();
             return;
