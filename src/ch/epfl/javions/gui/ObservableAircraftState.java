@@ -25,6 +25,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final DoubleProperty altitudeProperty;
     private final DoubleProperty velocityProperty;
     private final DoubleProperty trackOrHeadingProperty;
+    private long trajectoryTimeStampNs;
 
     public ObservableAircraftState(IcaoAddress address, AircraftData aircraftData) {
         var trajectory = FXCollections.<AirbornePos>observableArrayList();
@@ -40,6 +41,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.altitudeProperty = new SimpleDoubleProperty(Double.NaN);
         this.velocityProperty = new SimpleDoubleProperty(Double.NaN);
         this.trackOrHeadingProperty = new SimpleDoubleProperty(Double.NaN);
+        this.trajectoryTimeStampNs = -1L;
     }
 
     public IcaoAddress address() {
@@ -100,11 +102,26 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     @Override
     public void setPosition(GeoPos position) {
         positionProperty.set(position);
-        trajectory.add(new AirbornePos(position, getAltitude()));
+        updateTrajectory();
     }
 
     public ObservableList<AirbornePos> trajectory() {
         return unmodifiableTrajectory;
+    }
+
+    private void updateTrajectory() {
+        var position = getPosition();
+        var altitude = getAltitude();
+        if (position == null || Double.isNaN(altitude)) return;
+
+        var lastMessageTimeStampNs = getLastMessageTimeStampNs();
+        var currentPos = new AirbornePos(position, altitude);
+        if (lastMessageTimeStampNs == trajectoryTimeStampNs) {
+            trajectory.set(trajectory.size() - 1, currentPos);
+        } else {
+            trajectory.add(currentPos);
+            trajectoryTimeStampNs = lastMessageTimeStampNs;
+        }
     }
 
     public ReadOnlyDoubleProperty altitudeProperty() {
@@ -118,6 +135,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     @Override
     public void setAltitude(double altitude) {
         altitudeProperty.set(altitude);
+        updateTrajectory();
     }
 
     public ReadOnlyDoubleProperty velocityProperty() {
