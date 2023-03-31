@@ -78,7 +78,7 @@ public final class AircraftTableController {
                         Units.Length.METER,
                         0),
                 newDoubleColumn("Vitesse (km/h)",
-                        ObservableAircraftState::speedProperty,
+                        ObservableAircraftState::velocityProperty,
                         Units.Speed.KILOMETER_PER_HOUR,
                         0));
 

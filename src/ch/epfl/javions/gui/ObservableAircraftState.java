@@ -15,6 +15,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     public record GeoPosWithAltitude(GeoPos position, double altitude) {}
 
     private final IcaoAddress address;
+    private final AircraftData aircraftData;
     private final LongProperty lastMessageTimeStampNsProperty;
     private final IntegerProperty categoryProperty;
     private final ObjectProperty<CallSign> callSignProperty;
@@ -22,14 +23,14 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final ObservableList<GeoPosWithAltitude> trajectory;
     private final ObservableList<GeoPosWithAltitude> unmodifiableTrajectory;
     private final DoubleProperty altitudeProperty;
-    private final DoubleProperty speedProperty;
+    private final DoubleProperty velocityProperty;
     private final DoubleProperty trackOrHeadingProperty;
-    private final AircraftData aircraftData;
 
     public ObservableAircraftState(IcaoAddress address, AircraftData aircraftData) {
         var trajectory = FXCollections.<GeoPosWithAltitude>observableArrayList();
 
         this.address = Objects.requireNonNull(address);
+        this.aircraftData = aircraftData;
         this.lastMessageTimeStampNsProperty = new SimpleLongProperty();
         this.categoryProperty = new SimpleIntegerProperty();
         this.callSignProperty = new SimpleObjectProperty<>();
@@ -37,9 +38,8 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.trajectory = trajectory;
         this.unmodifiableTrajectory = FXCollections.unmodifiableObservableList(trajectory);
         this.altitudeProperty = new SimpleDoubleProperty(Double.NaN);
-        this.speedProperty = new SimpleDoubleProperty(Double.NaN);
+        this.velocityProperty = new SimpleDoubleProperty(Double.NaN);
         this.trackOrHeadingProperty = new SimpleDoubleProperty(Double.NaN);
-        this.aircraftData = aircraftData;
     }
 
     public IcaoAddress address() {
@@ -50,7 +50,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         return aircraftData;
     }
 
-    public ReadOnlyLongProperty lastMessageTimeStampNsProperty() {
+    public LongProperty lastMessageTimeStampNsProperty() {
         return lastMessageTimeStampNsProperty;
     }
 
@@ -120,17 +120,17 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         altitudeProperty.set(altitude);
     }
 
-    public DoubleProperty speedProperty() {
-        return speedProperty;
+    public DoubleProperty velocityProperty() {
+        return velocityProperty;
     }
 
-    public double getSpeed() {
-        return speedProperty.get();
+    public double getVelocity() {
+        return velocityProperty.get();
     }
 
     @Override
     public void setVelocity(double velocity) {
-        speedProperty.set(velocity);
+        velocityProperty.set(velocity);
     }
 
     public DoubleProperty trackOrHeadingProperty() {

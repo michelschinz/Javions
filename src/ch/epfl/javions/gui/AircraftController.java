@@ -151,7 +151,7 @@ public final class AircraftController {
             name = Bindings.when(callSign.isNotEmpty()).then(callSign).otherwise(icao24);
         }
 
-        var velocity = optionalNumericString(aircraftState.speedProperty(),
+        var velocity = optionalNumericString(aircraftState.velocityProperty(),
                 Units.Speed.KILOMETER_PER_HOUR,
                 "km/h");
         var altitude = optionalNumericString(aircraftState.altitudeProperty(),
