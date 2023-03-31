@@ -25,7 +25,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     private final DoubleProperty altitudeProperty;
     private final DoubleProperty velocityProperty;
     private final DoubleProperty trackOrHeadingProperty;
-    private long trajectoryTimeStampNs;
+    private long lastPositionTimeStampNs;
 
     public ObservableAircraftState(IcaoAddress address, AircraftData aircraftData) {
         var trajectory = FXCollections.<AirbornePos>observableArrayList();
@@ -41,7 +41,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         this.altitudeProperty = new SimpleDoubleProperty(Double.NaN);
         this.velocityProperty = new SimpleDoubleProperty(Double.NaN);
         this.trackOrHeadingProperty = new SimpleDoubleProperty(Double.NaN);
-        this.trajectoryTimeStampNs = -1L;
+        this.lastPositionTimeStampNs = -1L;
     }
 
     public IcaoAddress address() {
@@ -114,13 +114,17 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         var altitude = getAltitude();
         if (position == null || Double.isNaN(altitude)) return;
 
-        var lastMessageTimeStampNs = getLastMessageTimeStampNs();
-        var currentPos = new AirbornePos(position, altitude);
-        if (lastMessageTimeStampNs == trajectoryTimeStampNs) {
-            trajectory.set(trajectory.size() - 1, currentPos);
-        } else {
-            trajectory.add(currentPos);
-            trajectoryTimeStampNs = lastMessageTimeStampNs;
+        var maybeLastPosition = trajectory.isEmpty()
+                ? null
+                : trajectory.get(trajectory.size() - 1).position();
+
+        if (!position.equals(maybeLastPosition)) {
+            // New position: unconditionally augment the trajectory
+            trajectory.add(new AirbornePos(position, altitude));
+            lastPositionTimeStampNs = getLastMessageTimeStampNs();
+        } else if (lastPositionTimeStampNs == getLastMessageTimeStampNs()) {
+            // Same position and same message: update altitude
+            trajectory.set(trajectory.size() - 1, new AirbornePos(position, altitude));
         }
     }
 
