@@ -50,7 +50,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         return aircraftData;
     }
 
-    public LongProperty lastMessageTimeStampNsProperty() {
+    public ReadOnlyLongProperty lastMessageTimeStampNsProperty() {
         return lastMessageTimeStampNsProperty;
     }
 
@@ -63,7 +63,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         lastMessageTimeStampNsProperty.set(timeStampNs);
     }
 
-    public IntegerProperty categoryProperty() {
+    public ReadOnlyIntegerProperty categoryProperty() {
         return categoryProperty;
     }
 
@@ -76,7 +76,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         categoryProperty.set(category);
     }
 
-    public ObjectProperty<CallSign> callSignProperty() {
+    public ReadOnlyObjectProperty<CallSign> callSignProperty() {
         return callSignProperty;
     }
 
@@ -89,7 +89,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         callSignProperty.set(callSign);
     }
 
-    public ObjectProperty<GeoPos> positionProperty() {
+    public ReadOnlyObjectProperty<GeoPos> positionProperty() {
         return positionProperty;
     }
 
@@ -107,7 +107,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         return unmodifiableTrajectory;
     }
 
-    public DoubleProperty altitudeProperty() {
+    public ReadOnlyDoubleProperty altitudeProperty() {
         return altitudeProperty;
     }
 
@@ -120,7 +120,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         altitudeProperty.set(altitude);
     }
 
-    public DoubleProperty velocityProperty() {
+    public ReadOnlyDoubleProperty velocityProperty() {
         return velocityProperty;
     }
 
@@ -133,7 +133,7 @@ public final class ObservableAircraftState implements AircraftStateSetter {
         velocityProperty.set(velocity);
     }
 
-    public DoubleProperty trackOrHeadingProperty() {
+    public ReadOnlyDoubleProperty trackOrHeadingProperty() {
         return trackOrHeadingProperty;
     }
 
