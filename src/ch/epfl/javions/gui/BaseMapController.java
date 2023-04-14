@@ -100,7 +100,7 @@ public final class BaseMapController {
         if (!redrawNeeded) return;
         redrawNeeded = false;
 
-        int zoom = mapParameters.getZoom();
+        var zoom = mapParameters.getZoom();
         var minX = mapParameters.getMinX();
         var minY = mapParameters.getMinY();
         var minTileIndexX = (int) (minX / TILE_SIZE);
