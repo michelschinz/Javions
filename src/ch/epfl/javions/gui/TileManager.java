@@ -3,6 +3,7 @@ package ch.epfl.javions.gui;
 import ch.epfl.javions.Preconditions;
 import javafx.scene.image.Image;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -63,17 +64,21 @@ public final class TileManager {
 
     private Image fetchTileImage(TileId tileId) throws IOException {
         var imagePath = tileId.path(cacheBasePath);
-        if (!Files.exists(imagePath)) {
+        if (Files.exists(imagePath)) {
+            try (var inStream = new FileInputStream(imagePath.toFile())) {
+                return new Image(inStream);
+            }
+        } else {
             Files.createDirectories(imagePath.getParent());
             var connection = tileId.url(tileServerHost).openConnection();
             connection.setRequestProperty("User-Agent", "Javions");
             try (var inStream = connection.getInputStream();
                  var outStream = new FileOutputStream(imagePath.toFile())) {
-                inStream.transferTo(outStream);
+                var imageBytes = inStream.readAllBytes();
+                outStream.write(imageBytes);
+                // Note: a ByteArrayInputStream does not have to be closed
+                return new Image(new ByteArrayInputStream(imageBytes));
             }
-        }
-        try (var inStream = new FileInputStream(imagePath.toFile())) {
-            return new Image(inStream);
         }
     }
 }
