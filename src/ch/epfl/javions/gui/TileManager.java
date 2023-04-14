@@ -17,6 +17,8 @@ public final class TileManager {
     public static final int TILE_SIZE = 256;
 
     private static final int MAX_CACHE_SIZE = 100;
+    private static final float INITIAL_LOAD_FACTOR = 0.75f;
+    private static final int INITIAL_CAPACITY = (int) Math.ceil(MAX_CACHE_SIZE / INITIAL_LOAD_FACTOR);
 
     public record TileId(int zoom, int x, int y) {
         public static boolean isValid(int zoom, int x, int y) {
@@ -47,7 +49,7 @@ public final class TileManager {
     public TileManager(Path cacheBasePath, String tileServerHost) {
         this.cacheBasePath = Objects.requireNonNull(cacheBasePath);
         this.tileServerHost = Objects.requireNonNull(tileServerHost);
-        this.cache = new LinkedHashMap<>(MAX_CACHE_SIZE, 0.75f, true);
+        this.cache = new LinkedHashMap<>(INITIAL_CAPACITY, INITIAL_LOAD_FACTOR, true);
     }
 
     public Image imageForTileAt(TileId tileId) throws IOException {
