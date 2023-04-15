@@ -7,7 +7,7 @@ import static ch.epfl.javions.Math2.clamp;
 import static java.lang.Math.scalb;
 
 public final class MapParameters {
-    private static final int MIN_ZOOM_LEVEL = 1;
+    private static final int MIN_ZOOM_LEVEL = 6;
     private static final int MAX_ZOOM_LEVEL = 19;
 
     private final IntegerProperty zoomProperty;
