@@ -1,5 +1,6 @@
 package ch.epfl.javions.gui;
 
+import ch.epfl.javions.Preconditions;
 import javafx.beans.property.*;
 
 import static ch.epfl.javions.Math2.clamp;
@@ -14,6 +15,7 @@ public final class MapParameters {
     private final DoubleProperty minYProperty;
 
     public MapParameters(int initialZoom, double initialMinX, double initialMinY) {
+        Preconditions.checkArgument(MIN_ZOOM_LEVEL <= initialZoom && initialZoom <= MAX_ZOOM_LEVEL);
         zoomProperty = new SimpleIntegerProperty(initialZoom);
         minXProperty = new SimpleDoubleProperty(initialMinX);
         minYProperty = new SimpleDoubleProperty(initialMinY);
