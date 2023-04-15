@@ -48,11 +48,11 @@ public final class MapParameters {
         minYProperty.set(getMinY() + dY);
     }
 
-    public void changeZoomLevel(int zoomDelta, double centerViewX, double centerViewY) {
+    public void changeZoomLevel(int zoomDelta) {
         var newZoom = clamp(MIN_ZOOM_LEVEL, getZoom() + zoomDelta, MAX_ZOOM_LEVEL);
         if (newZoom != getZoom()) {
-            minXProperty.set(scalb(getMinX() + centerViewX, zoomDelta) - centerViewX);
-            minYProperty.set(scalb(getMinY() + centerViewY, zoomDelta) - centerViewY);
+            minXProperty.set(scalb(getMinX(), zoomDelta));
+            minYProperty.set(scalb(getMinY(), zoomDelta));
             zoomProperty.set(newZoom);
         }
     }

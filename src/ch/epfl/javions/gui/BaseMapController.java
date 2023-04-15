@@ -42,11 +42,16 @@ public final class BaseMapController {
         // Zooming
         var minScrollTime = new SimpleLongProperty();
         pane.setOnScroll(e -> {
-            if (e.getDeltaY() == 0d) return;
+            var zoomDelta = (int) Math.signum(e.getDeltaY());
+            if (zoomDelta == 0) return;
+
             var currentTime = System.currentTimeMillis();
             if (currentTime < minScrollTime.get()) return;
             minScrollTime.set(currentTime + 200);
-            mapParameters.changeZoomLevel((int) Math.signum(e.getDeltaY()), e.getX(), e.getY());
+
+            mapParameters.scroll(e.getX(), e.getY());
+            mapParameters.changeZoomLevel(zoomDelta);
+            mapParameters.scroll(-e.getX(), -e.getY());
         });
 
         // Scrolling
