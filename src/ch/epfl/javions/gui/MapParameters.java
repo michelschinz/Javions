@@ -1,7 +1,6 @@
 package ch.epfl.javions.gui;
 
 import javafx.beans.property.*;
-import javafx.geometry.Point2D;
 
 import static ch.epfl.javions.Math2.clamp;
 import static java.lang.Math.scalb;
@@ -51,15 +50,10 @@ public final class MapParameters {
 
     public void changeZoomLevel(int zoomDelta, double centerViewX, double centerViewY) {
         var newZoom = clamp(MIN_ZOOM_LEVEL, getZoom() + zoomDelta, MAX_ZOOM_LEVEL);
-        if (newZoom == getZoom()) return;
-
-        var newMinXY = new Point2D(getMinX(), getMinY())
-                .add(centerViewX, centerViewY)
-                .multiply(scalb(1d, zoomDelta))
-                .subtract(centerViewX, centerViewY);
-
-        minXProperty.set(newMinXY.getX());
-        minYProperty.set(newMinXY.getY());
-        zoomProperty.set(newZoom);
+        if (newZoom != getZoom()) {
+            minXProperty.set(scalb(getMinX() + centerViewX, zoomDelta) - centerViewX);
+            minYProperty.set(scalb(getMinY() + centerViewY, zoomDelta) - centerViewY);
+            zoomProperty.set(newZoom);
+        }
     }
 }
