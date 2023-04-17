@@ -83,7 +83,7 @@ public final class AircraftTableController {
                         0));
 
         var tableView = new TableView<ObservableAircraftState>();
-        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY);
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
         tableView.setTableMenuButtonVisible(true);
         tableView.getColumns().setAll(columns);
         return tableView;
