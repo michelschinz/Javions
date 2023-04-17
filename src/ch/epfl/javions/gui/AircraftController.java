@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 public final class AircraftController {
+    private static final double MAX_FLYING_ALTITUDE = 12_000;
+
     private final MapParameters mapParameters;
     private final ObjectProperty<ObservableAircraftState> selectedAircraftProperty;
     private final Pane pane;
@@ -181,9 +183,7 @@ public final class AircraftController {
     }
 
     private static Color colorForAltitude(double altitude) {
-        // FIXME improve (and avoid the arbitrary constant)
-        var scaledAltitude = altitude / 11_000d;
-        return ColorRamp.PLASMA.at(Math.pow(scaledAltitude, 1d / 3d));
+        return ColorRamp.PLASMA.at(Math.pow(altitude / MAX_FLYING_ALTITUDE, 1d / 3d));
     }
 
     private Group trajectory(ObservableAircraftState aircraftState) {
