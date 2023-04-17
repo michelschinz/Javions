@@ -1,6 +1,7 @@
 package ch.epfl.javions.gui;
 
 import ch.epfl.javions.GeoPos;
+import ch.epfl.javions.Preconditions;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.Units.Angle;
 import ch.epfl.javions.WebMercator;
@@ -38,7 +39,7 @@ public final class AircraftController {
     public AircraftController(MapParameters mapParameters,
                               ObservableSet<ObservableAircraftState> aircraftStates,
                               ObjectProperty<ObservableAircraftState> selectedAircraftProperty) {
-        assert aircraftStates.isEmpty(); // TODO should we instead create the initial nodes?
+        Preconditions.checkArgument(aircraftStates.isEmpty());
 
         var pane = new Pane();
         pane.getStylesheets().add("aircraft.css");
