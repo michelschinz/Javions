@@ -104,17 +104,19 @@ public final class AircraftController {
         var aircraftPath = new SVGPath();
         aircraftPath.getStyleClass().add("aircraft");
 
-        // TODO the category can change, we should observe it!
-        // TODO should the designator be valid (i.e. non-empty)?
         var fixedData = aircraftState.aircraftData();
-        var aircraftIcon = fixedData != null
-                ? AircraftIcon.iconFor(
-                fixedData.typeDesignator(),
-                fixedData.description(),
-                aircraftState.getCategory(),
-                fixedData.wakeTurbulenceCategory())
-                : AircraftIcon.UNKNOWN;
-        aircraftPath.setContent(aircraftIcon.svgPath());
+        if (fixedData == null) {
+            aircraftPath.setContent(AircraftIcon.UNKNOWN.svgPath());
+        } else {
+            var typeDesignator = fixedData.typeDesignator();
+            var description = fixedData.description();
+            var wtc = fixedData.wakeTurbulenceCategory();
+            aircraftPath.contentProperty().bind(Bindings.createStringBinding(
+                    () -> AircraftIcon
+                            .iconFor(typeDesignator, description, aircraftState.getCategory(), wtc)
+                            .svgPath(),
+                    aircraftState.categoryProperty()));
+        }
 
         aircraftPath.fillProperty().bind(Bindings.createObjectBinding(
                 () -> colorForAltitude(aircraftState.getAltitude()),
