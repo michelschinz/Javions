@@ -13,6 +13,7 @@ import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.geometry.Point2D;
@@ -104,20 +105,20 @@ public final class AircraftController {
         var aircraftPath = new SVGPath();
         aircraftPath.getStyleClass().add("aircraft");
 
+        var iconProperty = new SimpleObjectProperty<AircraftIcon>();
         var fixedData = aircraftState.aircraftData();
         if (fixedData == null) {
-            aircraftPath.setContent(AircraftIcon.UNKNOWN.svgPath());
+            iconProperty.set(AircraftIcon.UNKNOWN);
         } else {
             var typeDesignator = fixedData.typeDesignator();
             var description = fixedData.description();
             var wtc = fixedData.wakeTurbulenceCategory();
-            aircraftPath.contentProperty().bind(Bindings.createStringBinding(
-                    () -> AircraftIcon
-                            .iconFor(typeDesignator, description, aircraftState.getCategory(), wtc)
-                            .svgPath(),
+            iconProperty.bind(Bindings.createObjectBinding(() ->
+                        AircraftIcon.iconFor(typeDesignator, description, aircraftState.getCategory(), wtc),
                     aircraftState.categoryProperty()));
         }
 
+        aircraftPath.contentProperty().bind(iconProperty.map(AircraftIcon::svgPath));
         aircraftPath.fillProperty().bind(Bindings.createObjectBinding(
                 () -> colorForAltitude(aircraftState.getAltitude()),
                 aircraftState.altitudeProperty()));
@@ -125,8 +126,12 @@ public final class AircraftController {
         aircraftPath.layoutXProperty().bind(layoutX);
         aircraftPath.layoutYProperty().bind(layoutY);
 
-        aircraftPath.rotateProperty().bind(aircraftState.trackOrHeadingProperty()
-                        .map(a -> Units.convertTo(a.doubleValue(), Angle.DEGREE)));
+        aircraftPath.rotateProperty().bind(Bindings.createDoubleBinding(() ->
+                        iconProperty.get().canRotate()
+                                ? Units.convertTo(aircraftState.getTrackOrHeading(), Angle.DEGREE)
+                                : 0d,
+                iconProperty,
+                aircraftState.trackOrHeadingProperty()));
 
         aircraftPath.setOnMouseClicked(e -> selectedAircraftProperty.set(aircraftState));
 

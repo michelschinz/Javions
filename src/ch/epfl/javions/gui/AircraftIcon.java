@@ -13,18 +13,18 @@ import java.util.Map;
 import static ch.epfl.javions.aircraft.WakeTurbulenceCategory.HEAVY;
 
 public enum AircraftIcon {
-    AIRLINER,
-    BALLOON,
-    CESSNA,
-    HEAVY_2E,
-    HEAVY_4E,
-    HELICOPTER,
-    HI_PERF,
-    JET_NONSWEPT,
-    JET_SWEPT,
-    TWIN_LARGE,
-    TWIN_SMALL,
-    UNKNOWN;
+    AIRLINER(),
+    BALLOON(false),
+    CESSNA(),
+    HEAVY_2E(),
+    HEAVY_4E(),
+    HELICOPTER(),
+    HI_PERF(),
+    JET_NONSWEPT(),
+    JET_SWEPT(),
+    TWIN_LARGE(),
+    TWIN_SMALL(),
+    UNKNOWN();
 
     private static final Map<AircraftTypeDesignator, AircraftIcon> TYPE_DESIGNATOR_TABLE = createTypeDesignatorTable();
 
@@ -281,11 +281,19 @@ public enum AircraftIcon {
         }
     }
 
+    private final boolean canRotate;
     private final String svgPath;
 
-    AircraftIcon() {
+    AircraftIcon(boolean canRotate) {
         var resourceName = "/icons/" + name().toLowerCase() + ".svgpath";
-        svgPath = loadSvgPath(resourceName);
+        var svgPath = loadSvgPath(resourceName);
+
+        this.canRotate = canRotate;
+        this.svgPath = svgPath;
+    }
+
+    AircraftIcon() {
+        this(true);
     }
 
     public static AircraftIcon iconFor(AircraftTypeDesignator typeDesignator,
@@ -327,6 +335,10 @@ public enum AircraftIcon {
             case 0xB2 -> BALLOON;
             default -> UNKNOWN;
         };
+    }
+
+    public boolean canRotate() {
+        return canRotate;
     }
 
     public String svgPath() {
