@@ -66,8 +66,7 @@ public final class AircraftController {
     }
 
     private Node groupForAircraft(ObservableAircraftState aircraftState) {
-        var layoutX = Bindings.createDoubleBinding(() ->
-                {
+        var layoutX = Bindings.createDoubleBinding(() -> {
                     if (aircraftState.getPosition() != null) {
                         var lon = aircraftState.getPosition().longitude();
                         return WebMercator.x(mapParameters.getZoom(), lon) - mapParameters.getMinX();
@@ -78,8 +77,7 @@ public final class AircraftController {
                 aircraftState.positionProperty(),
                 mapParameters.zoomProperty(),
                 mapParameters.minXProperty());
-        var layoutY = Bindings.createDoubleBinding(() ->
-                {
+        var layoutY = Bindings.createDoubleBinding(() -> {
                     if (aircraftState.getPosition() != null) {
                         var lat = aircraftState.getPosition().latitude();
                         return WebMercator.y(mapParameters.getZoom(), lat) - mapParameters.getMinY();
@@ -127,7 +125,8 @@ public final class AircraftController {
         aircraftPath.layoutXProperty().bind(layoutX);
         aircraftPath.layoutYProperty().bind(layoutY);
 
-        aircraftPath.rotateProperty().bind(aircraftState.trackOrHeadingProperty().multiply(Angle.RADIAN / Angle.DEGREE));
+        aircraftPath.rotateProperty().bind(aircraftState.trackOrHeadingProperty()
+                        .map(a -> Units.convertTo(a.doubleValue(), Angle.DEGREE)));
 
         aircraftPath.setOnMouseClicked(e -> selectedAircraftProperty.set(aircraftState));
 
