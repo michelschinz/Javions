@@ -190,20 +190,19 @@ public final class AircraftController {
         return ColorRamp.PLASMA.at(Math.pow(altitude / MAX_FLYING_ALTITUDE, 1d / 3d));
     }
 
-    private Group trajectory(ObservableAircraftState aircraftState) {
+    private Node trajectory(ObservableAircraftState aircraftState) {
         var lineGroup = new Group();
-
-        aircraftState.trajectory().addListener((InvalidationListener) c ->
-                rebuildTrajectory(lineGroup, mapParameters.getZoom(), aircraftState.trajectory()));
-        mapParameters.zoomProperty().addListener((p, o, n) ->
-                rebuildTrajectory(lineGroup, n.intValue(), aircraftState.trajectory()));
+        lineGroup.getStyleClass().add("trajectory");
 
         lineGroup.layoutXProperty().bind(mapParameters.minXProperty().negate());
         lineGroup.layoutYProperty().bind(mapParameters.minYProperty().negate());
 
         lineGroup.visibleProperty().bind(selectedAircraftProperty.isEqualTo(aircraftState));
 
-        lineGroup.getStyleClass().add("trajectory");
+        aircraftState.trajectory().addListener((InvalidationListener) c ->
+                rebuildTrajectory(lineGroup, mapParameters.getZoom(), aircraftState.trajectory()));
+        mapParameters.zoomProperty().addListener((p, o, n) ->
+                rebuildTrajectory(lineGroup, n.intValue(), aircraftState.trajectory()));
 
         return lineGroup;
     }
