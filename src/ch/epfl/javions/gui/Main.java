@@ -17,6 +17,7 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -30,10 +31,11 @@ public final class Main extends Application {
     }
 
     @Override
-    public void start(Stage primaryStage) {
+    public void start(Stage primaryStage) throws Exception {
         var aircraftDbUrl = getClass().getResource(AIRCRAFT_DB_RESOURCE_NAME);
         assert aircraftDbUrl != null;
-        var aircraftDb = new AircraftDatabase(aircraftDbUrl.getFile());
+        var aircraftDbPath = Path.of(aircraftDbUrl.toURI());
+        var aircraftDb = new AircraftDatabase(aircraftDbPath.toString());
 
         var tileManager = new TileManager(Path.of(OSM_TILE_CACHE_PATH), OSM_TILE_SERVER);
         var mapParameters = new MapParameters(12, 543_200, 370_650);
