@@ -139,15 +139,6 @@ public final class AircraftController {
         return aircraftPath;
     }
 
-    private StringBinding optionalNumericString(DoubleExpression expression, double unit, String suffix) {
-        return Bindings.createStringBinding(() -> {
-            var value = expression.get();
-            return Double.isNaN(value)
-                    ? "? " + suffix
-                    : (int) Math.rint(Units.convertTo(value, unit)) + " " + suffix;
-        }, expression);
-    }
-
     private Node label(ObservableAircraftState aircraftState,
                        DoubleBinding layoutX,
                        DoubleBinding layoutY) {
@@ -181,6 +172,14 @@ public final class AircraftController {
                         .or(selectedAircraftProperty.isEqualTo(aircraftState)));
 
         return group;
+    }
+
+    private StringBinding optionalNumericString(DoubleExpression expression, double unit, String suffix) {
+        return Bindings.createStringBinding(() ->
+                Double.isNaN(expression.doubleValue())
+                        ? "? " + suffix
+                        : "%.0f %s".formatted(Units.convertTo(expression.doubleValue(), unit), suffix),
+                expression);
     }
 
     private static Color colorForAltitude(double altitude) {
