@@ -37,6 +37,7 @@ import java.util.List;
 
 public final class AircraftController {
     private static final double MAX_FLYING_ALTITUDE = 12_000;
+    private static final int MIN_ZOOM_LABEL = 11;
     private static final AircraftTypeDesignator EMPTY_TYPE_DESIGNATOR = new AircraftTypeDesignator("");
     private static final AircraftDescription EMPTY_DESCRIPTION = new AircraftDescription("");
 
@@ -168,7 +169,7 @@ public final class AircraftController {
         group.layoutYProperty().bind(layoutY);
 
         group.visibleProperty().bind(
-                mapParameters.zoomProperty().greaterThan(10)
+                mapParameters.zoomProperty().greaterThanOrEqualTo(MIN_ZOOM_LABEL)
                         .or(selectedAircraftProperty.isEqualTo(aircraftState)));
 
         return group;
