@@ -151,15 +151,11 @@ public final class AircraftController {
     private Node label(ObservableAircraftState aircraftState,
                        DoubleBinding layoutX,
                        DoubleBinding layoutY) {
-        var fixedData = aircraftState.aircraftData();
-        Object name;
-        if (fixedData != null) {
-            name = fixedData.registration().string();
-        } else {
-            var callSign = Bindings.convert(aircraftState.callSignProperty().map(CallSign::string));
-            var icao24 = Bindings.createStringBinding(aircraftState.address()::string);
-            name = Bindings.when(callSign.isNotEmpty()).then(callSign).otherwise(icao24);
-        }
+        var name = aircraftState.aircraftData() != null
+                ? aircraftState.aircraftData().registration().string()
+                : Bindings.when(aircraftState.callSignProperty().isNotNull())
+                .then(Bindings.convert(aircraftState.callSignProperty().map(CallSign::string)))
+                .otherwise(aircraftState.address().string());
 
         var velocity = optionalNumericString(aircraftState.velocityProperty(),
                 Units.Speed.KILOMETER_PER_HOUR,
