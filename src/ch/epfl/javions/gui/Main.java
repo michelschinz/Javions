@@ -25,6 +25,7 @@ public final class Main extends Application {
     private static final String AIRCRAFT_DB_RESOURCE_NAME = "/aircraft.zip";
     private static final String OSM_TILE_SERVER = "tile.openstreetmap.org";
     private static final String OSM_TILE_CACHE_PATH = "/Users/michelschinz/local/ppo/23/javions/osm-cache";
+    public static final long PURGE_INTERVAL_NS = 1_000_000_000L;
 
     public static void main(String[] args) {
         launch(args);
@@ -79,6 +80,8 @@ public final class Main extends Application {
         messageThread.start();
 
         var aircraftAnimationTimer = new AnimationTimer() {
+            private long lastPurgeTime = 0;
+
             @Override
             public void handle(long now) {
                 var messagesReceived = 0;
@@ -91,7 +94,10 @@ public final class Main extends Application {
                     messagesReceived += 1;
                 }
                 statusLineController.messageCountProperty().set(statusLineController.messageCountProperty().get() + messagesReceived);
-                aircraftStateManager.purge();
+                if (now - lastPurgeTime > PURGE_INTERVAL_NS) {
+                    aircraftStateManager.purge();
+                    lastPurgeTime = now;
+                }
             }
         };
         aircraftAnimationTimer.start();
