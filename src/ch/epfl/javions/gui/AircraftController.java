@@ -14,9 +14,9 @@ import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.DoubleExpression;
-import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
 import javafx.geometry.Point2D;
@@ -116,14 +116,12 @@ public final class AircraftController {
         var typeDesignator = fixedData != null ? fixedData.typeDesignator() : EMPTY_TYPE_DESIGNATOR;
         var description = fixedData != null ? fixedData.description() : EMPTY_DESCRIPTION;
         var wtc = fixedData != null ? fixedData.wakeTurbulenceCategory() : WakeTurbulenceCategory.UNKNOWN;
-        iconProperty.bind(Bindings.createObjectBinding(() ->
-                        AircraftIcon.iconFor(typeDesignator, description, aircraftState.getCategory(), wtc),
-                aircraftState.categoryProperty()));
+        iconProperty.bind(aircraftState.categoryProperty()
+                .map(c -> AircraftIcon.iconFor(typeDesignator, description, c.intValue(), wtc)));
 
         aircraftPath.contentProperty().bind(iconProperty.map(AircraftIcon::svgPath));
-        aircraftPath.fillProperty().bind(Bindings.createObjectBinding(
-                () -> colorForAltitude(aircraftState.getAltitude()),
-                aircraftState.altitudeProperty()));
+        aircraftPath.fillProperty().bind(aircraftState.altitudeProperty()
+                .map(a -> colorForAltitude(a.doubleValue())));
 
         aircraftPath.layoutXProperty().bind(layoutX);
         aircraftPath.layoutYProperty().bind(layoutY);
@@ -175,12 +173,11 @@ public final class AircraftController {
         return group;
     }
 
-    private StringBinding optionalNumericString(DoubleExpression expression, double unit, String suffix) {
-        return Bindings.createStringBinding(() ->
+    private ObservableValue<String> optionalNumericString(DoubleExpression expression, double unit, String suffix) {
+        return expression.map(v ->
                 Double.isNaN(expression.doubleValue())
                         ? "? " + suffix
-                        : "%.0f %s".formatted(Units.convertTo(expression.doubleValue(), unit), suffix),
-                expression);
+                        : "%.0f %s".formatted(Units.convertTo(expression.doubleValue(), unit), suffix));
     }
 
     private static Color colorForAltitude(double altitude) {
