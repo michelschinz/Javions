@@ -6,6 +6,9 @@ import ch.epfl.javions.Units;
 import ch.epfl.javions.Units.Angle;
 import ch.epfl.javions.WebMercator;
 import ch.epfl.javions.adsb.CallSign;
+import ch.epfl.javions.aircraft.AircraftDescription;
+import ch.epfl.javions.aircraft.AircraftTypeDesignator;
+import ch.epfl.javions.aircraft.WakeTurbulenceCategory;
 import ch.epfl.javions.gui.ObservableAircraftState.AirbornePos;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
@@ -34,6 +37,8 @@ import java.util.List;
 
 public final class AircraftController {
     private static final double MAX_FLYING_ALTITUDE = 12_000;
+    private static final AircraftTypeDesignator EMPTY_TYPE_DESIGNATOR = new AircraftTypeDesignator("");
+    private static final AircraftDescription EMPTY_DESCRIPTION = new AircraftDescription("");
 
     private final MapParameters mapParameters;
     private final ObjectProperty<ObservableAircraftState> selectedAircraftProperty;
@@ -107,16 +112,12 @@ public final class AircraftController {
 
         var iconProperty = new SimpleObjectProperty<AircraftIcon>();
         var fixedData = aircraftState.aircraftData();
-        if (fixedData == null) {
-            iconProperty.set(AircraftIcon.UNKNOWN);
-        } else {
-            var typeDesignator = fixedData.typeDesignator();
-            var description = fixedData.description();
-            var wtc = fixedData.wakeTurbulenceCategory();
-            iconProperty.bind(Bindings.createObjectBinding(() ->
+        var typeDesignator = fixedData != null ? fixedData.typeDesignator() : EMPTY_TYPE_DESIGNATOR;
+        var description = fixedData != null ? fixedData.description() : EMPTY_DESCRIPTION;
+        var wtc = fixedData != null ? fixedData.wakeTurbulenceCategory() : WakeTurbulenceCategory.UNKNOWN;
+        iconProperty.bind(Bindings.createObjectBinding(() ->
                         AircraftIcon.iconFor(typeDesignator, description, aircraftState.getCategory(), wtc),
-                    aircraftState.categoryProperty()));
-        }
+                aircraftState.categoryProperty()));
 
         aircraftPath.contentProperty().bind(iconProperty.map(AircraftIcon::svgPath));
         aircraftPath.fillProperty().bind(Bindings.createObjectBinding(
