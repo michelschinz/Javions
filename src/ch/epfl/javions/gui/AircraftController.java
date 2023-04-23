@@ -73,25 +73,15 @@ public final class AircraftController {
     }
 
     private Node groupForAircraft(ObservableAircraftState aircraftState) {
-        var layoutX = Bindings.createDoubleBinding(() -> {
-                    if (aircraftState.getPosition() != null) {
-                        var lon = aircraftState.getPosition().longitude();
-                        return WebMercator.x(mapParameters.getZoom(), lon) - mapParameters.getMinX();
-                    } else {
-                        return Double.NaN;
-                    }
-                },
+        var layoutX = Bindings.createDoubleBinding(() ->
+                        WebMercator.x(mapParameters.getZoom(), aircraftState.getPosition().longitude())
+                                - mapParameters.getMinX(),
                 aircraftState.positionProperty(),
                 mapParameters.zoomProperty(),
                 mapParameters.minXProperty());
-        var layoutY = Bindings.createDoubleBinding(() -> {
-                    if (aircraftState.getPosition() != null) {
-                        var lat = aircraftState.getPosition().latitude();
-                        return WebMercator.y(mapParameters.getZoom(), lat) - mapParameters.getMinY();
-                    } else {
-                        return Double.NaN;
-                    }
-                },
+        var layoutY = Bindings.createDoubleBinding(() ->
+                        WebMercator.y(mapParameters.getZoom(), aircraftState.getPosition().latitude())
+                                - mapParameters.getMinY(),
                 aircraftState.positionProperty(),
                 mapParameters.zoomProperty(),
                 mapParameters.minYProperty());
