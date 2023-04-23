@@ -153,7 +153,8 @@ public final class Main extends Application {
 
                     var nsToWait = timeStampNs - (System.nanoTime() - t0);
                     if (nsToWait > 0) Thread.sleep(nsToWait / 1_000_000L);
-                    messageQueue.add(MessageParser.parse(rawMessage));
+                    var message = MessageParser.parse(rawMessage);
+                    if (message != null) messageQueue.add(message);
                 }
             } catch (EOFException e) {
                 System.out.println("Messages exhausted, exiting.");
