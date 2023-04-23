@@ -183,10 +183,20 @@ public final class AircraftController {
 
         lineGroup.visibleProperty().bind(selectedAircraftProperty.isEqualTo(aircraftState));
 
-        aircraftState.trajectory().addListener((InvalidationListener) c ->
-                rebuildTrajectory(lineGroup, mapParameters.getZoom(), aircraftState.trajectory()));
-        mapParameters.zoomProperty().addListener((p, o, n) ->
-                rebuildTrajectory(lineGroup, n.intValue(), aircraftState.trajectory()));
+        var trajectoryInvalidationListener = (InvalidationListener) c ->
+                rebuildTrajectory(lineGroup, mapParameters.getZoom(), aircraftState.trajectory());
+
+        lineGroup.visibleProperty().addListener((p, wasVisible, isVisible) -> {
+            if (isVisible) {
+                rebuildTrajectory(lineGroup, mapParameters.getZoom(), aircraftState.trajectory());
+                aircraftState.trajectory().addListener(trajectoryInvalidationListener);
+                mapParameters.zoomProperty().addListener(trajectoryInvalidationListener);
+            } else {
+                lineGroup.getChildren().clear();
+                aircraftState.trajectory().removeListener(trajectoryInvalidationListener);
+                mapParameters.zoomProperty().removeListener(trajectoryInvalidationListener);
+            }
+        });
 
         return lineGroup;
     }
