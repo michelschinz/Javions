@@ -12,7 +12,6 @@ import ch.epfl.javions.aircraft.WakeTurbulenceCategory;
 import ch.epfl.javions.gui.ObservableAircraftState.AirbornePos;
 import javafx.beans.InvalidationListener;
 import javafx.beans.binding.Bindings;
-import javafx.beans.binding.DoubleBinding;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -73,31 +72,27 @@ public final class AircraftController {
     }
 
     private Node groupForAircraft(ObservableAircraftState aircraftState) {
-        var layoutX = Bindings.createDoubleBinding(() ->
+        var labelIcon = new Group(label(aircraftState), icon(aircraftState));
+        labelIcon.layoutXProperty().bind(Bindings.createDoubleBinding(() ->
                         WebMercator.x(mapParameters.getZoom(), aircraftState.getPosition().longitude())
                                 - mapParameters.getMinX(),
                 aircraftState.positionProperty(),
                 mapParameters.zoomProperty(),
-                mapParameters.minXProperty());
-        var layoutY = Bindings.createDoubleBinding(() ->
+                mapParameters.minXProperty()));
+        labelIcon.layoutYProperty().bind(Bindings.createDoubleBinding(() ->
                         WebMercator.y(mapParameters.getZoom(), aircraftState.getPosition().latitude())
                                 - mapParameters.getMinY(),
                 aircraftState.positionProperty(),
                 mapParameters.zoomProperty(),
-                mapParameters.minYProperty());
+                mapParameters.minYProperty()));
 
-        var group = new Group(
-                trajectory(aircraftState),
-                label(aircraftState, layoutX, layoutY),
-                icon(aircraftState, layoutX, layoutY));
-        group.setId(aircraftState.address().string());
-        group.viewOrderProperty().bind(aircraftState.altitudeProperty().negate());
-        return group;
+        var annotatedAircraft = new Group(trajectory(aircraftState), labelIcon);
+        annotatedAircraft.setId(aircraftState.address().string());
+        annotatedAircraft.viewOrderProperty().bind(aircraftState.altitudeProperty().negate());
+        return annotatedAircraft;
     }
 
-    private Node icon(ObservableAircraftState aircraftState,
-                      DoubleBinding layoutX,
-                      DoubleBinding layoutY) {
+    private Node icon(ObservableAircraftState aircraftState) {
         var aircraftPath = new SVGPath();
         aircraftPath.getStyleClass().add("aircraft");
 
@@ -113,9 +108,6 @@ public final class AircraftController {
         aircraftPath.fillProperty().bind(aircraftState.altitudeProperty()
                 .map(a -> colorForAltitude(a.doubleValue())));
 
-        aircraftPath.layoutXProperty().bind(layoutX);
-        aircraftPath.layoutYProperty().bind(layoutY);
-
         aircraftPath.rotateProperty().bind(Bindings.createDoubleBinding(() ->
                         iconProperty.get().canRotate()
                                 ? Units.convertTo(aircraftState.getTrackOrHeading(), Angle.DEGREE)
@@ -128,9 +120,7 @@ public final class AircraftController {
         return aircraftPath;
     }
 
-    private Node label(ObservableAircraftState aircraftState,
-                       DoubleBinding layoutX,
-                       DoubleBinding layoutY) {
+    private Node label(ObservableAircraftState aircraftState) {
         var name = aircraftState.aircraftData() != null
                 ? aircraftState.aircraftData().registration().string()
                 : Bindings.when(aircraftState.callSignProperty().isNotNull())
@@ -153,8 +143,6 @@ public final class AircraftController {
 
         var group = new Group(background, label);
         group.getStyleClass().add("label");
-        group.layoutXProperty().bind(layoutX);
-        group.layoutYProperty().bind(layoutY);
 
         group.visibleProperty().bind(
                 mapParameters.zoomProperty().greaterThanOrEqualTo(MIN_ZOOM_LABEL)
