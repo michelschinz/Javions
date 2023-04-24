@@ -96,23 +96,22 @@ public final class AircraftController {
         var aircraftPath = new SVGPath();
         aircraftPath.getStyleClass().add("aircraft");
 
-        var iconProperty = new SimpleObjectProperty<AircraftIcon>();
         var fixedData = aircraftState.aircraftData();
         var typeDesignator = fixedData != null ? fixedData.typeDesignator() : EMPTY_TYPE_DESIGNATOR;
         var description = fixedData != null ? fixedData.description() : EMPTY_DESCRIPTION;
         var wtc = fixedData != null ? fixedData.wakeTurbulenceCategory() : WakeTurbulenceCategory.UNKNOWN;
-        iconProperty.bind(aircraftState.categoryProperty()
-                .map(c -> AircraftIcon.iconFor(typeDesignator, description, c.intValue(), wtc)));
+        var icon = aircraftState.categoryProperty()
+                .map(c -> AircraftIcon.iconFor(typeDesignator, description, c.intValue(), wtc));
 
-        aircraftPath.contentProperty().bind(iconProperty.map(AircraftIcon::svgPath));
+        aircraftPath.contentProperty().bind(icon.map(AircraftIcon::svgPath));
         aircraftPath.fillProperty().bind(aircraftState.altitudeProperty()
                 .map(a -> colorForAltitude(a.doubleValue())));
 
         aircraftPath.rotateProperty().bind(Bindings.createDoubleBinding(() ->
-                        iconProperty.get().canRotate()
+                        icon.getValue().canRotate()
                                 ? Units.convertTo(aircraftState.getTrackOrHeading(), Angle.DEGREE)
                                 : 0d,
-                iconProperty,
+                icon,
                 aircraftState.trackOrHeadingProperty()));
 
         aircraftPath.setOnMouseClicked(e -> selectedAircraftProperty.set(aircraftState));
