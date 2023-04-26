@@ -43,18 +43,22 @@ public final class AircraftTableController {
 
     private static TableView<ObservableAircraftState> createTableView() {
         var tableView = new TableView<ObservableAircraftState>();
-        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_FLEX_LAST_COLUMN);
+        tableView.setColumnResizePolicy(TableView.CONSTRAINED_RESIZE_POLICY_SUBSEQUENT_COLUMNS);
         tableView.setTableMenuButtonVisible(true);
         //noinspection unchecked
         tableView.getColumns().setAll(
-                newStringColumn("OACI",
+                newStringColumn("OACI", 60,
                         s -> constantObservable(s.address().string())),
-                newStringColumn("Indicatif",
+                newStringColumn("Indicatif", 70,
                         s -> s.callSignProperty().map(CallSign::string)),
-                newStringColumn("Immatriculation",
+                newStringColumn("Immatriculation", 90,
                         s -> constantObservable(s.aircraftData()).map(d -> d.registration().string())),
-                newStringColumn("Modèle",
+                newStringColumn("Modèle", 230,
                         s -> constantObservable(s.aircraftData()).map(AircraftData::model)),
+                newStringColumn("Type", 50,
+                        s -> constantObservable(s.aircraftData()).map(d -> d.typeDesignator().string())),
+                newStringColumn("Description", 70,
+                        s -> constantObservable(s.aircraftData()).map(d -> d.description().string())),
                 newDoubleColumn("Longitude (°)",
                         s -> asDoubleExpression(s.positionProperty().map(GeoPos::longitude)),
                         Units.Angle.DEGREE,
@@ -76,9 +80,11 @@ public final class AircraftTableController {
 
     private static TableColumn<ObservableAircraftState, String> newStringColumn(
             String title,
+            int prefWidth,
             Function<ObservableAircraftState, ObservableValue<String>> propertyExtractor) {
         var column = new TableColumn<ObservableAircraftState, String>(title);
         column.setCellValueFactory(f -> propertyExtractor.apply(f.getValue()));
+        column.setPrefWidth(prefWidth);
         return column;
     }
 
@@ -88,6 +94,7 @@ public final class AircraftTableController {
             double unit,
             int fractionDigits) {
         var column = new TableColumn<ObservableAircraftState, String>(title);
+        column.setPrefWidth(85);
 
         // Change cell factory to add "numeric" style class to the cells.
         var originalCellFactory = column.getCellFactory();
