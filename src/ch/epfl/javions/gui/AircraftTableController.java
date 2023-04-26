@@ -152,9 +152,8 @@ public final class AircraftTableController {
     private void installListeners(ObservableSet<ObservableAircraftState> aircraftStates,
                                   ObjectProperty<ObservableAircraftState> selectedAddressProperty) {
         aircraftStates.addListener((SetChangeListener<ObservableAircraftState>) c -> {
-            var tableItems = tableView.getItems();
-            if (c.wasRemoved()) tableItems.remove(c.getElementRemoved());
-            if (c.wasAdded()) tableItems.add(c.getElementAdded());
+            if (c.wasRemoved()) tableView.getItems().remove(c.getElementRemoved());
+            if (c.wasAdded()) tableView.getItems().add(c.getElementAdded());
         });
 
         selectedAddressProperty.addListener((p, o, n) -> {
