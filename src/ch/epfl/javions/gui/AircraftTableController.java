@@ -25,17 +25,14 @@ import java.util.function.Function;
 
 public final class AircraftTableController {
     private final TableView<ObservableAircraftState> tableView;
-    private final Pane pane;
     private Consumer<ObservableAircraftState> doubleClickConsumer;
 
     public AircraftTableController(ObservableSet<ObservableAircraftState> aircraftStates,
                                    ObjectProperty<ObservableAircraftState> selectedAddressProperty) {
         var tableView = createTableView();
-        var pane = new BorderPane(tableView);
-        pane.getStylesheets().add("table.css");
+        tableView.getStylesheets().add("table.css");
 
         this.tableView = tableView;
-        this.pane = pane;
 
         installHandlers();
         installListeners(aircraftStates, selectedAddressProperty);
@@ -165,7 +162,7 @@ public final class AircraftTableController {
     }
 
     public Node pane() {
-        return pane;
+        return tableView;
     }
 
     public void setOnDoubleClick(Consumer<ObservableAircraftState> callback) {
