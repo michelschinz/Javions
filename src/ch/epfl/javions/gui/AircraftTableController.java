@@ -43,17 +43,17 @@ public final class AircraftTableController {
         tableView.setTableMenuButtonVisible(true);
         //noinspection unchecked
         tableView.getColumns().setAll(
-                newStringColumn("OACI", 60,
+                newTextColumn("OACI", 60,
                         s -> constantObservable(s.address().string())),
-                newStringColumn("Indicatif", 70,
+                newTextColumn("Indicatif", 70,
                         s -> s.callSignProperty().map(CallSign::string)),
-                newStringColumn("Immatriculation", 90,
+                newTextColumn("Immatriculation", 90,
                         s -> constantObservable(s.aircraftData()).map(d -> d.registration().string())),
-                newStringColumn("Modèle", 230,
+                newTextColumn("Modèle", 230,
                         s -> constantObservable(s.aircraftData()).map(AircraftData::model)),
-                newStringColumn("Type", 50,
+                newTextColumn("Type", 50,
                         s -> constantObservable(s.aircraftData()).map(d -> d.typeDesignator().string())),
-                newStringColumn("Description", 70,
+                newTextColumn("Description", 70,
                         s -> constantObservable(s.aircraftData()).map(d -> d.description().string())),
                 newDoubleColumn("Longitude (°)",
                         s -> asDoubleExpression(s.positionProperty().map(GeoPos::longitude)),
@@ -74,7 +74,7 @@ public final class AircraftTableController {
         return tableView;
     }
 
-    private static TableColumn<ObservableAircraftState, String> newStringColumn(
+    private static TableColumn<ObservableAircraftState, String> newTextColumn(
             String title,
             int prefWidth,
             Function<ObservableAircraftState, ObservableValue<String>> propertyExtractor) {
