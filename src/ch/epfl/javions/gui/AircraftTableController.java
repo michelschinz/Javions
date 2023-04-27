@@ -7,6 +7,7 @@ import ch.epfl.javions.aircraft.AircraftData;
 import javafx.beans.binding.Bindings;
 import javafx.beans.binding.DoubleExpression;
 import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.ObservableSet;
 import javafx.collections.SetChangeListener;
@@ -14,8 +15,6 @@ import javafx.scene.Node;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.input.MouseButton;
-import javafx.scene.layout.BorderPane;
-import javafx.scene.layout.Pane;
 
 import java.text.NumberFormat;
 import java.text.ParseException;
@@ -122,7 +121,7 @@ public final class AircraftTableController {
     }
 
     private static <T> ObservableValue<T> constantObservable(T value) {
-        return Bindings.createObjectBinding(() -> value);
+        return new ReadOnlyObjectWrapper<>(value);
     }
 
     private static DoubleExpression asDoubleExpression(ObservableValue<Double> observableValue) {
