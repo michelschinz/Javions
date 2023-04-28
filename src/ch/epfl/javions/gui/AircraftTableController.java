@@ -44,23 +44,23 @@ public final class AircraftTableController {
         //noinspection unchecked
         tableView.getColumns().setAll(
                 newTextColumn("OACI", 60,
-                        s -> constantObservable(s.address().string())),
+                        s -> new ReadOnlyObjectWrapper<>(s.address().string())),
                 newTextColumn("Indicatif", 70,
                         s -> s.callSignProperty().map(CallSign::string)),
                 newTextColumn("Immatriculation", 90,
-                        s -> constantObservable(s.aircraftData()).map(d -> d.registration().string())),
+                        s -> new ReadOnlyObjectWrapper<>(s.aircraftData()).map(d -> d.registration().string())),
                 newTextColumn("Modèle", 230,
-                        s -> constantObservable(s.aircraftData()).map(AircraftData::model)),
+                        s -> new ReadOnlyObjectWrapper<>(s.aircraftData()).map(AircraftData::model)),
                 newTextColumn("Type", 50,
-                        s -> constantObservable(s.aircraftData()).map(d -> d.typeDesignator().string())),
+                        s -> new ReadOnlyObjectWrapper<>(s.aircraftData()).map(d -> d.typeDesignator().string())),
                 newTextColumn("Description", 70,
-                        s -> constantObservable(s.aircraftData()).map(d -> d.description().string())),
+                        s -> new ReadOnlyObjectWrapper<>(s.aircraftData()).map(d -> d.description().string())),
                 newDoubleColumn("Longitude (°)",
-                        s -> asDoubleExpression(s.positionProperty().map(GeoPos::longitude)),
+                        s -> Bindings.createDoubleBinding(() -> s.getPosition().longitude(), s.positionProperty()),
                         Units.Angle.DEGREE,
                         4),
                 newDoubleColumn("Latitude (°)",
-                        s -> asDoubleExpression(s.positionProperty().map(GeoPos::latitude)),
+                        s -> Bindings.createDoubleBinding(() -> s.getPosition().latitude(), s.positionProperty()),
                         Units.Angle.DEGREE,
                         4),
                 newDoubleColumn("Altitude (m)",
@@ -118,14 +118,6 @@ public final class AircraftTableController {
                 : Double.compare(parseSafeDouble(formatter, s1), parseSafeDouble(formatter, s2)));
 
         return column;
-    }
-
-    private static <T> ObservableValue<T> constantObservable(T value) {
-        return new ReadOnlyObjectWrapper<>(value);
-    }
-
-    private static DoubleExpression asDoubleExpression(ObservableValue<Double> observableValue) {
-        return Bindings.createDoubleBinding(observableValue::getValue, observableValue);
     }
 
     private static double parseSafeDouble(NumberFormat format, String string) {
