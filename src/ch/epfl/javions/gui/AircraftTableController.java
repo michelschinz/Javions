@@ -140,7 +140,8 @@ public final class AircraftTableController {
         tableView.setOnMouseClicked(e -> {
             if (e.getClickCount() == 2
                 && MouseButton.PRIMARY.equals(e.getButton())
-                && doubleClickConsumer != null)
+                && doubleClickConsumer != null
+                && tableView.getSelectionModel().getSelectedItem() != null)
                 doubleClickConsumer.accept(tableView.getSelectionModel().getSelectedItem());
         });
     }
