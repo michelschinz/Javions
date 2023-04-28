@@ -114,7 +114,7 @@ public final class AircraftTableController {
 
         // Change comparator to sort values numerically
         column.setComparator((s1, s2) -> s1.isEmpty() || s2.isEmpty()
-                ? s2.compareTo(s1)
+                ? s1.compareTo(s2)
                 : Double.compare(parseSafeDouble(formatter, s1), parseSafeDouble(formatter, s2)));
 
         return column;
