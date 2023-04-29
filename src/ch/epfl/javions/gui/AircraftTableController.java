@@ -42,38 +42,38 @@ public final class AircraftTableController {
         tableView.setTableMenuButtonVisible(true);
         //noinspection unchecked
         tableView.getColumns().setAll(
-                newTextColumn("OACI", 60,
+                textColumn("OACI", 60,
                         s -> new ReadOnlyObjectWrapper<>(s.address().string())),
-                newTextColumn("Indicatif", 70,
+                textColumn("Indicatif", 70,
                         s -> s.callSignProperty().map(CallSign::string)),
-                newTextColumn("Immatriculation", 90,
+                textColumn("Immatriculation", 90,
                         s -> new ReadOnlyObjectWrapper<>(s.aircraftData()).map(d -> d.registration().string())),
-                newTextColumn("Modèle", 230,
+                textColumn("Modèle", 230,
                         s -> new ReadOnlyObjectWrapper<>(s.aircraftData()).map(AircraftData::model)),
-                newTextColumn("Type", 50,
+                textColumn("Type", 50,
                         s -> new ReadOnlyObjectWrapper<>(s.aircraftData()).map(d -> d.typeDesignator().string())),
-                newTextColumn("Description", 70,
+                textColumn("Description", 70,
                         s -> new ReadOnlyObjectWrapper<>(s.aircraftData()).map(d -> d.description().string())),
-                newDoubleColumn("Longitude (°)",
+                doubleColumn("Longitude (°)",
                         s -> Bindings.createDoubleBinding(() -> s.getPosition().longitude(), s.positionProperty()),
                         Units.Angle.DEGREE,
                         4),
-                newDoubleColumn("Latitude (°)",
+                doubleColumn("Latitude (°)",
                         s -> Bindings.createDoubleBinding(() -> s.getPosition().latitude(), s.positionProperty()),
                         Units.Angle.DEGREE,
                         4),
-                newDoubleColumn("Altitude (m)",
+                doubleColumn("Altitude (m)",
                         ObservableAircraftState::altitudeProperty,
                         Units.Length.METER,
                         0),
-                newDoubleColumn("Vitesse (km/h)",
+                doubleColumn("Vitesse (km/h)",
                         ObservableAircraftState::velocityProperty,
                         Units.Speed.KILOMETER_PER_HOUR,
                         0));
         return tableView;
     }
 
-    private static TableColumn<ObservableAircraftState, String> newTextColumn(
+    private static TableColumn<ObservableAircraftState, String> textColumn(
             String title,
             int prefWidth,
             Function<ObservableAircraftState, ObservableValue<String>> propertyExtractor) {
@@ -83,7 +83,7 @@ public final class AircraftTableController {
         return column;
     }
 
-    private static TableColumn<ObservableAircraftState, String> newDoubleColumn(
+    private static TableColumn<ObservableAircraftState, String> doubleColumn(
             String title,
             Function<ObservableAircraftState, DoubleExpression> propertyExtractor,
             double unit,
