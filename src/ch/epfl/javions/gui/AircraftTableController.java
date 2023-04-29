@@ -26,14 +26,14 @@ public final class AircraftTableController {
     private Consumer<ObservableAircraftState> doubleClickConsumer;
 
     public AircraftTableController(ObservableSet<ObservableAircraftState> aircraftStates,
-                                   ObjectProperty<ObservableAircraftState> selectedAddressProperty) {
+                                   ObjectProperty<ObservableAircraftState> selectedAircraftProperty) {
         var tableView = createTableView();
         tableView.getStylesheets().add("table.css");
 
         this.tableView = tableView;
 
         installHandlers();
-        installListeners(aircraftStates, selectedAddressProperty);
+        installListeners(aircraftStates, selectedAircraftProperty);
     }
 
     private static TableView<ObservableAircraftState> createTableView() {
@@ -135,7 +135,7 @@ public final class AircraftTableController {
     }
 
     private void installListeners(ObservableSet<ObservableAircraftState> aircraftStates,
-                                  ObjectProperty<ObservableAircraftState> selectedAddressProperty) {
+                                  ObjectProperty<ObservableAircraftState> selectedAircraftProperty) {
         aircraftStates.addListener((SetChangeListener<ObservableAircraftState>) c -> {
             if (c.wasRemoved()) tableView.getItems().remove(c.getElementRemoved());
             if (c.wasAdded()) {
@@ -144,12 +144,12 @@ public final class AircraftTableController {
             }
         });
 
-        selectedAddressProperty.addListener((p, o, n) -> {
+        selectedAircraftProperty.addListener((p, o, n) -> {
             if (!Objects.equals(tableView.getSelectionModel().getSelectedItem(), n))
                 tableView.scrollTo(n);
             tableView.getSelectionModel().select(n);
         });
-        tableView.getSelectionModel().selectedItemProperty().addListener((p, o, n) -> selectedAddressProperty.set(n));
+        tableView.getSelectionModel().selectedItemProperty().addListener((p, o, n) -> selectedAircraftProperty.set(n));
     }
 
     public Node pane() {
