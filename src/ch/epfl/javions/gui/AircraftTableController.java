@@ -1,6 +1,5 @@
 package ch.epfl.javions.gui;
 
-import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.adsb.CallSign;
 import ch.epfl.javions.aircraft.AircraftData;
@@ -113,19 +112,16 @@ public final class AircraftTableController {
         });
 
         // Change comparator to sort values numerically
-        column.setComparator((s1, s2) -> s1.isEmpty() || s2.isEmpty()
-                ? s1.compareTo(s2)
-                : Double.compare(parseSafeDouble(formatter, s1), parseSafeDouble(formatter, s2)));
+        column.setComparator((s1, s2) -> {
+            if (s1.isEmpty() || s2.isEmpty()) return s1.compareTo(s2);
+            try {
+                var d1 = formatter.parse(s1).doubleValue();
+                var d2 = formatter.parse(s2).doubleValue();
+                return Double.compare(d1, d2);
+            } catch (ParseException e) { throw new Error(e); /* can't happen */ }
+        });
 
         return column;
-    }
-
-    private static double parseSafeDouble(NumberFormat format, String string) {
-        try {
-            return format.parse(string).doubleValue();
-        } catch (ParseException e) {
-            throw new Error(e);
-        }
     }
 
     private void installHandlers() {
