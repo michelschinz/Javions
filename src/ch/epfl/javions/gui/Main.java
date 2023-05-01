@@ -8,6 +8,7 @@ import ch.epfl.javions.demodulation.AdsbDemodulator;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
@@ -17,15 +18,19 @@ import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
 
 import java.io.*;
-import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 public final class Main extends Application {
     private static final String AIRCRAFT_DB_RESOURCE_NAME = "/aircraft.zip";
     private static final String OSM_TILE_SERVER = "tile.openstreetmap.org";
-    private static final String OSM_TILE_CACHE_PATH = "/Users/michelschinz/local/ppo/23/javions/osm-cache";
-    public static final long PURGE_INTERVAL_NS = 1_000_000_000L;
+    private static final String OSM_TILE_CACHE_PATH = "tile-cache";
+
+    private static final int INITIAL_ZOOM = 8;
+    private static final int INITIAL_MIN_X = 33_530;
+    private static final int INITIAL_MIN_Y = 23_070;
+
+    private static final long PURGE_INTERVAL_NS = 1_000_000_000L;
 
     public static void main(String[] args) {
         launch(args);
@@ -38,36 +43,37 @@ public final class Main extends Application {
         var aircraftDbPath = Path.of(aircraftDbUrl.toURI());
         var aircraftDb = new AircraftDatabase(aircraftDbPath.toString());
 
-        var tileManager = new TileManager(Path.of(OSM_TILE_CACHE_PATH), OSM_TILE_SERVER);
-        var mapParameters = new MapParameters(12, 543_200, 370_650);
-
-        var baseMapController = new BaseMapController(tileManager, mapParameters);
-
         var aircraftStateManager = new AircraftStateManager(aircraftDb);
-
+        var tileManager = new TileManager(Path.of(OSM_TILE_CACHE_PATH), OSM_TILE_SERVER);
+        var mapParameters = new MapParameters(INITIAL_ZOOM, INITIAL_MIN_X, INITIAL_MIN_Y);
         var selectedAircraftProperty = new SimpleObjectProperty<ObservableAircraftState>();
-        var aircraftController = new AircraftController(mapParameters, aircraftStateManager.states(), selectedAircraftProperty);
-        var aircraftTableController = new AircraftTableController(aircraftStateManager.states(), selectedAircraftProperty);
-        aircraftTableController.setOnDoubleClick(p -> {
-            if (p.getPosition() != null) baseMapController.centerOn(p.getPosition());
-        });
 
+        // Map
+        var aircraftController = new AircraftController(mapParameters,
+                aircraftStateManager.states(),
+                selectedAircraftProperty);
+        var baseMapController = new BaseMapController(tileManager, mapParameters);
         var mapPane = new StackPane(baseMapController.pane(), aircraftController.pane());
 
+        // Status and table
         var statusLineController = new StatusLineController();
         statusLineController.aircraftCountProperty().bind(Bindings.size(aircraftStateManager.states()));
 
-        var bottomPane = new BorderPane(aircraftTableController.pane(), statusLineController.pane(), null, null, null);
+        var aircraftTableController = new AircraftTableController(aircraftStateManager.states(),
+                selectedAircraftProperty);
+        aircraftTableController.setOnDoubleClick(p -> {
+            assert p.getPosition() != null;
+            baseMapController.centerOn(p.getPosition());
+        });
+        var bottomPane = new BorderPane(aircraftTableController.pane());
+        bottomPane.setTop(statusLineController.pane());
 
         var mainPane = new SplitPane(mapPane, bottomPane);
         mainPane.setOrientation(Orientation.VERTICAL);
 
-        var scene = new Scene(mainPane);
-        primaryStage.setScene(scene);
-
+        primaryStage.setScene(new Scene(mainPane));
         primaryStage.setMinWidth(800);
         primaryStage.setMinHeight(600);
-
         primaryStage.setTitle("Javions");
         primaryStage.show();
 
@@ -81,6 +87,7 @@ public final class Main extends Application {
 
         var aircraftAnimationTimer = new AnimationTimer() {
             private long lastPurgeTime = 0;
+            private final IntegerProperty messageCount = statusLineController.messageCountProperty();
 
             @Override
             public void handle(long now) {
@@ -93,7 +100,7 @@ public final class Main extends Application {
                     }
                     messagesReceived += 1;
                 }
-                statusLineController.messageCountProperty().set(statusLineController.messageCountProperty().get() + messagesReceived);
+                messageCount.set(messageCount.get() + messagesReceived);
                 if (now - lastPurgeTime > PURGE_INTERVAL_NS) {
                     aircraftStateManager.purge();
                     lastPurgeTime = now;
@@ -157,11 +164,11 @@ public final class Main extends Application {
                     if (message != null) messageQueue.add(message);
                 }
             } catch (EOFException e) {
-                System.out.println("Messages exhausted, exiting.");
+                // nothing to do (messages exhausted)
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+                throw new Error(e);
             }
         }
     }
