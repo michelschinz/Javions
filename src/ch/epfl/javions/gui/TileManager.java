@@ -5,7 +5,6 @@ import javafx.scene.image.Image;
 
 import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
@@ -72,10 +71,9 @@ public final class TileManager {
             Files.createDirectories(imagePath.getParent());
             var connection = tileId.url(tileServerHost).openConnection();
             connection.setRequestProperty("User-Agent", "Javions");
-            try (var inStream = connection.getInputStream();
-                 var outStream = new FileOutputStream(imagePath.toFile())) {
+            try (var inStream = connection.getInputStream()) {
                 var imageBytes = inStream.readAllBytes();
-                outStream.write(imageBytes);
+                Files.write(imagePath, imageBytes);
                 // Note: a ByteArrayInputStream does not have to be closed
                 return new Image(new ByteArrayInputStream(imageBytes));
             }
