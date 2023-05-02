@@ -89,15 +89,8 @@ public final class AircraftTableController {
             double unit,
             int fractionDigits) {
         var column = new TableColumn<ObservableAircraftState, String>(title);
+        column.getStyleClass().add("numeric");
         column.setPrefWidth(85);
-
-        // Change cell factory to add "numeric" style class to the cells.
-        var originalCellFactory = column.getCellFactory();
-        column.setCellFactory(c -> {
-            var cell = originalCellFactory.call(c);
-            cell.getStyleClass().add("numeric");
-            return cell;
-        });
 
         // Change value factory to print NaNs as empty strings
         var formatter = NumberFormat.getInstance();
