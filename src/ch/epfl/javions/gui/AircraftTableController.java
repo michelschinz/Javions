@@ -97,12 +97,11 @@ public final class AircraftTableController {
         formatter.setMinimumFractionDigits(fractionDigits);
         formatter.setMaximumFractionDigits(fractionDigits);
 
-        column.setCellValueFactory(f -> {
-            var p = propertyExtractor.apply(f.getValue());
-            return Bindings.when(p.greaterThan(Double.NEGATIVE_INFINITY))
-                    .then(formatter.format(Units.convertTo(p.get(), unit)))
-                    .otherwise("");
-        });
+        column.setCellValueFactory(f -> propertyExtractor
+                .apply(f.getValue())
+                .map(n -> Double.isNaN(n.doubleValue())
+                        ? ""
+                        : formatter.format(Units.convertTo(n.doubleValue(), unit))));
 
         // Change comparator to sort values numerically
         column.setComparator((s1, s2) -> {
