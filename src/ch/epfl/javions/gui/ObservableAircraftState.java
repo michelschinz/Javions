@@ -102,30 +102,14 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     @Override
     public void setPosition(GeoPos position) {
         positionProperty.set(position);
-        updateTrajectory();
+
+        if (Double.isNaN(getAltitude())) return;
+        trajectory.add(new AirbornePos(position, getAltitude()));
+        lastPositionTimeStampNs = getLastMessageTimeStampNs();
     }
 
     public ObservableList<AirbornePos> trajectory() {
         return unmodifiableTrajectory;
-    }
-
-    private void updateTrajectory() {
-        var position = getPosition();
-        var altitude = getAltitude();
-        if (position == null || Double.isNaN(altitude)) return;
-
-        var maybeLastPosition = trajectory.isEmpty()
-                ? null
-                : trajectory.get(trajectory.size() - 1).position();
-
-        if (!position.equals(maybeLastPosition)) {
-            // New position: unconditionally augment the trajectory
-            trajectory.add(new AirbornePos(position, altitude));
-            lastPositionTimeStampNs = getLastMessageTimeStampNs();
-        } else if (lastPositionTimeStampNs == getLastMessageTimeStampNs()) {
-            // Same position and same message: update altitude
-            trajectory.set(trajectory.size() - 1, new AirbornePos(position, altitude));
-        }
     }
 
     public ReadOnlyDoubleProperty altitudeProperty() {
@@ -139,7 +123,14 @@ public final class ObservableAircraftState implements AircraftStateSetter {
     @Override
     public void setAltitude(double altitude) {
         altitudeProperty.set(altitude);
-        updateTrajectory();
+
+        if (getPosition() == null) return;
+        if (trajectory.isEmpty()) {
+            trajectory.add(new AirbornePos(getPosition(), altitude));
+            lastPositionTimeStampNs = getLastMessageTimeStampNs();
+        } else if (lastPositionTimeStampNs == getLastMessageTimeStampNs()) {
+            trajectory.set(trajectory.size() - 1, new AirbornePos(getPosition(), altitude));
+        }
     }
 
     public ReadOnlyDoubleProperty velocityProperty() {
