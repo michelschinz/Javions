@@ -20,6 +20,7 @@ import javafx.stage.Stage;
 import java.io.*;
 import java.nio.file.Path;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.function.Supplier;
 
 public final class Main extends Application {
     private static final String AIRCRAFT_DB_RESOURCE_NAME = "/aircraft.zip";
@@ -79,9 +80,18 @@ public final class Main extends Application {
 
         var messageQueue = new ConcurrentLinkedQueue<Message>();
         var programArguments = getParameters().getRaw();
-        var messageThread = programArguments.size() == 1
-                ? new BinMessageThread(programArguments.get(0), messageQueue)
-                : new AirSpyMessageThread(messageQueue);
+        var dataStream = programArguments.size() >= 2
+                ? new FileInputStream(programArguments.get(1))
+                : System.in;
+        var messageSupplier = supplier(programArguments.size() >= 1 ? programArguments.get(0) : "", dataStream);
+        var messageThread = new Thread(() -> {
+            while (true) {
+                var message = messageSupplier.get();
+                if (message == null)
+                    break;
+                messageQueue.add(message);
+            }
+        });
         messageThread.setDaemon(true);
         messageThread.start();
 
@@ -110,45 +120,34 @@ public final class Main extends Application {
         aircraftAnimationTimer.start();
     }
 
-    private static final class AirSpyMessageThread extends Thread {
-        private final ConcurrentLinkedQueue<Message> messages;
+    private static Supplier<Message> supplier(String name, InputStream dataStream) throws IOException {
+        return "airspy".equalsIgnoreCase(name)
+                ? airSpyMessageSupplier(dataStream)
+                : binMessageSupplier(dataStream);
+    }
 
-        public AirSpyMessageThread(ConcurrentLinkedQueue<Message> messages) {
-            super("AirSpyMessageThread");
-            this.messages = messages;
-        }
-
-        @Override
-        public void run() {
+    private static Supplier<Message> airSpyMessageSupplier(InputStream dataStream) throws IOException {
+        var demodulator = new AdsbDemodulator(dataStream);
+        return () -> {
             try {
-                var demodulator = new AdsbDemodulator(System.in);
                 while (true) {
                     var rawMessage = demodulator.nextMessage();
-                    if (rawMessage == null) break;
+                    if (rawMessage == null) return null;
                     var message = MessageParser.parse(rawMessage);
-                    if (message != null) messages.add(message);
+                    if (message != null) return message;
                 }
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             }
-        }
+        };
     }
 
-    private static final class BinMessageThread extends Thread {
-        private final String messageFileName;
-        private final ConcurrentLinkedQueue<Message> messageQueue;
-
-        public BinMessageThread(String messageFileName, ConcurrentLinkedQueue<Message> messageQueue) {
-            super("BinMessageThread");
-            this.messageFileName = messageFileName;
-            this.messageQueue = messageQueue;
-        }
-
-        @Override
-        public void run() {
-            try (var s = new DataInputStream(new FileInputStream(messageFileName))) {
-                var messageBuffer = new byte[RawMessage.LENGTH];
-                var t0 = System.nanoTime();
+    private static Supplier<Message> binMessageSupplier(InputStream dataStream) {
+        var s = new DataInputStream(dataStream);
+        var messageBuffer = new byte[RawMessage.LENGTH];
+        var t0 = System.nanoTime();
+        return () -> {
+            try {
                 while (true) {
                     var timeStampNs = s.readLong();
                     var bytesRead = s.read(messageBuffer);
@@ -161,15 +160,15 @@ public final class Main extends Application {
                     var nsToWait = timeStampNs - (System.nanoTime() - t0);
                     if (nsToWait > 0) Thread.sleep(nsToWait / 1_000_000L);
                     var message = MessageParser.parse(rawMessage);
-                    if (message != null) messageQueue.add(message);
+                    if (message != null) return message;
                 }
             } catch (EOFException e) {
-                // nothing to do (messages exhausted)
+                return null;
             } catch (IOException e) {
                 throw new UncheckedIOException(e);
             } catch (InterruptedException e) {
                 throw new Error(e);
             }
-        }
+        };
     }
 }
