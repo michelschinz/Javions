@@ -23,6 +23,9 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Supplier;
 
 public final class Main extends Application {
+    private static final int WINDOW_MIN_WIDTH = 800;
+    private static final int WINDOW_MIN_HEIGHT = 600;
+
     private static final String AIRCRAFT_DB_RESOURCE_NAME = "/aircraft.zip";
     private static final String OSM_TILE_SERVER = "tile.openstreetmap.org";
     private static final String OSM_TILE_CACHE_PATH = "tile-cache";
@@ -73,8 +76,8 @@ public final class Main extends Application {
         mainPane.setOrientation(Orientation.VERTICAL);
 
         primaryStage.setScene(new Scene(mainPane));
-        primaryStage.setMinWidth(800);
-        primaryStage.setMinHeight(600);
+        primaryStage.setMinWidth(WINDOW_MIN_WIDTH);
+        primaryStage.setMinHeight(WINDOW_MIN_HEIGHT);
         primaryStage.setTitle("Javions");
         primaryStage.show();
 
@@ -126,8 +129,8 @@ public final class Main extends Application {
                 : binMessageSupplier(dataStream);
     }
 
-    private static Supplier<Message> airSpyMessageSupplier(InputStream dataStream) throws IOException {
-        var demodulator = new AdsbDemodulator(dataStream);
+    private static Supplier<Message> airSpyMessageSupplier(InputStream samplesStream) throws IOException {
+        var demodulator = new AdsbDemodulator(samplesStream);
         return () -> {
             try {
                 while (true) {
@@ -142,23 +145,24 @@ public final class Main extends Application {
         };
     }
 
-    private static Supplier<Message> binMessageSupplier(InputStream dataStream) {
-        var s = new DataInputStream(dataStream);
+    private static Supplier<Message> binMessageSupplier(InputStream msgStream) {
+        var dataStream = new DataInputStream(msgStream);
         var messageBuffer = new byte[RawMessage.LENGTH];
-        var t0 = System.nanoTime();
+        var startTime = System.nanoTime();
         return () -> {
             try {
                 while (true) {
-                    var timeStampNs = s.readLong();
-                    var bytesRead = s.read(messageBuffer);
+                    var timeStampNs = dataStream.readLong();
+                    var bytesRead = dataStream.read(messageBuffer);
                     if (bytesRead != RawMessage.LENGTH)
                         throw new IOException("Unexpected end of file");
 
                     var rawMessage = RawMessage.of(timeStampNs, messageBuffer);
                     assert rawMessage != null;
 
-                    var nsToWait = timeStampNs - (System.nanoTime() - t0);
-                    if (nsToWait > 0) Thread.sleep(nsToWait / 1_000_000L);
+                    var nsToWait = timeStampNs - (System.nanoTime() - startTime);
+                    if (nsToWait > 0) //noinspection BusyWait
+                        Thread.sleep(nsToWait / 1_000_000L);
                     var message = MessageParser.parse(rawMessage);
                     if (message != null) return message;
                 }
