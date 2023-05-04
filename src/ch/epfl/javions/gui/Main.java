@@ -109,7 +109,7 @@ public final class Main extends Application {
                     try {
                         aircraftStateManager.updateWithMessage(messageQueue.remove());
                     } catch (IOException e) {
-                        e.printStackTrace(System.err);
+                        throw new UncheckedIOException(e);
                     }
                     messagesReceived += 1;
                 }
