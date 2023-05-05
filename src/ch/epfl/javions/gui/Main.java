@@ -8,7 +8,7 @@ import ch.epfl.javions.demodulation.AdsbDemodulator;
 import javafx.animation.AnimationTimer;
 import javafx.application.Application;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.geometry.Orientation;
 import javafx.scene.Scene;
@@ -100,7 +100,7 @@ public final class Main extends Application {
 
         var aircraftAnimationTimer = new AnimationTimer() {
             private long lastPurgeTime = 0;
-            private final IntegerProperty messageCount = statusLineController.messageCountProperty();
+            private final LongProperty messageCount = statusLineController.messageCountProperty();
 
             @Override
             public void handle(long now) {

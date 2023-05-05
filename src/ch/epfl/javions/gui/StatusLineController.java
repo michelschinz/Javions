@@ -2,19 +2,21 @@ package ch.epfl.javions.gui;
 
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.IntegerProperty;
+import javafx.beans.property.LongProperty;
 import javafx.beans.property.SimpleIntegerProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.Pane;
 import javafx.scene.text.Text;
 
 public final class StatusLineController {
     private final Pane statusPane;
-    private final IntegerProperty messageCountProperty;
     private final IntegerProperty aircraftCountProperty;
+    private final LongProperty messageCountProperty;
 
     public StatusLineController() {
-        var messageCountProperty = new SimpleIntegerProperty();
         var aircraftCountProperty = new SimpleIntegerProperty();
+        var messageCountProperty = new SimpleLongProperty();
 
         var leftStatusText = new Text();
         leftStatusText.textProperty().bind(Bindings.format("Aéronefs visibles : %d",
@@ -27,8 +29,8 @@ public final class StatusLineController {
         statusPane.getStylesheets().add("status.css");
 
         this.statusPane = statusPane;
-        this.messageCountProperty = messageCountProperty;
         this.aircraftCountProperty = aircraftCountProperty;
+        this.messageCountProperty = messageCountProperty;
     }
 
     public Pane pane() {
@@ -39,7 +41,7 @@ public final class StatusLineController {
         return aircraftCountProperty;
     }
 
-    public IntegerProperty messageCountProperty() {
+    public LongProperty messageCountProperty() {
         return messageCountProperty;
     }
 }
