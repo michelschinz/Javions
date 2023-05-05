@@ -104,19 +104,19 @@ public final class Main extends Application {
 
             @Override
             public void handle(long now) {
-                var messagesReceived = 0;
-                while (!messageQueue.isEmpty()) {
-                    try {
+                try {
+                    var messagesReceived = 0;
+                    while (!messageQueue.isEmpty()) {
                         aircraftStateManager.updateWithMessage(messageQueue.remove());
-                    } catch (IOException e) {
-                        throw new UncheckedIOException(e);
+                        messagesReceived += 1;
                     }
-                    messagesReceived += 1;
-                }
-                messageCount.set(messageCount.get() + messagesReceived);
-                if (now - lastPurgeTime > PURGE_INTERVAL_NS) {
-                    aircraftStateManager.purge();
-                    lastPurgeTime = now;
+                    messageCount.set(messageCount.get() + messagesReceived);
+                    if (now - lastPurgeTime > PURGE_INTERVAL_NS) {
+                        aircraftStateManager.purge();
+                        lastPurgeTime = now;
+                    }
+                } catch (IOException e) {
+                    throw new UncheckedIOException(e);
                 }
             }
         };
