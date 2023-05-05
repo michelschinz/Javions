@@ -99,11 +99,11 @@ public final class Main extends Application {
         messageThread.start();
 
         var aircraftAnimationTimer = new AnimationTimer() {
-            private long lastPurgeTime = 0;
+            private long lastPurgeTimeNs = 0;
             private final LongProperty messageCount = statusLineController.messageCountProperty();
 
             @Override
-            public void handle(long now) {
+            public void handle(long nowNs) {
                 try {
                     var messagesReceived = 0;
                     while (!messageQueue.isEmpty()) {
@@ -111,9 +111,9 @@ public final class Main extends Application {
                         messagesReceived += 1;
                     }
                     messageCount.set(messageCount.get() + messagesReceived);
-                    if (now - lastPurgeTime > PURGE_INTERVAL_NS) {
+                    if (nowNs - lastPurgeTimeNs > PURGE_INTERVAL_NS) {
                         aircraftStateManager.purge();
-                        lastPurgeTime = now;
+                        lastPurgeTimeNs = nowNs;
                     }
                 } catch (IOException e) {
                     throw new UncheckedIOException(e);
