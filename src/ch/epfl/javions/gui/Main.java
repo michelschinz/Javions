@@ -19,8 +19,10 @@ import javafx.stage.Stage;
 
 import java.io.*;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 public final class Main extends Application {
     private static final int WINDOW_MIN_WIDTH = 800;
@@ -83,10 +85,9 @@ public final class Main extends Application {
 
         var messageQueue = new ConcurrentLinkedQueue<Message>();
         var programArguments = getParameters().getRaw();
-        var dataStream = programArguments.size() >= 2
-                ? new FileInputStream(programArguments.get(1))
-                : System.in;
-        var messageSupplier = supplier(programArguments.size() >= 1 ? programArguments.get(0) : "", dataStream);
+        var messageSupplier = programArguments.size() >= 1
+                ? binaryFileMessageSupplier(readAllMessages(programArguments.get(0)))
+                : airSpyMessageSupplier();
         var messageThread = new Thread(() -> {
             while (true) {
                 var message = messageSupplier.get();
@@ -123,14 +124,8 @@ public final class Main extends Application {
         aircraftAnimationTimer.start();
     }
 
-    private static Supplier<Message> supplier(String name, InputStream dataStream) throws IOException {
-        return "airspy".equalsIgnoreCase(name)
-                ? airSpyMessageSupplier(dataStream)
-                : binMessageSupplier(dataStream);
-    }
-
-    private static Supplier<Message> airSpyMessageSupplier(InputStream samplesStream) throws IOException {
-        var demodulator = new AdsbDemodulator(samplesStream);
+    private static Supplier<Message> airSpyMessageSupplier() throws IOException {
+        var demodulator = new AdsbDemodulator(System.in);
         return () -> {
             try {
                 while (true) {
@@ -145,31 +140,36 @@ public final class Main extends Application {
         };
     }
 
-    private static Supplier<Message> binMessageSupplier(InputStream msgStream) {
-        var dataStream = new DataInputStream(msgStream);
-        var messageBuffer = new byte[RawMessage.LENGTH];
+    private static List<Message> readAllMessages(String fileName) throws IOException {
+        var messages = Stream.<Message>builder();
+        try (var dataStream = new DataInputStream(new FileInputStream(fileName))) {
+            var messageBuffer = new byte[RawMessage.LENGTH];
+            //noinspection InfiniteLoopStatement
+            while (true) {
+                var timeStampNs = dataStream.readLong();
+                var bytesRead = dataStream.read(messageBuffer);
+                if (bytesRead != RawMessage.LENGTH) throw new EOFException();
+
+                var rawMessage = RawMessage.of(timeStampNs, messageBuffer);
+                assert rawMessage != null;
+
+                var message = MessageParser.parse(rawMessage);
+                if (message != null) messages.add(message);
+            }
+        } catch (EOFException e) {
+            return messages.build().toList();
+        }
+    }
+
+    private static Supplier<Message> binaryFileMessageSupplier(List<Message> messages) {
         var startTime = System.nanoTime();
+        var messageIt = messages.iterator();
         return () -> {
             try {
-                while (true) {
-                    var timeStampNs = dataStream.readLong();
-                    var bytesRead = dataStream.read(messageBuffer);
-                    if (bytesRead != RawMessage.LENGTH)
-                        throw new IOException("Unexpected end of file");
-
-                    var rawMessage = RawMessage.of(timeStampNs, messageBuffer);
-                    assert rawMessage != null;
-
-                    var nsToWait = timeStampNs - (System.nanoTime() - startTime);
-                    if (nsToWait > 0) //noinspection BusyWait
-                        Thread.sleep(nsToWait / 1_000_000L);
-                    var message = MessageParser.parse(rawMessage);
-                    if (message != null) return message;
-                }
-            } catch (EOFException e) {
-                return null;
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
+                var message = messageIt.next();
+                var nsToWait = message.timeStampNs() - (System.nanoTime() - startTime);
+                if (nsToWait > 0) Thread.sleep(nsToWait / 1_000_000L);
+                return message;
             } catch (InterruptedException e) {
                 throw new Error(e);
             }
