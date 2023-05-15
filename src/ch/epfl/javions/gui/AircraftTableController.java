@@ -1,5 +1,6 @@
 package ch.epfl.javions.gui;
 
+import ch.epfl.javions.GeoPos;
 import ch.epfl.javions.Units;
 import ch.epfl.javions.adsb.CallSign;
 import ch.epfl.javions.aircraft.AircraftData;
@@ -55,11 +56,11 @@ public final class AircraftTableController {
                 textColumn("Description", 70,
                         s -> new ReadOnlyObjectWrapper<>(s.aircraftData()).map(d -> d.description().string())),
                 doubleColumn("Longitude (°)",
-                        s -> Bindings.createDoubleBinding(() -> s.getPosition().longitude(), s.positionProperty()),
+                        s -> s.positionProperty().map(GeoPos::longitude),
                         Units.Angle.DEGREE,
                         4),
                 doubleColumn("Latitude (°)",
-                        s -> Bindings.createDoubleBinding(() -> s.getPosition().latitude(), s.positionProperty()),
+                        s -> s.positionProperty().map(GeoPos::latitude),
                         Units.Angle.DEGREE,
                         4),
                 doubleColumn("Altitude (m)",
@@ -85,7 +86,7 @@ public final class AircraftTableController {
 
     private static TableColumn<ObservableAircraftState, String> doubleColumn(
             String title,
-            Function<ObservableAircraftState, DoubleExpression> propertyExtractor,
+            Function<ObservableAircraftState, ObservableValue<Number>> propertyExtractor,
             double unit,
             int fractionDigits) {
         var column = new TableColumn<ObservableAircraftState, String>(title);
