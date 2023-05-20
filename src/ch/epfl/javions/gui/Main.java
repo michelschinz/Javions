@@ -125,6 +125,14 @@ public final class Main extends Application {
     }
 
     private static Supplier<Message> airSpyMessageSupplier() throws IOException {
+        // To launch airspy_rx directly:
+//        Process process = new ProcessBuilder("airspy_rx", "-r", "-", "-f", "1090", "-t", "5", "-g", "17")
+//                .redirectError(ProcessBuilder.Redirect.INHERIT)
+//                .redirectOutput(ProcessBuilder.Redirect.PIPE)
+//                .start();
+//
+//        AdsbDemodulator demodulator = new AdsbDemodulator(process.getInputStream());
+
         var demodulator = new AdsbDemodulator(System.in);
         return () -> {
             try {
