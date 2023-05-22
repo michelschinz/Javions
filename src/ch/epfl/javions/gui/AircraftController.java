@@ -107,7 +107,7 @@ public final class AircraftController {
                 .map(a -> colorForAltitude(a.doubleValue())));
 
         aircraftPath.rotateProperty().bind(Bindings.createDoubleBinding(() ->
-                        icon.getValue().canRotate()
+                        icon.getValue().canRotate() && !Double.isNaN(aircraftState.getTrackOrHeading())
                                 ? Units.convertTo(aircraftState.getTrackOrHeading(), Angle.DEGREE)
                                 : 0d,
                 icon,
