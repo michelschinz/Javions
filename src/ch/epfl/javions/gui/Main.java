@@ -174,6 +174,7 @@ public final class Main extends Application {
         var messageIt = messages.iterator();
         return () -> {
             try {
+                if (!messageIt.hasNext()) return null;
                 var message = messageIt.next();
                 var nsToWait = message.timeStampNs() - (System.nanoTime() - startTime);
                 if (nsToWait > 0) Thread.sleep(nsToWait / 1_000_000L);
